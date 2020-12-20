@@ -7,3 +7,11 @@ A system to control a harrow
 - Adjust harrow left right
 - Start/Stop automatic arrow adjustment
 
+
+## setup raspberry ##
+use raspap.com to install a apache and install wifi connection
+https://www.youtube.com/watch?v=YbvSS8MJm2s
+
+## copy traktor /var/www/html/ ## 
+
+sudo nano /etc/sudoers
