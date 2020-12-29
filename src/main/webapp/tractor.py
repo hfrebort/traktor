@@ -1,34 +1,50 @@
 #!/usr/bin/python3
 from gpiozero import PWMLED
-from signal import pause
-import time
-import sys
+import time, sys
 
-print (sys.argv)
+ledLeft = None
+ledRight = None
 
-led = PWMLED(18)
-# 0.25 .. left 0.5 .. center 1 .. right
-duration = int(sys.argv[1])
-left = float(sys.argv[2])
-center = float(sys.argv[3])
-right = float(sys.argv[4])
-direction = sys.argv[5]
+def stop_all():
+    global ledLeft, ledRight
+    
+    if ledLeft is not None:
+      ledLeft.value = 0
 
+    if ledRight is not None:
+      ledRight.value = 0
 
-if direction == "left":
-  led.value = left
-elif direction == "center":
-  led.value = center
-elif direction == "right":
-  led.value = right
+def perform(data):
+    global ledLeft, ledRight
+    print (data)
+    
+    # 12 .. left 13 .. right
+    duration = float(data['duration'])
+    left = int(data['left'])
+    right = int(data['right'])
+    direction = data['direction']
 
+    # initialize the leds    
+    if ledLeft is None:
+        ledLeft = PWMLED(left)
 
-print ("led.value %s" % (led.value))
-
-if direction != "stop":
-  print ("sleep of %s sec was executed " % duration)
-  time.sleep(duration)
-
-
-# stop
-led.value = 0
+    if ledRight is None:
+        ledRight = PWMLED(right)
+    
+    # evaluate the direction
+    if direction == "left":
+        ledRight.value = 0
+        ledLeft.value = 1
+    elif direction == "right":
+        ledLeft.value = 0
+        ledRight.value = 1
+    else:
+        stop_all()
+    
+    
+    print ("left: %d, right: %d" % (ledLeft.value, ledRight.value))
+    
+    if direction != "stop" and duration > 0:
+        print ("sleep of %s sec was executed " % duration)
+        time.sleep(duration)
+        stop_all()

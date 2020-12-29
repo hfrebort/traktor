@@ -9,6 +9,11 @@
 <!-- Bootstrap CSS -->
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="css/bootstrap.min.css">
+<style>
+	.traktor-container {position: relative;}
+	.traktor-image {width:100%; display: block;}
+	.traktor-overlay {width:100%; position: absolute; bottom: 0; opacity:0.5; z-index:10;}
+</style>
 
 <script src="scripts/angular.min.js"></script>
 <script src="scripts/tractor.js"></script>
@@ -18,12 +23,10 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-sm-6">
-				<!-- 16:9 aspect ratio -->
-				<div class="thumbnail">
-					<!-- <video id="videoPlayer" controls muted autoplay></video> -->
-					<!-- <video src="soja.mp4" type="video/mp4" autobuffer autoplay controls /> -->
-					<img src="{{showSnapShot ? showSnapShotImage : data.url + 'video'}}">
-					
+				<div class="traktor-container">
+					<!-- img src="{{data.url + '/video'}}" class="traktor-image" -->
+					<img class="traktor-image" src="{{videoUrl}}">
+					<img data-ng-show="showSnapShot" class="traktor-overlay" src="{{showSnapShotImage}}">
 				</div>
 			</div>
 		
@@ -32,65 +35,56 @@
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
 					<div class="row">
 						<div class="col-sm-4">
-							<button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-primary btn-block btn-lg">
+							<button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-lg btn-primary">
 								<span class="glyphicon glyphicon-chevron-left"></span>
 							</button>
 						</div>
 						<div class="col-sm-4">
-							<button name="direction" data-ng-click="ctrl.perform('center')" class="btn btn-primary btn-block btn-lg">
-								<span class="glyphicon glyphicon-align-justify"></span>
+							<button name="direction" data-ng-click="ctrl.perform('stop')" class="btn btn-block btn-lg btn-primary">
+								<span class="glyphicon glyphicon-pause"></span>
 							</button>
 						</div>
 						<div class="col-sm-4">
-							<button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-primary btn-block btn-lg">
+							<button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-lg btn-primary">
 								<span class="glyphicon glyphicon-chevron-right"></span>
 							</button>
 						</div>
 					</div>
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
 					<div class="row">
-						<div class="col-sm-12">
-							<button name="direction" data-ng-click="ctrl.perform('stop')" class="btn btn-block btn-lg btn-danger">
+						<div class="col-sm-4">
+							<button name="play" data-ng-click="ctrl.streamVideo()" class="btn btn-block btn-lg btn-default">
+								<span class="glyphicon glyphicon-facetime-video"></span>
+							</button>
+						</div>
+						<div class="col-sm-4">
+							<button name="shot" data-ng-click="ctrl.snapShot()" class="btn btn-block btn-lg btn-default">
+								<span class="glyphicon glyphicon-camera"></span>
+							</button>
+						</div>
+						<div class="col-sm-4">
+							<button name="stop" data-ng-click="ctrl.startStop()" class="btn btn-block btn-lg btn-danger">
 								<span class="glyphicon glyphicon-off"></span>
 							</button>
 						</div>
 					</div>
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
 					<div class="row">
-						<div class="col-sm-6">
-							<button name="shot" data-ng-click="ctrl.startVideo()" class="btn btn-block btn-lg btn-default">
-								<span class="glyphicon glyphicon-facetime-video"></span>
-							</button>
-						</div>
-						<div class="col-sm-6">
-							<button name="shot" data-ng-click="ctrl.snapShot()" class="btn btn-block btn-lg btn-default">
-								<span class="glyphicon glyphicon-camera"></span>
-							</button>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
-						<div class="col-sm-3">
+						<div class="col-sm-4">
 							<div class="input-group">
 								<span class="input-group-addon" id="basic-addon1">D</span>
 								<input name="duration" data-ng-model="data.duration" class="form-control" aria-describedby="basic-addon1"/>
 							</div>
 						</div>
-						<div class="col-sm-3">
+						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon2">L</span>
+								<span class="input-group-addon" id="basic-addon2">GPIO-Left</span>
 								<input name="left" data-ng-model="data.left" class="form-control" aria-describedby="basic-addon2"/>
 							</div>
 						</div>
-						<div class="col-sm-3">
+						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon3">Z</span>
-								<input name="center" data-ng-model="data.center" class="form-control" aria-describedby="basic-addon3"/>
-							</div>
-						</div>
-						<div class="col-sm-3">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon4">R</span>
+								<span class="input-group-addon" id="basic-addon4">GPIO-Right</span>
 								<input name="right" data-ng-model="data.right" class="form-control" aria-describedby="basic-addon4"/>
 							</div>
 						</div>
