@@ -109,7 +109,7 @@ def drawContours(img, contours, color=(0,0,255), contour_mode='CONT'):
                 cont_img = cv2.drawContours(cont_img, [cnt], -1, color,2)
             elif contour_mode == 'LINE':
                 (vx, vy, cx, cy) = cv2.fitLine(cnt, cv2.DIST_L12, 0, 0.1, 0.1)
-                cv2.line(cont_img,(int(cx-vx*w),int(cy-vy*h)),(int(cx+vx*w),int(cy+vy*h)),color,2)
+                cv2.line(cont_img,(int(cx-vx*width),int(cy-vy*height)),(int(cx+vx*width),int(cy+vy*height)),color,2)
             elif contour_mode == 'POLY':
                 cont_img = cv2.fillPoly(cont_img, [cnt], color)
             elif contour_mode == 'RECT':
@@ -149,7 +149,7 @@ def draw_on_frame(src_img, calc_img):
     draw_middle_line(img)
     return img
 
-w,h = 640, 480
+width, height = 640, 480
 video_name = 'tests/lavendel1.mp4'
 
 def on_erode_trackbar(val):
@@ -189,9 +189,9 @@ while(True):
     # Display the resulting frame
     if frame is not None:
         start = time.perf_counter()
-        img = cv2.resize(frame, (w, h))        
+        img = cv2.resize(frame, (width, height))        
 
-        default_img, default_cnt = search_lines(img)        
+        default_img, default_cnt = search_lines(img, contour_mode='LINE')        
         default_img = draw_on_frame(img, default_img)
 
         fill_img, fill_cnt = search_lines(img, True, 'POLY') #, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
@@ -204,8 +204,8 @@ while(True):
         cv2.imshow('fill', fill_img)
         cv2.imshow('rectangle', rect_img)
         
-        print(f"Prepare image took: {time.perf_counter() - start:0.4f} ms - first:{default_cnt} | second:{fill_cnt} | third:{rect_cnt}")
-#        print(f"Prepare image took: {time.perf_counter() - start:0.3f} ms - found contours: {default_cnt}")
+        print(f"Prepare image took: {time.perf_counter() - start:0.4f} s - first:{default_cnt} | second:{fill_cnt} | third:{rect_cnt}")
+#        print(f"Prepare image took: {time.perf_counter() - start:0.3f} s - found contours: {default_cnt}")
     else:
         cap.release()
         cap = cv2.VideoCapture(video_name)
