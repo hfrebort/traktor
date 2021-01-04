@@ -2,6 +2,9 @@
 import cv2, time
 import numpy as np
 
+global erode_iteration, dilate_iteration, green_range
+w,h = 640, 480
+
 def region_of_interest(img):
     height = img.shape[0]
     width = img.shape[1]
@@ -21,21 +24,15 @@ def region_of_interest(img):
     return masked_img
 
 def find_green(img):
+    global green_range
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     ## mask of green (36,25,25) ~ (86, 255,255)
-    mask = cv2.inRange(hsv, (36, 25, 25), (100, 255,255))
+    mask = cv2.inRange(hsv, (36, 25, 25), (green_range, 255,255))
     ## slice the green
     imask = mask>0
     green = np.zeros_like(img, np.uint8)
     green[imask] = img[imask]    
     return green
-
-def find_contours(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _,thresh = cv2.threshold(gray,240,255,0)
-    contours,_ = cv2.findContours(thresh, 1, 2)
-    rect_img = drawContoursRectangle(img, contours)
-    return rect_img
 
 def find_vertical_lines(img):    
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -45,33 +42,6 @@ def find_vertical_lines(img):
     contours,_ = cv2.findContours(new_img, 1, 2)    
     line_img = drawContoursLine(new_img, contours)
     return line_img
-
-def drawContoursLine(img, contours, color=(0,0,255)):    
-    line_image = np.copy(img) * 0
-    w,h = 640, 480
-    for cnt in contours:
-        if cv2.contourArea(cnt) > 1800:
-            (vx, vy, cx, cy) = cv2.fitLine(cnt, cv2.DIST_L12, 0, 0.1, 0.1)
-            cv2.line(line_image,(int(cx-vx*w),int(cy-vy*h)),(int(cx+vx*w),int(cy+vy*h)),color,2)
-    return line_image
-#        moments = cv2.moments(cnt, True)
-#        #print(f'Moment: {moments}')
-#        if moments is not None and moments['m00'] > 0:
-#            x1 = int(moments['m10']/moments['m00'])
-#            y1 = int(moments['m01']/moments['m00'])
-#
-#            x,y,w,h = cv2.boundingRect(cnt)
-#            x2, y2 = (int(x + w/2), int(y - h/2))
-
-#            line_image = cv2.line(line_image,(x1,y1),(x2,y2),color,5)
-    return line_image
-
-def drawContoursRectangle(img, contours, color=(0,0,255)):
-    rect_img = np.copy(img) * 0
-    for cnt in contours:
-        x,y,w,h = cv2.boundingRect(cnt)
-        rect_img = cv2.rectangle(rect_img,(x,y),(x+w,y+h),color,2)
-    return rect_img
 
 def hough_lines_p(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -114,32 +84,64 @@ def hough_lines(img):
 
     return line_image
 
+def drawContoursLine(img, contours, color=(0,0,255)):
+    global area_thresh
+    line_image = np.copy(img) * 0
+    for cnt in contours:
+        if cv2.contourArea(cnt) > area_thresh:
+            moments = cv2.moments(cnt, True)
+            if moments is not None and moments['m00'] > 0:
+                x1 = int(moments['m10']/moments['m00'])
+                y1 = int(moments['m01']/moments['m00'])
+
+                x,y,w,h = cv2.boundingRect(cnt)
+                x2, y2 = (int(x + w/2), int(y - h/2))
+
+                line_image = cv2.line(line_image,(x1,y1),(x2,y2),color,5)
+    return line_image
+
+def drawContours(img, contours, color=(0,0,255), contour_mode='CONT'):
+    global area_thresh
+
+    cnt_len = 0
+    cont_img = np.copy(img) * 0
+    for cnt in contours:
+        if cv2.contourArea(cnt) > area_thresh:
+            cnt_len += 1
+            if contour_mode == 'CONT':
+                cont_img = cv2.drawContours(cont_img, [cnt], -1, color,2)
+            elif contour_mode == 'LINE':
+                (vx, vy, cx, cy) = cv2.fitLine(cnt, cv2.DIST_L12, 0, 0.1, 0.1)
+                cv2.line(cont_img,(int(cx-vx*w),int(cy-vy*h)),(int(cx+vx*w),int(cy+vy*h)),color,2)
+            elif contour_mode == 'POLY':
+                cont_img = cv2.fillPoly(cont_img, [cnt], color)
+            elif contour_mode == 'RECT':
+                x,y,w,h = cv2.boundingRect(cnt)
+                cont_img = cv2.rectangle(cont_img,(x,y),(x+w,y+h),color,2)
+            else:
+                print (f"The mode {contour_mode} is not supported")
+
+    return cont_img, cnt_len
+
 def search_lines(img, filter_green=True, contour_mode='CONT', mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE):    
+    global erode_iteration, dilate_iteration, green_range
     gray = None
     if filter_green == True:
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         # mask of green (36,25,25) ~ (86, 255,255)
-        gray = cv2.inRange(hsv, (36, 25, 25), (100, 255,255))         
+        gray = cv2.inRange(hsv, (36, 25, 25), (green_range, 255,255))         
     else:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    blur = cv2.GaussianBlur(gray, (3,3), 0)
-    thresh = cv2.threshold(blur,0,255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-    eroded = cv2.erode(thresh, (5,5), iterations=5)
-    
-    contours,_ = cv2.findContours(eroded, mode, method)
-    contour_img = np.copy(img) * 0
-    if contour_mode == 'RECT':
-        contour_img = drawContoursRectangle(img, contours, (255,0,255))
-    elif contour_mode == 'LINE':
-        contour_img = drawContoursLine(img, contours)
-    elif contour_mode == 'FILL':
-        contour_img = cv2.fillPoly(contour_img, contours, (0,0,255))
-    else:
-        cv2.drawContours(contour_img, contours, -1, (0,0,255), 2)
+    blur = cv2.GaussianBlur(gray, (5,5), 0)
+    thresh = cv2.threshold(blur,0,255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    eroded = cv2.erode(thresh, (5,5), iterations=erode_iteration)
+    dilated = cv2.dilate(eroded, (5,5), iterations=dilate_iteration)
 
+    contours,_ = cv2.findContours(dilated, mode, method)
+    contour_img, cnt_len = drawContours(img, contours, (0,0,255), contour_mode)
     #contour_img = region_of_interest(contour_img)
-    return contour_img, len(contours) 
+    return contour_img, cnt_len 
 
 def draw_middle_line(img):
     half_width = int(img.shape[1]/2)
@@ -150,7 +152,34 @@ def draw_on_frame(src_img, calc_img):
     draw_middle_line(img)
     return img
 
-video_name = 'tests/soja2.mp4'
+video_name = 'tests/lavendel1.mp4'
+
+def on_erode_trackbar(val):
+    global erode_iteration
+    erode_iteration = val
+
+def on_dilate_trackbar(val):
+    global dilate_iteration
+    dilate_iteration = val
+
+def on_green_trackbar(val):
+    global green_range
+    green_range = val
+
+def on_area_trackbar(val):
+    global area_thresh
+    area_thresh = val
+
+cv2.namedWindow('Trackbar')
+cv2.createTrackbar('Eroded', 'Trackbar', 10, 100, on_erode_trackbar)
+cv2.createTrackbar('Dilated', 'Trackbar', 20, 100, on_dilate_trackbar)
+cv2.createTrackbar('Green', 'Trackbar', 110, 255, on_green_trackbar)
+cv2.createTrackbar('Area', 'Trackbar', 130, 2000, on_area_trackbar)
+
+on_erode_trackbar(10)
+on_dilate_trackbar(20)
+on_green_trackbar(110)
+on_area_trackbar(130)
 
 cap = cv2.VideoCapture(video_name)
 
@@ -162,23 +191,23 @@ while(True):
     # Display the resulting frame
     if frame is not None:
         start = time.perf_counter()
-        img = cv2.resize(frame, (640, 480))
-
-        fill_img, fill_cnt = search_lines(img, True, 'FILL', mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
-        fill_img = draw_on_frame(img, fill_img)
+        img = cv2.resize(frame, (w, h))        
 
         default_img, default_cnt = search_lines(img)        
         default_img = draw_on_frame(img, default_img)
 
-        fitline_img, fitline_cnt = search_lines(img, True, 'LINE') #, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
-        fitline_img = draw_on_frame(img, fitline_img)
+        fill_img, fill_cnt = search_lines(img, True, 'POLY') #, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+        fill_img = draw_on_frame(img, fill_img)
 
-        cv2.imshow('fillPoly', fill_img)
-        cv2.imshow('contours', default_img)
-        cv2.imshow('fitLine', fitline_img)
+        rect_img, rect_cnt = search_lines(img, True, 'RECT')
+        rect_img = draw_on_frame(img, rect_img)
+
+        cv2.imshow('default', default_img)
+        cv2.imshow('fill', fill_img)
+        cv2.imshow('rectangle', rect_img)
         
-        print(f"Prepare image took: {time.perf_counter() - start:0.3f} ms - first:{fill_cnt} | second:{default_cnt} | third:{fitline_cnt}")
-        #print(f"Prepare image took: {time.perf_counter() - start:0.3f} ms - fitline:{fitline_cnt}")
+        print(f"Prepare image took: {time.perf_counter() - start:0.4f} ms - first:{default_cnt} | second:{fill_cnt} | third:{rect_cnt}")
+#        print(f"Prepare image took: {time.perf_counter() - start:0.3f} ms - found contours: {default_cnt}")
     else:
         cap.release()
         cap = cv2.VideoCapture(video_name)
