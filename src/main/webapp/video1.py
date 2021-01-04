@@ -2,9 +2,6 @@
 import cv2, time
 import numpy as np
 
-global erode_iteration, dilate_iteration, green_range
-w,h = 640, 480
-
 def region_of_interest(img):
     height = img.shape[0]
     width = img.shape[1]
@@ -152,6 +149,7 @@ def draw_on_frame(src_img, calc_img):
     draw_middle_line(img)
     return img
 
+w,h = 640, 480
 video_name = 'tests/lavendel1.mp4'
 
 def on_erode_trackbar(val):
