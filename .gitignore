@@ -4,3 +4,4 @@
 .project
 **/.vscode/
 **/tests/
+**/__pycache__/
