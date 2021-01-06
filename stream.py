@@ -11,15 +11,16 @@ def detect():
     _destroyed = False
 
     vcap = cv2.VideoCapture(_url)
-    while not _destroyed:
+    while True: #not _destroyed:
         frame = vcap.read()        
                 
         if frame is not None:            
             image = cv2.resize(frame[1], (320, 240))
-            detected, _ = detector.detect(image, contour_mode='POLY')
-            newImage = cv2.addWeighted(image, 0.8, detected, 1, 0)
+            if not _destroyed:
+                detected, _ = detector.detect(image, contour_mode='POLY')
+                image = cv2.addWeighted(image, 0.8, detected, 1, 0)
             with _lock:                
-                _outputFrame = newImage 
+                _outputFrame = image 
         else:
             print("frame is none")
     vcap.release()
@@ -27,7 +28,7 @@ def detect():
 def generate():
     global _outputFrame, _lock, _destroyed
 
-    while not _destroyed:
+    while True: #not _destroyed:
         time.sleep(0.0001)
         with _lock:
             if _outputFrame is None:

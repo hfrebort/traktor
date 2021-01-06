@@ -179,7 +179,8 @@ on_dilate_trackbar(20)
 on_green_trackbar(110)
 on_area_trackbar(130)
 
-cap = cv2.VideoCapture(video_name)
+#cap = cv2.VideoCapture(video_name)
+cap = cv2.VideoCapture(0)
 
 default_img = None
 while(True):

@@ -41,7 +41,6 @@ def perform(data):
     else:
         stop_all()
     
-    
     print ("left: %d, right: %d" % (ledLeft.value, ledRight.value))
     
     if direction != "stop" and duration > 0:
