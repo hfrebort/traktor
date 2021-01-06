@@ -1,4 +1,6 @@
-![Java CI with Maven](https://github.com/hfrebort/billing/workflows/Java%20CI%20with%20Maven/badge.svg)
+[Python-Markdown][]
+===================
+![Upload Python Package](https://github.com/hfrebort/traktor/workflows/Upload%20Python%20Package/badge.svg)
 
 # tractor
 A system to control a harrow 
