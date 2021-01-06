@@ -1,39 +1,28 @@
 #!/usr/bin/python3
-import cv2
-import numpy as np
+import cv2, threading, time, stream
 
-isStreaming = True
+isStreaming = False
+thread = None
 
-def video_on_off(data):
+def videoOnOff(data):
     global isStreaming
-    if isStreaming == True:
-        release_video()
+    if isStreaming == False:        
+        capture(data)
     else:
-        capture_video(data)
+        release()
 
-def release_video():
-    global isStreaming
-    isStreaming = False
-
-def capture_video(data):
-    global isStreaming
+def capture(data):
+    global isStreaming, thread
     isStreaming = True
-    # Open a sample video available in sample-videos
-    vcap = cv2.VideoCapture(data['url'] + '/video')
-    #if not vcap.isOpened():
-    #    print "File Cannot be Opened"
-    
-    while(isStreaming):
-        # Capture frame-by-frame
-        ret, frame = vcap.read()
-        #print cap.isOpened(), ret
-        if frame is not None:
-            # Display the resulting frame
-            cv2.imwrite('tmp/frame.mjpg',frame)
-        else:
-            print ('Frame is None')
-            break
-    
-    # When everything done, release the capture
-    vcap.release()
-    print ('Video stop')
+    thread = threading.Thread(target=stream.detect, daemon=True)
+    thread.start() # start a thread that will perform motion detection
+    print(f"started thread from url: {data['url']}")
+
+def release():
+    global isStreaming, thread
+    isStreaming = False
+    stream.destroy()
+    try:
+        thread.join()
+    finally:
+        print(f"Stopped read from")

@@ -24,9 +24,8 @@
 		<div class="row">
 			<div class="col-sm-6">
 				<div class="traktor-container">
-					<!-- img src="{{data.url + '/video'}}" class="traktor-image" -->
 					<img class="traktor-image" src="{{videoUrl}}">
-					<img data-ng-show="showSnapShot" class="traktor-overlay" src="{{showSnapShotImage}}">
+					<img data-ng-show="showSnapShot" class="traktor-overlay" src="{{snapShotUrl}}">
 				</div>
 			</div>
 		
@@ -72,20 +71,20 @@
 					<div class="row">
 						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon1">D</span>
-								<input name="duration" data-ng-model="data.duration" class="form-control" aria-describedby="basic-addon1"/>
-							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon2">GPIO-Left</span>
+								<span class="input-group-addon" id="basic-addon2">GPIO-L</span>
 								<input name="left" data-ng-model="data.left" class="form-control" aria-describedby="basic-addon2"/>
 							</div>
 						</div>
 						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon4">GPIO-Right</span>
+								<span class="input-group-addon" id="basic-addon4">GPIO-R</span>
 								<input name="right" data-ng-model="data.right" class="form-control" aria-describedby="basic-addon4"/>
+							</div>
+						</div>
+						<div class="col-sm-4">
+							<div class="input-group">
+								<span class="input-group-addon" id="basic-addon1">D</span>
+								<input name="duration" data-ng-model="data.duration" class="form-control" aria-describedby="basic-addon1"/>
 							</div>
 						</div>
 					</div>
@@ -134,12 +133,13 @@
 							</div>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-sm-12">
-							<var>{{response}}</var>
-						</div>
-					</div>
 				</form>
+			</div>
+		</div>
+		<div class="row"><div class="col-sm-12">&nbsp;</div></div>
+		<div class="row">
+			<div class="col-sm-12">
+				<pre>{{response}}</pre>
 			</div>
 		</div>
 	</div>

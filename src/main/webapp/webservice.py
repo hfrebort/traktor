@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-import sys, web, json, snapshot, tractor, video
+import sys, json, threading, web
+import snapshot, tractor, video, stream
 
 urls = (
     '/(.*)', 'ImageHandler'
@@ -16,13 +17,16 @@ class ImageHandler:
     def GET(self, path):
         if path == 'stop':
             tractor.stop_all()
+        elif path == 'video':
+            web.header('Content-Type', 'multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM')
+            return stream.generate()
 
     def POST(self, path):
         postInput = json.loads(web.data())
         if path == 'prepareImage':
             snapshot.create_image(postInput)
         elif path == 'videoOnOff':
-            video.video_on_off(postInput)
+            video.videoOnOff(postInput)
         elif path == 'perform':
             tractor.perform(postInput)
         else:
@@ -35,5 +39,7 @@ class ImageHandler:
         return {'success': 'true'}
 
 if __name__ == "__main__":
+    # start a thread that will perform motion detection
+    #threading.Thread(target=stream.detect, daemon=True).start()
     app.run()
 	
