@@ -38,7 +38,7 @@ def create_image(data):
     	# Draw the lines on the  image
         lines_edges = cv2.addWeighted(img, 0.8, line_image, 1, 0)
 
-        cv2.imwrite('tmp/snapShot.jpg', lines_edges)
+        cv2.imwrite('static/tmp/snapShot.jpg', lines_edges)
         print(f"Create and write image: {time.perf_counter() - start:0.2f} ms\n")
     else:	
         print('nolines')

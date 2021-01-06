@@ -4,24 +4,23 @@ angular.module('tractor',[])
 	// TO AVOID triggering the pre-flight OPTIONS request
 	$http.defaults.headers.post["Content-Type"] = "text/plain";
 	
-	const host = 'http://10.3.141.1:8080';
-	$scope.showSnapShot = false;
 	$scope.data = {
-			duration: 1,
-			left: 12,
-			right: 13,
-			direction: 'center',
-			url: 'http://10.3.141.165:8888',
-			cannyLowThreshold: 250,
-			cannyHighThreshold: 350,
-			houghThreshold: 15,
-			houghMinLineLength: 20,
-			houghMaxLineGap: 20
+		duration: 1,
+		left: 12,
+		right: 13,
+		direction: 'center',
+		url: 'http://10.3.141.165:8888',
+		cannyLowThreshold: 250,
+		cannyHighThreshold: 350,
+		houghThreshold: 15,
+		houghMinLineLength: 20,
+		houghMaxLineGap: 20
 	};
+	$scope.showSnapShot = false;
 	$scope.videoUrl = $scope.data.url + '/video';	
 	
-    this.startStop = function() {
-		$http.get('webservice.php')
+    this.stop = function() {
+		$http.get('/stop')
 			.then(function(response) {
 				$scope.response = angular.toJson(response, true);
 			}, function(response) {
@@ -31,7 +30,7 @@ angular.module('tractor',[])
     this.perform = function(direction) {
     	$scope.data.direction = direction;
     	console.log("perform: ", $scope.data);
-		$http.post(host + '/perform', $scope.data)
+		$http.post('/perform', $scope.data)
 			.then(function(response) {
 				$scope.response = angular.toJson(response, true);
 			}, function(response) {
@@ -40,9 +39,9 @@ angular.module('tractor',[])
 	};
     this.streamVideo = function() {		
 		$scope.showSnapShot = false;		
-		$http.post(host + '/videoOnOff', $scope.data)
+		$http.post('/videoOnOff', $scope.data)
 			.then(function(response) {
-				$scope.videoUrl = host + '/video?t=' + new Date().getTime(); 
+				$scope.videoUrl = '/video?t=' + new Date().getTime(); 
 				$scope.response = angular.toJson(response, true);
 			}, function(response) {
 				$scope.videoUrl = $scope.data.url + '/video';
@@ -50,7 +49,7 @@ angular.module('tractor',[])
 			});
 	};
     this.snapShot = function() {
-		$http.post(host + '/prepareImage', $scope.data)
+		$http.post('/prepareImage', $scope.data)
 			.then(function (response) {
 				$scope.showSnapShot = true;
 				// add the date to the end of the image to ensure the broser to reload the image
