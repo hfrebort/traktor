@@ -1,5 +1,5 @@
-[Python-Markdown][]
-===================
+[Traktor]: https://github.com/hfrebort/traktor
+===============================================
 ![Upload Python Package](https://github.com/hfrebort/traktor/workflows/Upload%20Python%20Package/badge.svg)
 
 # tractor
