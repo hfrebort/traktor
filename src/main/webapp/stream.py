@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import cv2, threading, time
+import cv2, threading, time, detector
 
 _outputFrame = None
 _url = 'http://10.3.141.165:8888/video'
@@ -16,8 +16,10 @@ def detect():
                 
         if frame is not None:            
             image = cv2.resize(frame[1], (320, 240))
+            detected, _ = detector.detect(image, contour_mode='POLY')
+            newImage = cv2.addWeighted(image, 0.8, detected, 1, 0)
             with _lock:                
-                _outputFrame = image.copy()
+                _outputFrame = newImage 
         else:
             print("frame is none")
     vcap.release()
@@ -26,7 +28,7 @@ def generate():
     global _outputFrame, _lock, _destroyed
 
     while not _destroyed:
-        time.sleep(0.001)
+        time.sleep(0.0001)
         with _lock:
             if _outputFrame is None:
                 continue

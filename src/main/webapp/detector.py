@@ -21,6 +21,8 @@ def regionOfInterest(img):
     return masked_img
 
 def drawContours(img, contours, color=(0,0,255), contour_mode='CONT'):
+    height = img.shape[0]
+    width = img.shape[1]
     cnt_len = 0
     cont_img = np.copy(img) * 0
     for cnt in contours:
@@ -58,34 +60,3 @@ def detect(img, filter_green=True, contour_mode='CONT', mode=cv2.RETR_EXTERNAL, 
     contour_img, contour_cnt = drawContours(img, contours, contour_mode=contour_mode)
     
     return contour_img, contour_cnt
-
-width, height = 640, 480
-video_name = 'tests/lavendel1.mp4'
-
-cap = cv2.VideoCapture(video_name)
-
-while True:
-    _, frame = cap.read()
-
-    if frame is not None:
-        start = time.perf_counter()
-
-        img = cv2.resize(frame, (width, height))
-
-        detected, _ = detect(img, contour_mode='POLY')
-        detected = cv2.addWeighted(img, 0.8, detected, 1, 0)
-        
-        #cv2.imshow('orig', img)
-        cv2.imshow('detected', detected)
-        #cv2.imwrite('tmp/frame.jpg', detected)
-        print(f"Prepare image took: {time.perf_counter() - start:f} s")
-    else:
-        cap.release()
-        cap = cv2.VideoCapture(video_name)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# When everything done, release the capture 
-cap.release()
-cv2.destroyAllWindows()
