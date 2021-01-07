@@ -9,15 +9,16 @@ angular.module('tractor',[])
 		left: 12,
 		right: 13,
 		direction: 'center',
-		url: 'http://10.3.141.165:8888',
-		cannyLowThreshold: 250,
-		cannyHighThreshold: 350,
-		houghThreshold: 15,
-		houghMinLineLength: 20,
-		houghMaxLineGap: 20
+		url: 'http://10.3.141.165:8888/video',
+		colorFilter: true,
+		detecting: true,
+		colorFrom: '36,25,25',
+		colorTo: '110,255,255',
+		erode: 10,
+		dilate: 20,
+		contourMode: 'CONT'
 	};
-	$scope.showSnapShot = false;
-	$scope.videoUrl = $scope.data.url + '/video';	
+	$scope.videoUrl = $scope.data.url;
 	
     this.stop = function() {
 		$http.get('/stop')
@@ -29,7 +30,6 @@ angular.module('tractor',[])
 	};
     this.perform = function(direction) {
     	$scope.data.direction = direction;
-    	console.log("perform: ", $scope.data);
 		$http.post('/perform', $scope.data)
 			.then(function(response) {
 				$scope.response = angular.toJson(response, true);
@@ -38,22 +38,18 @@ angular.module('tractor',[])
 			});
 	};
     this.streamVideo = function() {		
-		$scope.showSnapShot = false;		
-		$http.post('/videoOnOff', $scope.data)
+		$http.get('/videoOnOff', $scope.data)
 			.then(function(response) {
 				$scope.videoUrl = '/video?t=' + new Date().getTime(); 
 				$scope.response = angular.toJson(response, true);
 			}, function(response) {
-				$scope.videoUrl = $scope.data.url + '/video';
+				$scope.videoUrl = $scope.data.url;
 				$scope.response = angular.toJson(response, true);
 			});
 	};
-    this.snapShot = function() {
-		$http.post('/prepareImage', $scope.data)
+    this.applyChanges = function() {
+		$http.post('/applyChanges', $scope.data)
 			.then(function (response) {
-				$scope.showSnapShot = true;
-				// add the date to the end of the image to ensure the broser to reload the image
-				$scope.snapShotUrl = 'tmp/snapShot.jpg?t=' + new Date().getTime(); 
 				$scope.response = angular.toJson(response, true);
 			}, function(response) {
 				$scope.response = angular.toJson(response, true);

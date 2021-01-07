@@ -4,25 +4,20 @@ import cv2, threading, time, stream
 _isStreaming = False
 _thread = None
 
-def videoOnOff(data):
-    global _isStreaming
+def videoOnOff():
+    global _isStreaming, _thread
     if _isStreaming == False:        
-        capture(data)
+        _thread = threading.Thread(target=stream.read, daemon=True)
+        _thread.start() # start a thread which reads from camera (url) and applys detection
+        _isStreaming = True
+        print(f"Started streaming thread")
     else:
-        release()
+        try:
+            stream.end()
+            _thread.join()
+        finally:
+            print(f"Stopped read from")
+        _isStreaming = False
 
-def capture(data):
-    global _isStreaming, _thread
-    _isStreaming = True
-    _thread = threading.Thread(target=stream.detect, daemon=True)
-    _thread.start() # start a thread which reads from camera (url) and applys detection
-    print(f"started thread from url: {data['url']}")
-
-def release():
-    global _isStreaming, _thread
-    _isStreaming = False
-    stream.destroy()
-    try:
-        _thread.join()
-    finally:
-        print(f"Stopped read from")
+def applyChanges(data):
+    stream.apply(data)

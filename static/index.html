@@ -33,6 +33,14 @@
 				<form name="tractorForm" method="post">
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
 					<div class="row">
+						<div class="col-sm-12">
+							<button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-lg btn-danger">
+								<span class="glyphicon glyphicon-off"></span>
+							</button>
+						</div>
+					</div>
+					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
+					<div class="row">
 						<div class="col-sm-4">
 							<button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-lg btn-primary">
 								<span class="glyphicon glyphicon-chevron-left"></span>
@@ -50,25 +58,7 @@
 						</div>
 					</div>
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
-						<div class="col-sm-4">
-							<button name="play" data-ng-click="ctrl.streamVideo()" class="btn btn-block btn-lg btn-default">
-								<span class="glyphicon glyphicon-facetime-video"></span>
-							</button>
-						</div>
-						<div class="col-sm-4">
-							<button name="shot" data-ng-click="ctrl.snapShot()" class="btn btn-block btn-lg btn-default">
-								<span class="glyphicon glyphicon-camera"></span>
-							</button>
-						</div>
-						<div class="col-sm-4">
-							<button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-lg btn-danger">
-								<span class="glyphicon glyphicon-off"></span>
-							</button>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
+					<div class="form-row">
 						<div class="col-sm-4">
 							<div class="input-group">
 								<span class="input-group-addon" id="basic-addon2">GPIO-L</span>
@@ -89,8 +79,28 @@
 						</div>
 					</div>
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
+					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
 					<div class="row">
-						<div class="col-sm-12">
+						<div class="col-sm-6">
+							<button name="play" data-ng-click="ctrl.streamVideo()" class="btn btn-block btn-lg btn-primary">
+								<span class="glyphicon glyphicon-facetime-video"></span>
+							</button>
+						</div>
+						<div class="col-sm-6">
+							<button name="apply" data-ng-click="ctrl.applyChanges()" class="btn btn-block btn-lg btn-primary">
+								<span class="glyphicon glyphicon-ok"></span>
+							</button>
+						</div>
+					</div>
+					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
+					<div class="form-row">
+						<div class="form-group col-sm-2">
+							<div class="form-check">
+								<input class="form-check-input" name="detecting" type="checkbox" data-ng-model="data.detecting" id="basic-addon6"/>									
+								<label class="form-check-label" for="basic-addon6">Erkennen</label>								
+							</div>
+						</div>
+						<div class="col-sm-10">
 							<div class="input-group">
 								<span class="input-group-addon" id="basic-addon5">Video</span>
 								<input name="url" data-ng-model="data.url" class="form-control" aria-describedby="basic-addon5"/>
@@ -98,38 +108,47 @@
 						</div>
 					</div>
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
-						<div class="col-sm-6">
+					<div class="form-row">
+						<div class="form-group col-sm-2">
+							<input class="form-check-input" name="colorFilter" type="checkbox" data-ng-model="data.colorFilter" id="basic-addon7"/>
+							<label class="form-check-label" for="basic-addon7">Farbfilter</label>
+						</div>
+						<div class="col-sm-5">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon6">CaLT</span>
-								<input name="cannyLowThreshold" data-ng-model="data.cannyLowThreshold" class="form-control" aria-describedby="basic-addon6"/>
+								<span class="input-group-addon" id="basic-addon8">Farbe von</span>
+								<input name="colorFrom" data-ng-model="data.colorFrom" class="form-control" aria-describedby="basic-addon8"/>
 							</div>
 						</div>
-						<div class="col-sm-6">
+						<div class="col-sm-5">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon7">CaLT</span>
-								<input name="cannyHighThreshold" data-ng-model="data.cannyHighThreshold" class="form-control" aria-describedby="basic-addon7"/>
+								<span class="input-group-addon" id="basic-addon9">Farbe bis</span>
+								<input name="colorTo" data-ng-model="data.colorTo" class="form-control" aria-describedby="basic-addon9"/>
 							</div>
 						</div>
 					</div>
 					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
+					<div class="form-row">
 						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon8">HuT</span>
-								<input name="houghThreshold" data-ng-model="data.houghThreshold" class="form-control" aria-describedby="basic-addon8"/>
+								<span class="input-group-addon" id="basic-addon11">Abtragen</span>
+								<input name="erode" data-ng-model="data.erode" class="form-control" aria-describedby="basic-addon11"/>
 							</div>
 						</div>
 						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon9">HuMLL</span>
-								<input name="houghMinLineLength" data-ng-model="data.houghMinLineLength" class="form-control" aria-describedby="basic-addon9"/>
+								<span class="input-group-addon" id="basic-addon12">Auftragen</span>
+								<input name="dilate" data-ng-model="data.dilate" class="form-control" aria-describedby="basic-addon12"/>
 							</div>
 						</div>
 						<div class="col-sm-4">
 							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon10">HuMLG</span>
-								<input name="houghMaxLineGap" data-ng-model="data.houghMaxLineGap" class="form-control" aria-describedby="basic-addon10"/>
+								<span class="input-group-addon" id="basic-addon13">Modus</span>
+								<select name="contourMode" data-ng-model="data.contourMode" class="form-control" aria-describedby="basic-addon12">
+									<option selected>LINE</option>
+									<option>CONT</option>
+									<option>POLY</option>
+									<option>RECT</option>
+								</select>
 							</div>
 						</div>
 					</div>

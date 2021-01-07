@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys, json, threading, web
-import snapshot, video, stream #, tractor
+import snapshot, video, stream, tractor
 
 urls = (
     '/(.*)', 'RequestHandler'
@@ -19,20 +19,21 @@ class RequestHandler:
             raise web.seeother('/static/index.html')
         elif path == 'stop':
             print ('tractor.stop_all()') 
-            #tractor.stop_all()
+            tractor.stop_all()
+        elif path == 'videoOnOff':
+            video.videoOnOff()
         elif path == 'video':
             web.header('Content-Type', 'multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM')
             return stream.generate()
 
     def POST(self, path):
         inputData = json.loads(web.data())
-        if path == 'prepareImage':
-            snapshot.create_image(inputData)
-        elif path == 'videoOnOff':
-            video.videoOnOff(inputData)
+        if path == 'applyChanges':
+            print (f'tractor.perform({inputData})') 
+            video.applyChanges(inputData)
         elif path == 'perform':
             print (f'tractor.perform({inputData})') 
-            #tractor.perform(inputData)
+            tractor.perform(inputData)
         else:
             print ('Nothing')
         init_header()

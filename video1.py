@@ -120,6 +120,21 @@ def drawContours(img, contours, color=(0,0,255), contour_mode='CONT'):
 
     return cont_img, cnt_len
 
+def kMeans(img):    
+    # k-means 
+    Z = img.reshape((-1,3))
+    # convert to np.float32
+    Z = np.float32(Z)
+    # define criteria, number of clusters(K) and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    K = 3
+    ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+    # Now convert back into uint8, and make original image
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    res2 = res.reshape((img.shape))
+    return res2
+
 def search_lines(img, filter_green=True, contour_mode='CONT', mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE):    
     global erode_iteration, dilate_iteration, green_range
     gray = None
@@ -138,6 +153,7 @@ def search_lines(img, filter_green=True, contour_mode='CONT', mode=cv2.RETR_EXTE
     contours,_ = cv2.findContours(dilated, mode, method)
     contour_img, cnt_len = drawContours(img, contours, (0,0,255), contour_mode)
     #contour_img = region_of_interest(contour_img)
+    #contour_img = kMeans(contour_img)
     return contour_img, cnt_len 
 
 def draw_middle_line(img):
@@ -150,7 +166,6 @@ def draw_on_frame(src_img, calc_img):
     return img
 
 width, height = 640, 480
-video_name = 'tests/lavendel1.mp4'
 
 def on_erode_trackbar(val):
     global erode_iteration
@@ -179,8 +194,9 @@ on_dilate_trackbar(20)
 on_green_trackbar(110)
 on_area_trackbar(130)
 
-#cap = cv2.VideoCapture(video_name)
-cap = cv2.VideoCapture(0)
+video_name = 'tests/lavendel1.mp4'
+cap = cv2.VideoCapture(video_name)
+#cap = cv2.VideoCapture(0)
 
 default_img = None
 while(True):
@@ -190,7 +206,10 @@ while(True):
     # Display the resulting frame
     if frame is not None:
         start = time.perf_counter()
-        img = cv2.resize(frame, (width, height))        
+        img = cv2.resize(frame, (width, height))
+        #img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+
+        
 
         default_img, default_cnt = search_lines(img, contour_mode='LINE')        
         default_img = draw_on_frame(img, default_img)
