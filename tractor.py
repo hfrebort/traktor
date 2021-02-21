@@ -14,8 +14,14 @@ def stop_all():
     if ledRight is not None:
       ledRight.value = 0
 
+def move(left, right, threshold=30, offset=0):
+    if abs(offset) < threshold:
+        stop_all()
+    else:
+        direction = "left" if offset > 0 else "right"
+        _execute(0, left, right, direction)
+
 def perform(data):
-    global ledLeft, ledRight
     print (data)
     
     # 12 .. left 13 .. right
@@ -24,6 +30,10 @@ def perform(data):
     right = int(data['right'])
     direction = data['direction']
 
+    _execute(duration, left, right, direction)
+
+def _execute(duration, left, right, direction):
+    global ledLeft, ledRight
     # initialize the leds    
     if ledLeft is None:
         ledLeft = PWMLED(left)

@@ -16,7 +16,8 @@ angular.module('tractor',[])
 		colorTo: '110,255,255',
 		erode: 10,
 		dilate: 20,
-		contourMode: 'CONT'
+		contourMode: 'CONT',
+		threshold: 30
 	};
 	$scope.videoUrl = $scope.data.url;
 	

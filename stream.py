@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-import cv2, threading, time, detector
+import cv2, threading, time, detector, render, tractor
 
-_data = {'url': 'http://10.3.141.165:8888/video', 'detecting': True, 'colorFilter': True, 'colorFrom': (36, 25, 25), 'colorTo': (110, 255,255), 'erode': 5, 'dilate': 5, 'contourMode': 'CONT'}
+_data = {'url': 'http://10.3.141.165:8888/video', 'detecting': True, 'threshold': 30, 'colorFilter': True, 'colorFrom': (36, 25, 25), 'colorTo': (110, 255,255), 'erode': 5, 'dilate': 5, 'contourMode': 'CONT'}
 _running = True
 _outputFrame = None
 _lock = threading.Lock()
@@ -26,16 +26,19 @@ def read():
 
     try:
         _running = True
-        vcap = cv2.VideoCapture(_data['url'])
+        vcap = cv2.VideoCapture(0) #_data['url'])
         while _running:
-            frame = vcap.read()        
-                    
-            if frame is not None:            
-                image = cv2.resize(frame[1], (640, 480))
+            frame = vcap.read()
+            if frame is not None and frame[1] is not None:
+                image = frame[1] #cv2.resize(frame[1], (320, 240))
                 if _data['detecting'] == True:
-                    image, _ = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
-                with _lock:                
-                    _outputFrame = image 
+                    start = time.perf_counter()
+                    image, offset = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
+                    image = render.render(image, offset, _data['threshold'])
+                    print(f"detecting took: {time.perf_counter() - start:0.3f} s")
+                    tractor.move(_data['left'], _data['right'], _data['threshold'], offset)
+                with _lock:
+                    _outputFrame = image
             else:
                 print("frame is none")
     finally:
@@ -50,7 +53,7 @@ def generate():
         with _lock:
             if _outputFrame is None:
                 continue
-            
+
             (flag, encodedImage) = cv2.imencode(".jpg", _outputFrame)
 
             if not flag:

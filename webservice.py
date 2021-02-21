@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys, json, threading, web
-import snapshot, video, stream, tractor
+import video, stream#, tractor
 
 urls = (
     '/(.*)', 'RequestHandler'
@@ -19,7 +19,7 @@ class RequestHandler:
             raise web.seeother('/static/index.html')
         elif path == 'stop':
             print ('tractor.stop_all()') 
-            tractor.stop_all()
+            #tractor.stop_all()
         elif path == 'videoOnOff':
             video.videoOnOff()
         elif path == 'video':
@@ -33,7 +33,7 @@ class RequestHandler:
             video.applyChanges(inputData)
         elif path == 'perform':
             print (f'tractor.perform({inputData})') 
-            tractor.perform(inputData)
+            #tractor.perform(inputData)
         else:
             print ('Nothing')
         init_header()
