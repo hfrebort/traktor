@@ -12,7 +12,6 @@
 <style>
 	.traktor-container {position: relative;}
 	.traktor-image {width:100%; display: block;}
-	.traktor-overlay {width:100%; position: absolute; bottom: 0; opacity:0.5; z-index:10;}
 </style>
 
 <script src="scripts/angular.min.js"></script>
@@ -22,140 +21,24 @@
 <body data-ng-controller="TractorController as ctrl">
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-sm-6">
-				<div class="traktor-container">
-					<img class="traktor-image" src="{{videoUrl}}">
-					<img data-ng-show="showSnapShot" class="traktor-overlay" src="{{snapShotUrl}}">
-				</div>
-			</div>
-		
+			<div class="col-sm-6"><div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div></div>			
 			<div class="col-sm-6">
 				<form name="tractorForm" method="post">
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
-						<div class="col-sm-12">
-							<button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-lg btn-danger">
-								<span class="glyphicon glyphicon-off"></span>
-							</button>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
-						<div class="col-sm-4">
-							<button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-lg btn-primary">
-								<span class="glyphicon glyphicon-chevron-left"></span>
-							</button>
-						</div>
-						<div class="col-sm-4">
-							<button name="direction" data-ng-click="ctrl.perform('stop')" class="btn btn-block btn-lg btn-primary">
-								<span class="glyphicon glyphicon-pause"></span>
-							</button>
-						</div>
-						<div class="col-sm-4">
-							<button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-lg btn-primary">
-								<span class="glyphicon glyphicon-chevron-right"></span>
-							</button>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="form-row">
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon2">GPIO-L</span>
-								<input name="left" data-ng-model="data.left" class="form-control" aria-describedby="basic-addon2"/>
-							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon4">GPIO-R</span>
-								<input name="right" data-ng-model="data.right" class="form-control" aria-describedby="basic-addon4"/>
-							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon1">D</span>
-								<input name="duration" data-ng-model="data.duration" class="form-control" aria-describedby="basic-addon1"/>
-							</div>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="row">
-						<div class="col-sm-6">
-							<button name="play" data-ng-click="ctrl.streamVideo()" class="btn btn-block btn-lg btn-primary">
-								<span class="glyphicon glyphicon-facetime-video"></span>
-							</button>
-						</div>
-						<div class="col-sm-6">
-							<button name="apply" data-ng-click="ctrl.applyChanges()" class="btn btn-block btn-lg btn-primary">
-								<span class="glyphicon glyphicon-ok"></span>
-							</button>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="form-row">
-						<div class="form-group col-sm-2">
-							<div class="form-check">
-								<input class="form-check-input" name="detecting" type="checkbox" data-ng-model="data.detecting" id="basic-addon6"/>									
-								<label class="form-check-label" for="basic-addon6">Erkennen</label>								
-							</div>
-						</div>
-						<div class="col-sm-10">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon5">Video</span>
-								<input name="url" data-ng-model="data.url" class="form-control" aria-describedby="basic-addon5"/>
-							</div>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="form-row">
-						<div class="form-group col-sm-2">
-							<input class="form-check-input" name="colorFilter" type="checkbox" data-ng-model="data.colorFilter" id="basic-addon7"/>
-							<label class="form-check-label" for="basic-addon7">Farbfilter</label>
-						</div>
-						<div class="col-sm-5">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon8">Farbe von</span>
-								<input name="colorFrom" data-ng-model="data.colorFrom" class="form-control" aria-describedby="basic-addon8"/>
-							</div>
-						</div>
-						<div class="col-sm-5">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon9">Farbe bis</span>
-								<input name="colorTo" data-ng-model="data.colorTo" class="form-control" aria-describedby="basic-addon9"/>
-							</div>
-						</div>
-					</div>
-					<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-					<div class="form-row">
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon11">Abtragen</span>
-								<input name="erode" data-ng-model="data.erode" class="form-control" aria-describedby="basic-addon11"/>
-							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon12">Auftragen</span>
-								<input name="dilate" data-ng-model="data.dilate" class="form-control" aria-describedby="basic-addon12"/>
-							</div>
-						</div>
-						<div class="col-sm-4">
-							<div class="input-group">
-								<span class="input-group-addon" id="basic-addon13">Modus</span>
-								<select name="contourMode" data-ng-model="data.contourMode" class="form-control" aria-describedby="basic-addon12">
-									<option selected>LINE</option>
-									<option>CONT</option>
-									<option>POLY</option>
-									<option>RECT</option>
-								</select>
-							</div>
-						</div>
+					<div class="col-sm-6"><button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-lg btn-danger"><span class="glyphicon glyphicon-off"></span></button></div>
+
+					<div class="col-sm-6"><button name="apply" data-ng-click="ctrl.applyChanges()" class="btn btn-block btn-lg btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
+
+					<div class="col-sm-6"><button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-lg btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button></div>
+					<div class="col-sm-6"><button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-lg btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button></div>
+					<div class="col-sm-6"><h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1></div>
+					<div class="col-sm-12">
+						<label>Konfiguration</label>
+						<textarea name="model" class="form-control" rows="5">{{data|json}}</textarea>
+						<!-- textarea data-json-text name="model" data-ng-model="data" class="form-control" rows="5"></textarea -->
 					</div>
 				</form>
 			</div>
 		</div>
-		<div class="row"><div class="col-sm-12">&nbsp;</div></div>
 		<div class="row">
 			<div class="col-sm-12">
 				<pre>{{response}}</pre>

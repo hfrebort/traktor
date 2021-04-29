@@ -5,13 +5,13 @@ angular.module('tractor',[])
 	$http.defaults.headers.post["Content-Type"] = "text/plain";
 	
 	$scope.data = {
-		duration: 1,
+		duration: 0.1,
 		left: 12,
 		right: 13,
 		direction: 'center',
 		url: 'http://10.3.141.165:8888/video',
 		colorFilter: true,
-		detecting: true,
+		detecting: false,
 		colorFrom: '36,25,25',
 		colorTo: '110,255,255',
 		erode: 10,
@@ -19,9 +19,10 @@ angular.module('tractor',[])
 		contourMode: 'CONT',
 		threshold: 30
 	};
-	$scope.videoUrl = $scope.data.url;
+	$scope.videoUrl = '/video?t=' + new Date().getTime();
 	
     this.stop = function() {
+		$scope.data.detecting = !$scope.data.detecting;
 		$http.get('/stop')
 			.then(function(response) {
 				$scope.response = angular.toJson(response, true);
@@ -38,16 +39,6 @@ angular.module('tractor',[])
 				$scope.response = angular.toJson(response, true);
 			});
 	};
-    this.streamVideo = function() {		
-		$http.get('/videoOnOff', $scope.data)
-			.then(function(response) {
-				$scope.videoUrl = '/video?t=' + new Date().getTime(); 
-				$scope.response = angular.toJson(response, true);
-			}, function(response) {
-				$scope.videoUrl = $scope.data.url;
-				$scope.response = angular.toJson(response, true);
-			});
-	};
     this.applyChanges = function() {
 		$http.post('/applyChanges', $scope.data)
 			.then(function (response) {
@@ -58,4 +49,20 @@ angular.module('tractor',[])
 	};
 
     console.log("initialize controller");
+}).directive('jsonText', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attr, ngModel) {            
+          function into(input) {
+            return JSON.parse(input);
+          }
+          function out(data) {
+            return JSON.stringify(data);
+          }
+          ngModel.$parsers.push(into);
+          ngModel.$formatters.push(out);
+
+        }
+    };
 });

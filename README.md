@@ -20,3 +20,8 @@ python3 webservice.py
 ## users ##
 - ssh: pi, raspberry
 - raspap: admin, secret
+- wifi: raspi-webgui, ChangeMe
+
+
+## TODO's
+- calculate ans display frames per second
