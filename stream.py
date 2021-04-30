@@ -32,14 +32,11 @@ def read():
         while _running:
             frame = vcap.read()
             if frame is not None and frame[1] is not None:
-                image = cv2.resize(frame[1], (320, 240))
-                start = time.perf_counter()
+                image = frame[1]
                 image, offset = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
                 image = render.render(image, offset, _data['threshold'])
-                print(f"detecting took: {time.perf_counter() - start:0.3f} s")
                 if _data['detecting'] == True:
                     tractor.move(_data['left'], _data['right'], _data['threshold'], offset)
-                    #print("detecting move tractor")
                 with _lock:
                     _outputFrame = image
             else:

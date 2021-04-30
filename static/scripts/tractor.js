@@ -20,32 +20,20 @@ angular.module('tractor',[])
 		threshold: 30
 	};
 	$scope.videoUrl = '/video?t=' + new Date().getTime();
-	
+
+	const handleResponse = function(response) {
+		$scope.response = angular.toJson(response, true);
+	};
     this.stop = function() {
-		$scope.data.detecting = !$scope.data.detecting;
-		$http.get('/stop')
-			.then(function(response) {
-				$scope.response = angular.toJson(response, true);
-			}, function(response) {
-				$scope.response = angular.toJson(response, true);
-			});
+		this.applyChanges(false);
 	};
     this.perform = function(direction) {
     	$scope.data.direction = direction;
-		$http.post('/perform', $scope.data)
-			.then(function(response) {
-				$scope.response = angular.toJson(response, true);
-			}, function(response) {
-				$scope.response = angular.toJson(response, true);
-			});
+		this.applyChanges(true);
 	};
-    this.applyChanges = function() {
-		$http.post('/applyChanges', $scope.data)
-			.then(function (response) {
-				$scope.response = angular.toJson(response, true);
-			}, function(response) {
-				$scope.response = angular.toJson(response, true);
-			});	
+    this.applyChanges = function(detecting) {
+		$scope.data.detecting = detecting;
+		$http.post('/applyChanges', $scope.data).then(handleResponse);	
 	};
 
     console.log("initialize controller");

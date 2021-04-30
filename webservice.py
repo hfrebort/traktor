@@ -15,19 +15,15 @@ def init_header():
 class RequestHandler:
 
     def GET(self, path):
-        if path == '':
-            raise web.seeother('/static/index.html')
-        elif path == 'stop':
-            print ('tractor.stop_all()') 
-            tractor.stop_all()
-        elif path == 'video':
+        if path == 'video':
             web.header('Content-Type', 'multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM')
             return stream.generate()
+
+        raise web.seeother('/static/index.html')
 
     def POST(self, path):
         inputData = json.loads(web.data())
         if path == 'applyChanges':
-            print (f'tractor.perform({inputData})') 
             video.applyChanges(inputData)
         elif path == 'perform':
             print (f'tractor.perform({inputData})') 

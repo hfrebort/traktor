@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-from gpiozero import PWMLED
+#from gpiozero import PWMLED
+from demo import PWMLED
 import time, sys
 
 ledLeft = None
