@@ -56,7 +56,7 @@ def calculateOffset(img, contours, xOfTarget, xRange, threshold=130, color=(0,0,
                 cont_img = cv2.drawMarker(cont_img, (x1, y1), color, markerType=cv2.MARKER_CROSS, thickness=1)
                 if abs(xOfTarget - x1) < xRange:
                     centroids.append((x1,y1))
-    if len(centroids) > 0:
+    if centroids:
         points = np.array(centroids)
         # points order by y-coordinate 
         ySorted = points[np.argsort(points[:, 1]), :]

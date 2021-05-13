@@ -4,13 +4,12 @@ import numpy as np
 from datetime import datetime
 
 def render(img, offset=0, threshold=30):
-    stat = _statistics(img, offset, threshold)
-    return stat
+    return _statistics(img, offset, threshold)
 
 
 def _statistics(orig, offset=0, threshold=30):
     # write offset -> contours
-    white = (0,0,255)
+    white = (255,255,255)
     height = int(orig.shape[0] / 3)
     width = int(orig.shape[1] / 3)
 
@@ -18,8 +17,8 @@ def _statistics(orig, offset=0, threshold=30):
     # statistic rectangle 
     # second line -> offset
     # third line -> arrow (left / right)
-    now = datetime.now().strftime("%D %H:%M:%S")    
-    img = cv2.putText(img, now, (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, white, 1)
+    #now = datetime.now().strftime("%D %H:%M:%S")    
+    #img = cv2.putText(img, now, (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, white, 1)
     text = f"{offset:+#4d}cm"
     img = cv2.putText(img, text, (10, int(height/2 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 1, white, 2)
 

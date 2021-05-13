@@ -24,4 +24,5 @@ python3 webservice.py
 
 
 ## TODO's
-- calculate ans display frames per second
+- calculate and display frames per second
+- https://angular-slider.github.io/angularjs-slider/

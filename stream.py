@@ -28,17 +28,23 @@ def read():
 
     try:
         _running = True
-        vcap = cv2.VideoCapture(0) #_data['url'])
+        vcap = cv2.VideoCapture(0)
+        #vcap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+        #vcap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        #vcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         while _running:
+            start = time.time()
             frame = vcap.read()
             if frame is not None and frame[1] is not None:
                 image = frame[1]
-                image, offset = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
-                image = render.render(image, offset, _data['threshold'])
                 if _data['detecting'] == True:
+                    image, offset = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
+                    image = render.render(image, offset, _data['threshold'])
                     tractor.move(_data['left'], _data['right'], _data['threshold'], offset)
+
                 with _lock:
                     _outputFrame = image
+                print(f"prepare: {(time.time() - start) * 1000:0.3f} ms")
             else:
                 print("frame is none")
     finally:
