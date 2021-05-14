@@ -26,7 +26,6 @@ class RequestHandler:
         if path == 'applyChanges':
             video.applyChanges(inputData)
         elif path == 'perform':
-            print (f'tractor.perform({inputData})') 
             tractor.perform(inputData)
         else:
             print ('Nothing')
