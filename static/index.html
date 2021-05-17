@@ -1,57 +1,63 @@
 <!doctype html>
 <html data-ng-app="tractor">
+
 <head>
-<!-- Required meta tags -->
-<meta charset="utf-8">
-<meta name="viewport"
-	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<!-- Bootstrap CSS -->
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="css/bootstrap.min.css">
-<link rel="stylesheet" href="css/rzslider.min.css">
-<style>
-	.traktor-container {position: relative;}
-	.traktor-image {width:100%; display: block;}
-	.custom-slider.rzslider .rz-selection {background: #337ab7;}
-	.custom-slider.rzslider .rz-pointer {background-color: #337ab7;}
-</style>
+  <!-- Bootstrap CSS -->
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/rzslider.min.css">
+  <style>
+    .traktor-container { position: relative; }
+    .traktor-image { width: 100%; display: block; }
 
-<script src="scripts/angular.min.js"></script>
-<script src="scripts/rzslider.min.js"></script>
-<script src="scripts/tractor.js"></script>
-<title>Traktor</title>
+    .custom-slider.rzslider .rz-selection { background: #337ab7; }
+    .custom-slider.rzslider .rz-pointer { background-color: #337ab7; }
+  </style>
+  <script src="scripts/angular.min.js"></script>
+  <script src="scripts/rzslider.min.js"></script>
+  <script src="scripts/tractor.js"></script>
+  <title>Traktor</title>
 </head>
-<body data-ng-controller="TractorController as ctrl">
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-sm-6"><div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div></div>			
-			<div class="col-sm-6">
-				<form name="tractorForm" method="post">
-					<div class="row">
-						<div class="col-xs-6"><button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-sm btn-danger"><span class="glyphicon glyphicon-off"></span></button></div>
-						<div class="col-xs-6"><button name="stop" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-repeat"></span></button></div>
 
-						<div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button></div>
-						<div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button></div>
-						<div class="col-xs-6"><h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1></div>
-						<div class="col-xs-12">
-							<label>Frabe</label>
-							<rzslider class="custom-slider" rz-slider-model="colorSlider.minValue" rz-slider-high="colorSlider.maxValue" rz-slider-options="colorSlider.options"></rzslider>
-							<label>Schwelle</label>
-							<rzslider class="custom-slider" rz-slider-model="thresholdSlider.value" rz-slider-options="thresholdSlider.options"></rzslider>
-						</div>
-						<div class="col-xs-6 pull-right"><button name="apply" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
-					</div>
-				</form>
-			</div>
-		</div>
-		<div class="row"><div class="col-sm-12">&nbsp;</div></div>
-		<div class="row">
-			<div class="col-sm-12">
-				<pre>{{response}}</pre>
-			</div>
-		</div>
-	</div>
+<body data-ng-controller="TractorController as ctrl">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-7">
+        <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>
+      </div>
+      <div class="col-sm-5">
+        <form name="tractorForm" method="post">
+          <div class="row">
+            <div class="col-xs-6"><button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-sm btn-danger"><span class="glyphicon glyphicon-off"></span></button></div>
+            <div class="col-xs-6"><button name="stop" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-repeat"></span></button></div>
+
+            <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button></div>
+            <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button></div>
+            <div class="col-xs-6">
+              <h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1>
+            </div>
+            <div class="col-xs-12">
+              <label>Frabe</label>
+              <rzslider class="custom-slider" rz-slider-model="colorSlider.minValue" rz-slider-high="colorSlider.maxValue" rz-slider-options="colorSlider.options"></rzslider>
+              <label>Schwelle</label>
+              <rzslider class="custom-slider" rz-slider-model="thresholdSlider.value" rz-slider-options="thresholdSlider.options"></rzslider>
+            </div>
+            <div class="col-xs-6 pull-right"><button name="apply" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="row"><div class="col-sm-12">&nbsp;</div></div>
+    <div class="row">
+      <div class="col-sm-12">
+        <pre>{{response}}</pre>
+      </div>
+    </div>
+  </div>
 </body>
+
 </html>
