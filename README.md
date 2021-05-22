@@ -26,3 +26,7 @@ python3 webservice.py
 ## TODO's
 - calculate and display frames per second
 - https://angular-slider.github.io/angularjs-slider/
+
+# Calculation
+width (px) / height (cm) = factor (px/cm)
+640 / 50 = 12,8 

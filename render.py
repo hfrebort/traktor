@@ -19,7 +19,7 @@ def _statistics(orig, offset=0, threshold=30):
     # third line -> arrow (left / right)
     #now = datetime.now().strftime("%D %H:%M:%S")    
     #img = cv2.putText(img, now, (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, white, 1)
-    text = f"{offset:+#4d}cm"
+    text = f"{offset:+#4.1f}cm"
     img = cv2.putText(img, text, (10, int(height/2 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 1, white, 2)
 
     if abs(offset) > threshold:

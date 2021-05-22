@@ -62,7 +62,7 @@ def calculateOffset(img, contours, xOfTarget, xRange, threshold=130, color=(0,0,
         ySorted = points[np.argsort(points[:, 1]), :]
         # get the x-coordinate of the countour on the bottom of the image
         xOfYmax,_ = ySorted[len(ySorted) -1]
-        offset = int(xOfTarget - xOfYmax)
+        offset = int(xOfTarget - xOfYmax) / 12.8 # relation between width and cm
         xOfYmin,_ = ySorted[0]
         points = np.array((xOfYmin, 0))
         ySorted = np.vstack((points, ySorted, np.array((xOfYmax, img.shape[0]))))
