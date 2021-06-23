@@ -41,12 +41,15 @@
               <h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1>
             </div>
             <div class="col-xs-12">
-              <label>Frabe</label>
+              <label>Farbbereich (Rot, Gr&uuml;n)</label>
               <rzslider class="custom-slider" rz-slider-model="colorSlider.minValue" rz-slider-high="colorSlider.maxValue" rz-slider-options="colorSlider.options"></rzslider>
-              <label>Schwelle</label>
+              <rzslider class="custom-slider" rz-slider-model="greenSlider.minValue" rz-slider-high="greenSlider.maxValue" rz-slider-options="greenSlider.options"></rzslider>
+              <label>Maximale Abweichung der Pflanze (cm)</label>
               <rzslider class="custom-slider" rz-slider-model="thresholdSlider.value" rz-slider-options="thresholdSlider.options"></rzslider>
+              <label>Maximalanazahl Pflanzen/Bild (Stk)</label>
+              <rzslider class="custom-slider" rz-slider-model="maxMarkerSlider.value" rz-slider-options="maxMarkerSlider.options"></rzslider>
             </div>
-            <div class="col-xs-6 pull-right"><button name="apply" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
+            <div class="col-xs-6 pull-right"><button name="apply" data-ng-click="ctrl.applyChanges(false)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
           </div>
         </form>
       </div>

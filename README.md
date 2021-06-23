@@ -22,11 +22,15 @@ python3 webservice.py
 - raspap: admin, secret
 - wifi: raspi-webgui, ChangeMe
 
-
-## TODO's
-- calculate and display frames per second
-- https://angular-slider.github.io/angularjs-slider/
-
 # Calculation
 width (px) / height (cm) = factor (px/cm)
 640 / 50 = 12,8 
+
+## TODO's
+- calculate and display frames per second
+
+Phase 1:
+- detect areas which are overloaded with weed and show a warning to handle it manually -> harrow is fixed
+
+Phase 2:
+- calculate the deviation for all rows -> corrected regarding the perspective 

@@ -53,7 +53,7 @@ def calculateOffset(img, contours, xOfTarget, xRange, threshold=130, color=(0,0,
             if moments is not None and moments['m00'] > 0:
                 x1 = int(moments['m10']/moments['m00'])
                 y1 = int(moments['m01']/moments['m00'])
-                cont_img = cv2.drawMarker(cont_img, (x1, y1), color, markerType=cv2.MARKER_CROSS, thickness=1)
+                cont_img = cv2.drawMarker(cont_img, (x1, y1), color, markerType=cv2.MARKER_CROSS, thickness=3)
                 if abs(xOfTarget - x1) < xRange:
                     centroids.append((x1,y1))
     if centroids:
@@ -68,7 +68,7 @@ def calculateOffset(img, contours, xOfTarget, xRange, threshold=130, color=(0,0,
         ySorted = np.vstack((points, ySorted, np.array((xOfYmax, img.shape[0]))))
         cont_img = cv2.polylines(cont_img, np.int32([ySorted]), isClosed = False, color = (0,255,255), thickness = 2)
 
-    return cont_img, offset
+    return cont_img, offset, len(centroids)
 
 def detect(img, filterColorRange=True, colorFrom=(36, 25, 25), colorTo=(110, 255,255), errode=5, dilate=5, contourMode='CONT'):
     gray = None
@@ -85,9 +85,10 @@ def detect(img, filterColorRange=True, colorFrom=(36, 25, 25), colorTo=(110, 255
     dilated = cv2.dilate(eroded, (5,5), iterations=dilate)
     #roi = regionOfInterest(eroded)
     contours,_ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    #contourImg, offset = drawContours(img, contours, contourMode=contourMode)
+    contourImg1, _ = drawContours(img, contours, contourMode=contourMode)
     width = img.shape[1]
-    contourImg, offset = calculateOffset(img, contours, width/2, width/(2*3))
+    contourImg2, offset, markers = calculateOffset(img, contours, width/2, width/(2*3))
 
-    contourImg = cv2.addWeighted(img, 0.8, contourImg, 1, 0)
-    return contourImg, offset
+    contourImg = cv2.addWeighted(img, 1, contourImg1, 1, 0)
+    contourImg = cv2.addWeighted(contourImg, 1, contourImg2, 1, 0)
+    return contourImg, offset, markers

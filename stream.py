@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import cv2, threading, time, detector, render, tractor
 
-_data = {'url': 'http://10.3.141.165:8888/video', 'detecting': False, 'threshold': 30, 'colorFilter': True, 'colorFrom': (36, 25, 25), 'colorTo': (110, 255,255), 'erode': 5, 'dilate': 5, 'contourMode': 'CONT', 'left': 12, 'right': 13}
+_data = {'url': 'http://10.3.141.165:8888/video', 'detecting': False, 'threshold': 30, 'colorFilter': True, 'colorFrom': (36, 25, 25), 'colorTo': (110, 255,255), 'erode': 5, 'dilate': 5, 'contourMode': 'CONT', 'left': 12, 'right': 13, 'maximumMarkers': 10}
 _running = True
 _outputFrame = None
 _lock = threading.Lock()
@@ -22,6 +22,8 @@ def apply(data):
             _data['dilate'] = int(data['dilate'])
         if isinstance(data['threshold'], str):
             _data['threshold'] = int(data['threshold'])
+        if isinstance(data['maximumMarkers'], str):
+            _data['maximumMarkers'] = int(data['maximumMarkers'])
 
 def read():
     global _outputFrame, _lock, _data, _running
@@ -37,9 +39,9 @@ def read():
             frame = vcap.read()
             if frame is not None and frame[1] is not None:
                 image = frame[1]
-                if _data['detecting'] == True:
-                    image, offset = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
-                    image = render.render(image, offset, _data['threshold'])
+                image, offset, markers = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
+                image = render.render(image, offset, _data['threshold'], markers, _data['maximumMarkers'])
+                if _data['detecting'] == True and markers < _data['maximumMarkers']:
                     tractor.move(_data['left'], _data['right'], _data['threshold'], offset)
 
                 with _lock:
