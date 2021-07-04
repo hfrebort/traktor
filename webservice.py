@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import sys, json, threading, web
+import sys, json, threading, web, gc
 import video, stream, tractor
 
 urls = (
@@ -32,7 +32,15 @@ class RequestHandler:
         init_header()
         return {'success': 'true'}
 
+def gc_callback(phase, info):
+       print(f'gc {phase}')
+
+
 if __name__ == "__main__":
+
+    gc.set_debug(gc.DEBUG_STATS)
+    gc.callbacks.append(gc_callback)
+
     video.videoOnOff()
     print ('started application')
     app.run()
