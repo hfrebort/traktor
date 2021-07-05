@@ -32,8 +32,8 @@ angular.module('tractor', ['rzSlider'])
           floor: 1,
           ceil: 50
       }
-  }
-  $scope.data = {
+    };
+    $scope.data = {
         duration: 1.0,
         left: 12,
         right: 13,
@@ -60,6 +60,25 @@ angular.module('tractor', ['rzSlider'])
         $scope.data.threshold = $scope.thresholdSlider.value;
         $scope.data.maximumMarkers = $scope.maxMarkerSlider.value;
     };
+    this.getData = function() {
+      $http.get('/data').then(function (response) {
+          console.log(response.data);
+          let input = response.data.replace(/'/g, '"');
+          input = input.replace(/\(/g, '[');
+          input = input.replace(/\)/g, ']');
+          input = input.replace(/T/g, 't');
+          input = input.replace(/F/g, 'f');
+          console.log('input: ', input);
+          const data = angular.fromJson(input, true);
+          console.log(data);
+          $scope.colorSlider.minValue = data.colorfrom[0];
+          $scope.colorSlider.maxValue = data.colorto[0];
+          $scope.greenSlider.minValue = data.colorfrom[1];
+          $scope.greenSlider.maxValue = data.colorto[1];
+          $scope.thresholdSlider.value = data.threshold;
+          $scope.maxMarkerSlider.value = data.maximumMarkers;
+      });
+    }
     this.stop = function () {
         this.applyChanges(false);
     };

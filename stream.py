@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import cv2, threading, time, detector, render, tractor
 
-_data = {'url': 'http://10.3.141.165:8888/video', 'detecting': False, 'threshold': 30, 'colorFilter': True, 'colorFrom': (36, 25, 25), 'colorTo': (110, 255,255), 'erode': 5, 'dilate': 5, 'contourMode': 'CONT', 'left': 12, 'right': 13, 'maximumMarkers': 10}
+_data = {'url': 'http://10.3.141.165:8888/video', 'detecting': False, 'threshold': 10, 'colorFilter': True, 'colorFrom': (40, 110, 25), 'colorTo': (120, 255,255), 'erode': 5, 'dilate': 5, 'contourMode': 'POLY', 'left': 12, 'right': 13, 'maximumMarkers': 30}
 _running = True
 _outputFrame = None
 _lock = threading.Lock()
@@ -24,6 +24,10 @@ def apply(data):
             _data['threshold'] = int(data['threshold'])
         if isinstance(data['maximumMarkers'], str):
             _data['maximumMarkers'] = int(data['maximumMarkers'])
+
+def getData():
+  global _data
+  return _data
 
 def read():
     global _outputFrame, _lock, _data, _running

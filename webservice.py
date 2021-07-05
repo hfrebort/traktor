@@ -18,6 +18,8 @@ class RequestHandler:
         if path == 'video':
             web.header('Content-Type', 'multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM')
             return stream.generate()
+        elif path == 'data':
+          return stream.getData()
 
         raise web.seeother('/static/index.html')
 

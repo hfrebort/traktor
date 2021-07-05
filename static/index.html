@@ -33,7 +33,7 @@
         <form name="tractorForm" method="post">
           <div class="row">
             <div class="col-xs-6"><button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-sm btn-danger"><span class="glyphicon glyphicon-off"></span></button></div>
-            <div class="col-xs-6"><button name="stop" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-repeat"></span></button></div>
+            <div class="col-xs-6"><button name="stop" data-ng-click="ctrl.getData()" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-repeat"></span></button></div>
 
             <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button></div>
             <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button></div>
@@ -46,10 +46,10 @@
               <rzslider class="custom-slider" rz-slider-model="greenSlider.minValue" rz-slider-high="greenSlider.maxValue" rz-slider-options="greenSlider.options"></rzslider>
               <label>Maximale Abweichung der Pflanze (cm)</label>
               <rzslider class="custom-slider" rz-slider-model="thresholdSlider.value" rz-slider-options="thresholdSlider.options"></rzslider>
-              <label>Maximalanazahl Pflanzen/Bild (Stk)</label>
+              <label>Maximalanzahl Pflanzen/Bild (Stk)</label>
               <rzslider class="custom-slider" rz-slider-model="maxMarkerSlider.value" rz-slider-options="maxMarkerSlider.options"></rzslider>
             </div>
-            <div class="col-xs-6 pull-right"><button name="apply" data-ng-click="ctrl.applyChanges(false)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
+            <div class="col-xs-6 pull-right"><button name="apply" data-ng-click="ctrl.applyChanges(true)" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
           </div>
         </form>
       </div>
