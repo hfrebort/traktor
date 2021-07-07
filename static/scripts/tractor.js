@@ -77,6 +77,7 @@ angular.module('tractor', ['rzSlider'])
           $scope.greenSlider.maxValue = data.colorto[1];
           $scope.thresholdSlider.value = data.threshold;
           $scope.maxMarkerSlider.value = data.maximumMarkers;
+          $scope.data.detecting = data.detecting;
       });
     }
     this.stop = function () {
@@ -92,5 +93,6 @@ angular.module('tractor', ['rzSlider'])
         $http.post('/applyChanges', $scope.data).then(handleResponse);
     };
 
+    this.getData();
     console.log("initialize controller");
 });

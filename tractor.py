@@ -1,7 +1,11 @@
 #!/usr/bin/python3
-#from gpiozero import PWMLED
-from demo import PWMLED
-import time, sys
+from gpiozero import PWMLED, Button
+#from demo import PWMLED, Button
+import time
+
+lifter = None
+detectorLeft = None
+detectorRight = None
 
 ledLeft = None
 ledRight = None
@@ -32,6 +36,28 @@ def perform(data):
     direction = data['direction']
 
     _execute(duration, left, right, direction)
+
+def centerHarrow(left, right):
+  global lifter, detectorLeft, detectorRight
+  # lazy initialize of the buttons
+  if lifter is None:
+    lifter = Button(17)
+  if detectorLeft is None:
+    detectorLeft = Button(27)
+  if detectorRight is None:
+    detectorRight = Button(22)
+
+  while lifter.is_pressed:
+    if detectorLeft.is_pressed == False and detectorRight.is_pressed == False:
+      print ("left and right is false")
+      stop_all()
+    elif detectorLeft.is_pressed:
+      _execute(0, left, right, "left")
+      print ("detected left")
+    elif detectorRight.is_pressed:
+      _execute(0, left, right, "right")
+      print ("detected right")
+  stop_all()
 
 def _execute(duration, left, right, direction):
     global ledLeft, ledRight

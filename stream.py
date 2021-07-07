@@ -39,10 +39,11 @@ def read():
         #vcap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         #vcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         while _running:
-            start = time.time()
+            tractor.centerHarrow(_data['left'], _data['right'])
             frame = vcap.read()
             if frame is not None and frame[1] is not None:
                 image = frame[1]
+                start = time.time()
                 image, offset, markers = detector.detect(image, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
                 image = render.render(image, offset, _data['threshold'], markers, _data['maximumMarkers'])
                 if _data['detecting'] == True and markers < _data['maximumMarkers']:
