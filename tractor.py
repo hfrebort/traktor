@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-from gpiozero import PWMLED, Button
-#from demo import PWMLED, Button
+#from gpiozero import PWMLED, Button
+from demo import PWMLED, Button
 import time
 
 lifter = None
