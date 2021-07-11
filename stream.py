@@ -22,9 +22,7 @@ class Stats:
     lock_ns = 0
     fps = 0
     jpg_ns = 0
-    camera_fps = 0
-    camera_width = 0
-    camera_height = 0
+    jpg_bytes = 0
 
 _running = True
 _outputFrame = None
@@ -61,7 +59,7 @@ def ms_from_ns(ns):
 def printStats():
     global _stats
     while True:
-        print("read detect render move lock jpg fps   {0:8.1f} {1:8.1f} {2:8.1f} {3:8.1f} {4:8.1f} {5:8.1f} {6:4} ({7:.0f}x{8:.0f}x{9:.0f})"
+        print("read detect render move lock jpg fps jpg-kB   {0:8.1f} {1:8.1f} {2:8.1f} {3:8.1f} {4:8.1f} {5:8.1f} {6:4} {7}"
         .format(
                 ms_from_ns(_stats.read_ns)
             ,   ms_from_ns(_stats.detect_ns)
@@ -70,8 +68,7 @@ def printStats():
             ,   ms_from_ns(_stats.lock_ns)
             ,   ms_from_ns(_stats.jpg_ns)
             ,   _stats.fps
-            ,   _stats.camera_width, _stats.camera_height, _stats.camera_fps
-            ))
+            ,   _stats.jpg_bytes // 1024          ))
                 
         _stats.fps = 0
         time.sleep(1.0)
@@ -85,9 +82,17 @@ def read():
     try:
         _running = True
         vcap = cv2.VideoCapture(0)
+
+        #vcap.set( cv2.CAP_PROP_FPS, 15 )
+        vcap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         #vcap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
         #vcap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         #vcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+
+        print(f"CAP_PROP_BUFFERSIZE   : {vcap.get(cv2.CAP_PROP_BUFFERSIZE)}")
+        print(f"CAP_PROP_FPS          : {vcap.get(cv2.CAP_PROP_FPS)}")
+        print(f"CAP_PROP_FRAME_WIDTH  : {vcap.get(cv2.CAP_PROP_FRAME_WIDTH)}")
+        print(f"CAP_PROP_FRAME_HEIGHT : {vcap.get(cv2.CAP_PROP_FRAME_HEIGHT)}")
 
         _stats.camera_width = vcap.get(cv2.CAP_PROP_FRAME_WIDTH)
         _stats.camera_height = vcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -138,6 +143,8 @@ def read():
 def generate():
     global _outputFrame, _lock, _running, _stats, _imageReady
 
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
+
     while _running:
 
         _imageReady.wait()
@@ -148,11 +155,13 @@ def generate():
                 continue
 
             start_ns = time.perf_counter_ns()    
-            (bSucess, encodedImage) = cv2.imencode(".jpg", _outputFrame)
+            (bSucess, encodedImage) = cv2.imencode(".jpg", _outputFrame, encode_param )
             _outputFrame = None
 
         if bSucess:
-            yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+            jpegBytes = bytearray(encodedImage)
+            _stats.jpg_bytes = len(jpegBytes)
+            yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + jpegBytes + b'\r\n')
             now_ns = time.perf_counter_ns()
             _stats.jpg_ns = now_ns - start_ns
         else:
