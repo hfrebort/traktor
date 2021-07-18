@@ -1,7 +1,4 @@
-/target/
-/.settings/
-.classpath
-.project
-**/.vscode/
-**/tests/
-**/__pycache__/
+build/**
+CMakeFiles/**
+deps/**
+release/**
