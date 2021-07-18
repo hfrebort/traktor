@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from typing import Callable
 import cv2, threading, time, detector, render, tractor
 
 _data = {   'url'               : 'http://10.3.141.165:8888/video'
@@ -24,11 +25,24 @@ class Stats:
     jpg_ns = 0
     jpg_bytes = 0
 
+class StatsDetect:
+    inRange = 0
+    GaussianBlur = 0
+    threshold = 0
+    erode = 0
+    dilate = 0
+    findContours = 0
+    drawContours = 0
+    moments = 0
+    centroids = 0
+    addWeighted = 0
+
 _running = True
 _outputFrame = None
 _lock = threading.Lock()
 _imageReady = threading.Event()
 _stats = Stats()
+_stats_detect = StatsDetect()
 
 def apply(data):
     global _data, _lock
@@ -57,24 +71,54 @@ def ms_from_ns(ns):
     return ns / 1000000
 
 def printStats():
-    global _stats
+    global _stats, _stats_detect
     while True:
-        print("read detect render move lock jpg fps jpg-kB   {0:8.1f} {1:8.1f} {2:8.1f} {3:8.1f} {4:8.1f} {5:8.1f} {6:4} {7}"
-        .format(
-                ms_from_ns(_stats.read_ns)
-            ,   ms_from_ns(_stats.detect_ns)
-            ,   ms_from_ns(_stats.render_ns)
-            ,   ms_from_ns(_stats.move_ns)
-            ,   ms_from_ns(_stats.lock_ns)
-            ,   ms_from_ns(_stats.jpg_ns)
-            ,   _stats.fps
-            ,   _stats.jpg_bytes // 1024          ))
+        #print("read detect render move lock jpg fps jpg-kB   {0:8.1f} {1:8.1f} {2:8.1f} {3:8.1f} {4:8.1f} {5:8.1f} {6:4} {7}"
+        #.format(
+        #        ms_from_ns(_stats.read_ns)
+        #    ,   ms_from_ns(_stats.detect_ns)
+        #    ,   ms_from_ns(_stats.render_ns)
+        #    ,   ms_from_ns(_stats.move_ns)
+        #    ,   ms_from_ns(_stats.lock_ns)
+        #    ,   ms_from_ns(_stats.jpg_ns)
+        #    ,   _stats.fps
+        #    ,   _stats.jpg_bytes // 1024          
+        #    ))
                 
+        sumTimes = (  _stats_detect.inRange 
+                    + _stats_detect.GaussianBlur 
+                    + _stats_detect.threshold 
+                    + _stats_detect.erode 
+                    + _stats_detect.dilate 
+                    + _stats_detect.findContours 
+                    + _stats_detect.drawContours 
+                    + _stats_detect.moments 
+                    + _stats_detect.centroids
+                    + _stats_detect.addWeighted )
+
+        print("fps {11:2} detect({0:2.1f} = inRange {1:2.1f}, GaussianBlur {2:2.1f}, threshold {3:2.1f}, erode {4:2.1f}, dilate {5:2.1f}, findContours {6:2.1f}, drawContours {7:2.1f}, moments {8:2.1f}, centroids {9:2.1f}, addWeighted {10:2.1f})"
+        .format(
+                ms_from_ns(sumTimes)
+            ,   ms_from_ns(_stats_detect.inRange)
+            ,   ms_from_ns(_stats_detect.GaussianBlur)
+            ,   ms_from_ns(_stats_detect.threshold)
+            ,   ms_from_ns(_stats_detect.erode)
+            ,   ms_from_ns(_stats_detect.dilate)
+            ,   ms_from_ns(_stats_detect.findContours)
+            ,   ms_from_ns(_stats_detect.drawContours)
+            ,   ms_from_ns(_stats_detect.moments)
+            ,   ms_from_ns(_stats_detect.centroids)
+            ,   ms_from_ns(_stats_detect.addWeighted)
+            ,   _stats.fps
+                        ))
+
         _stats.fps = 0
         time.sleep(1.0)
 
+
+
 def read():
-    global _outputFrame, _lock, _data, _running, _imageReady
+    global _outputFrame, _lock, _data, _running, _imageReady, _stats, _stats_detect
 
     _imageReady.clear()
     threading.Thread(target=printStats).start()
@@ -89,10 +133,10 @@ def read():
         #vcap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         #vcap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
-        print(f"CAP_PROP_BUFFERSIZE   : {vcap.get(cv2.CAP_PROP_BUFFERSIZE)}")
-        print(f"CAP_PROP_FPS          : {vcap.get(cv2.CAP_PROP_FPS)}")
-        print(f"CAP_PROP_FRAME_WIDTH  : {vcap.get(cv2.CAP_PROP_FRAME_WIDTH)}")
-        print(f"CAP_PROP_FRAME_HEIGHT : {vcap.get(cv2.CAP_PROP_FRAME_HEIGHT)}")
+        print(f"CAP_PROP_BUFFERSIZE   : {int(vcap.get(cv2.CAP_PROP_BUFFERSIZE)):3}")
+        print(f"CAP_PROP_FPS          : {int(vcap.get(cv2.CAP_PROP_FPS)):3}")
+        print(f"CAP_PROP_FRAME_WIDTH  : {int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH)):3}")
+        print(f"CAP_PROP_FRAME_HEIGHT : {int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT)):3}")
 
         _stats.camera_width = vcap.get(cv2.CAP_PROP_FRAME_WIDTH)
         _stats.camera_height = vcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -110,7 +154,7 @@ def read():
             if bReadSuccess:
                 
                 start_ns = now_ns
-                image, offset, markers = detector.detect(frame, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
+                image, offset, markers = detector.detect(_stats_detect, frame, _data['colorFilter'], _data['colorFrom'], _data['colorTo'], _data['erode'], _data['dilate'], _data['contourMode'])
                 now_ns = time.perf_counter_ns()
                 _stats.detect_ns = now_ns - start_ns                             
 
