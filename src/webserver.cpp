@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <stdio.h>
 
 #include "webserver.h"
 
@@ -6,26 +7,26 @@ void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> s
 
 void TraktorHandler::onRequest(const Pistache::Http::Request& req, Pistache::Http::ResponseWriter response)
 {
-            if ( req.resource() == "/video" ) {
-            response
-                .headers()
-                .add<Pistache::Http::Header::Server>("pistache/0.1")
-                .add<Pistache::Http::Header::ContentType>("multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM");
+    if ( req.resource() == "/video" ) {
+        response
+            .headers()
+            .add<Pistache::Http::Header::Server>("pistache/0.1")
+            .add<Pistache::Http::Header::ContentType>("multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM");
 
-            static const std::string boundary("--Ba4oTvQMY8ew04N8dcnM\r\nContent-Type: image/jpeg\r\n\r\n");
-            static const std::string CRLF("\r\n");
+        static const std::string boundary("--Ba4oTvQMY8ew04N8dcnM\r\nContent-Type: image/jpeg\r\n\r\n");
+        static const std::string CRLF("\r\n");
 
-            Pistache::Http::ResponseStream stream = response.stream(Pistache::Http::Code::Ok);
+        Pistache::Http::ResponseStream stream = response.stream(Pistache::Http::Code::Ok);
 
-            thread_send_jpeg(
-                    this->_shared,
-                    [&stream](std::vector<unsigned char>& jpegBytes) {
-                    // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
-                    stream.write( boundary.data(), boundary.length() );
-                    jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
-                    stream.write( (char*)jpegBytes.data(), jpegBytes.size() );
-                    stream.flush();
-            });
+        thread_send_jpeg(
+                this->_shared,
+                [&stream](std::vector<unsigned char>& jpegBytes) {
+                // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+                stream.write( boundary.data(), boundary.length() );
+                jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
+                stream.write( (char*)jpegBytes.data(), jpegBytes.size() );
+                stream.flush();
+        });
     }
     else if ( req.resource() == "/data" ) {
     }
@@ -46,6 +47,7 @@ void TraktorHandler::onRequest(const Pistache::Http::Request& req, Pistache::Htt
             struct stat buffer;
             if ( stat(toServe.c_str(), &buffer) == 0) {
                 Pistache::Http::serveFile(response, toServe);
+                printf("I: static-web: [%s]\n", toServe.c_str());
             }
             else {
                 response.send(Pistache::Http::Code::Not_Found);

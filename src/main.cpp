@@ -24,6 +24,7 @@ int wait_for_signal(void)
         return 1;
     }
 
+    printf("press CTRL-C to quit\n");
     int signal = 0;
     int status = sigwait(&signals, &signal);
     if (status == 0)
@@ -37,7 +38,6 @@ int wait_for_signal(void)
 
     return 0;
 }
-
 std::unique_ptr<Pistache::Http::Endpoint> startServer(int port, Shared* shared)
 {
     Pistache::Address addr4(Pistache::Ipv4::any(),     Pistache::Port(port));
@@ -53,26 +53,38 @@ std::unique_ptr<Pistache::Http::Endpoint> startServer(int port, Shared* shared)
     server4->init(opts);
     server4->setHandler(handler);
     server4->serveThreaded();
+    
     std::cout << "listening on IPv4: " << addr4 << std::endl;
 
     return server4;
 }
 
-void thread_camera(Stats* stats, cv::Mat frame_buf[], std::atomic<int>* sharedFrameBufSlot);
+void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomic<int>* sharedFrameBufSlot);
+void thread_stats(Stats* stats);
 
-int main()
+int main(int argc, char* argv[])
 {
     int rc = 0;
 
+    int cameraIdx = 0;
+    if (argc == 2)
+    {
+        cameraIdx = std::stoi(argv[1]);
+    }
+
+    printf("I: using camera #%d\n", cameraIdx);
+
     Shared shared;
 
-    std::thread camera(thread_camera, &shared.stats, shared.frame_buf, &shared.frame_buf_slot);
+    std::thread camera(thread_camera, cameraIdx, &shared.stats, shared.frame_buf, &shared.frame_buf_slot);
+    std::thread stats (thread_stats, &shared.stats);
     auto server4 = startServer(9080, &shared);
 
     rc = wait_for_signal();
     
-
+    printf("I: shutting down webserver... \n");
     server4->shutdown();
+    printf("I: shutting down webserver done\n");
 
     return rc;
 }

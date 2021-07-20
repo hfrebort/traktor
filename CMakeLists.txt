@@ -17,6 +17,7 @@ set(SOURCES
     src/detect.cpp
     src/shared.h
     src/thread_camera.cpp
+    src/thread_stats
 )
 
 add_executable(${EXECUTABLE} ${SOURCES})

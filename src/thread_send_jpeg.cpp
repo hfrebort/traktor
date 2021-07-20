@@ -8,10 +8,9 @@ void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> s
 {
     const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 50};
 
-    cv::Mat frame;
     std::vector<uchar> jpegImage;
 
-    printf("thread send_jpeg running\n");
+    printf("I: thread send_jpeg running\n");
 
     for (;;)
     {
@@ -21,7 +20,11 @@ void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> s
             // wait for a frame ready in the frameBuffer
         }
 
-        cv::Mat& frame = shared->frame_buf[frameReadySlot];
+        int arrayIdx = frameReadySlot - 1;
+        cv::Mat& frame = shared->frame_buf[arrayIdx];
+        
+        //printf("JPG: arrayIdx: %d, Mat: %dx%d\n", arrayIdx, frame.size().width, frame.size().height );
+
         if ( !cv::imencode(".jpg", frame, jpegImage, JPEGparams))
         {
 
@@ -29,7 +32,7 @@ void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> s
         }
         else
         {
-            printf("I: sending JPEG bytes: %lukB\n", jpegImage.size() / 1024);
+            //printf("JPG: sending JPEG bytes: %lukB\n", jpegImage.size() / 1024);
             sendJPEGbytes(jpegImage);
             shared->stats.jpeg_sent++;
         }

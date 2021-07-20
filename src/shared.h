@@ -11,4 +11,5 @@ struct Shared {
 
         cv::Mat             frame_buf[3];
         std::atomic<int>    frame_buf_slot;
+
 };

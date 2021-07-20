@@ -3,9 +3,18 @@
 
 #include "stats.h"
 
-void thread_camera(Stats* stats, cv::Mat frame_buf[], std::atomic<int>* sharedFrameBufSlot)
+void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomic<int>* sharedFrameBufSlot)
 {
-    cv::VideoCapture capture = cv::VideoCapture(0);
+    cv::VideoCapture capture = cv::VideoCapture(cameraIdx);
+    
+    capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+
+    printf("camera: %dx%d fps: %d\n",
+         (int)capture.get(cv::CAP_PROP_FRAME_WIDTH)
+        ,(int)capture.get(cv::CAP_PROP_FRAME_HEIGHT)
+        ,(int)capture.get(cv::CAP_PROP_FPS));
 
     int WorkNr;
     int CurrNr = 1;
@@ -20,13 +29,18 @@ void thread_camera(Stats* stats, cv::Mat frame_buf[], std::atomic<int>* sharedFr
 
     printf("I: thread camera running\n");
 
-    *sharedFrameBufSlot = 1;
+    sharedFrameBufSlot->store(1);
     WorkNr = 1;
     CurrNr = 2;
 
     for (;;)
     {
-        if ( !capture.read(frame_buf[CurrNr - 1]) )
+        cv::Mat& buf = frame_buf[CurrNr - 1];
+
+        bool read_ok = capture.read(buf);
+        stats->camera_frames++;
+
+        if ( !read_ok )
         {
             printf("E: capture.read()\n");
             break;
@@ -37,8 +51,6 @@ void thread_camera(Stats* stats, cv::Mat frame_buf[], std::atomic<int>* sharedFr
             NextNr = ( PrevNr == 0 ) ? 6 - ( WorkNr + CurrNr ) : PrevNr;
             WorkNr = CurrNr;
             CurrNr = NextNr;
-
-            stats->camera_frames_read++;
         }
     }
 }
