@@ -2,7 +2,7 @@
 
 #include "webserver.h"
 
-void loop_sendJPEG(std::function<void(std::vector<unsigned char>&)> sendJPEGbytes);
+void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> sendJPEGbytes);
 
 void TraktorHandler::onRequest(const Pistache::Http::Request& req, Pistache::Http::ResponseWriter response)
 {
@@ -17,7 +17,9 @@ void TraktorHandler::onRequest(const Pistache::Http::Request& req, Pistache::Htt
 
             Pistache::Http::ResponseStream stream = response.stream(Pistache::Http::Code::Ok);
 
-            loop_sendJPEG([&stream](std::vector<unsigned char>& jpegBytes) {
+            thread_send_jpeg(
+                    this->_shared,
+                    [&stream](std::vector<unsigned char>& jpegBytes) {
                     // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
                     stream.write( boundary.data(), boundary.length() );
                     jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());

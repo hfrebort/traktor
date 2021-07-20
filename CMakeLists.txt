@@ -9,9 +9,14 @@ enable_testing()
 
 set(SOURCES 
     src/main.cpp
-    src/sendJPEG.cpp
+    src/thread_send_jpeg.cpp
     src/webserver.h
     src/webserver.cpp
+    src/stats.h
+    src/detect.h
+    src/detect.cpp
+    src/shared.h
+    src/thread_camera.cpp
 )
 
 add_executable(${EXECUTABLE} ${SOURCES})
