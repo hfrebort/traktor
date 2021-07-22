@@ -27,12 +27,16 @@ void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> s
 
         if ( !cv::imencode(".jpg", frame, jpegImage, JPEGparams))
         {
-
             printf("E: imencode(jpg)\n");
         }
         else
         {
-            //printf("JPG: sending JPEG bytes: %lukB\n", jpegImage.size() / 1024);
+            /*
+            printf("JPG: sending JPEG %d/%d bytes: %lukB\n"
+                , frame.size().width
+                , frame.size().height
+                , jpegImage.size() / 1024);
+                */
             sendJPEGbytes(jpegImage);
             shared->stats.jpeg_sent++;
         }
