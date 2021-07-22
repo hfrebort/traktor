@@ -1,6 +1,4 @@
 #include <signal.h>
-
-
 #include <iostream>
 #include <functional>
 #include <memory>
@@ -64,7 +62,7 @@ void thread_stats(Stats* stats);
 
 int main(int argc, char* argv[])
 {
-    int rc = 0;
+    int rc =0;
 
     int cameraIdx = 0;
     if (argc == 2)

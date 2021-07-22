@@ -22,6 +22,22 @@ set(SOURCES
 
 add_executable(${EXECUTABLE} ${SOURCES})
 
+target_precompile_headers(${EXECUTABLE} PRIVATE
+  <signal.h>
+  <sys/stat.h>
+  <stdio.h>
+  <iostream>
+  <functional>
+  <memory>
+  <thread>
+  <atomic>
+  <cstddef>
+  <thread>
+  <chrono>
+  <opencv2/opencv.hpp>
+  [["pistache/endpoint.h"]]
+)
+
 target_compile_features(${EXECUTABLE} PRIVATE cxx_std_17)
 
 #target_include_directories(traktor_cpp_test PRIVATE "./deps/boost_1_76_0")
