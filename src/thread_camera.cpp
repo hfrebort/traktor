@@ -17,12 +17,12 @@ void thread_camera(int cameraIdx, Shared* shared)
         ,(int)capture.get(cv::CAP_PROP_FRAME_HEIGHT)
         ,(int)capture.get(cv::CAP_PROP_FPS));
 
-    int WorkNr;
-    int CurrNr = 1;
-    int NextNr; 
-    int PrevNr;
+    short WorkNr;
+    short CurrNr = 0;
+    short NextNr; 
+    short PrevNr;
 
-    if ( !capture.read(shared->frame_buf[CurrNr - 1]) )
+    if ( !capture.read(shared->frame_buf[CurrNr]) )
     {
         printf("E: first capture.read()\n");
         return;
@@ -30,13 +30,13 @@ void thread_camera(int cameraIdx, Shared* shared)
 
     printf("I: thread camera running\n");
 
-    shared->frame_buf_slot.store(1);
-    WorkNr = 1;
-    CurrNr = 2;
+    shared->frame_buf_slot.store(0);
+    WorkNr = 0;
+    CurrNr = 1;
 
     for (;;)
     {
-        cv::Mat& buf = shared->frame_buf[CurrNr - 1];
+        cv::Mat& buf = shared->frame_buf[CurrNr];
 
         bool read_ok = capture.read(buf);
         shared->stats.camera_frames++;
@@ -50,7 +50,7 @@ void thread_camera(int cameraIdx, Shared* shared)
         {
             PrevNr = std::atomic_exchange( &(shared->frame_buf_slot), CurrNr );
             shared->camera_frame_ready.notify_one();
-            NextNr = ( PrevNr == 0 ) ? 6 - ( WorkNr + CurrNr ) : PrevNr;
+            NextNr = ( PrevNr == -1 ) ? 3 - ( WorkNr + CurrNr ) : PrevNr;
             WorkNr = CurrNr;
             CurrNr = NextNr;
         }
