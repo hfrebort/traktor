@@ -18,6 +18,8 @@ void thread_send_jpeg(Shared* shared, std::function<void(std::vector<uchar>&)> s
         while ( (frameReadySlot=std::atomic_exchange( &(shared->frame_buf_slot), 0)) == 0 )
         {
             // wait for a frame ready in the frameBuffer
+            std::unique_lock<std::mutex> lk(shared->camera_frame_ready_mutex);
+            shared->camera_frame_ready.wait(lk);
         }
 
         int arrayIdx = frameReadySlot - 1;

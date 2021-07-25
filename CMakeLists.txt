@@ -29,6 +29,7 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <iostream>
   <functional>
   <memory>
+  <condition_variable>
   <thread>
   <atomic>
   <cstddef>

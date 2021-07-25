@@ -57,7 +57,7 @@ std::unique_ptr<Pistache::Http::Endpoint> startServer(int port, Shared* shared)
     return server4;
 }
 
-void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomic<int>* sharedFrameBufSlot);
+void thread_camera(int cameraIdx, Shared* shared);
 void thread_stats(Stats* stats);
 
 int main(int argc, char* argv[])
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 
     Shared shared;
 
-    std::thread camera(thread_camera, cameraIdx, &shared.stats, shared.frame_buf, &shared.frame_buf_slot);
+    std::thread camera(thread_camera, cameraIdx, &shared);
     std::thread stats (thread_stats, &shared.stats);
     auto server4 = startServer(9080, &shared);
 

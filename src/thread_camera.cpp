@@ -1,9 +1,10 @@
 #include <atomic>
 #include <opencv2/opencv.hpp>
 
+#include "shared.h"
 #include "stats.h"
 
-void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomic<int>* sharedFrameBufSlot)
+void thread_camera(int cameraIdx, Shared* shared)
 {
     cv::VideoCapture capture = cv::VideoCapture(cameraIdx);
     
@@ -21,7 +22,7 @@ void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomi
     int NextNr; 
     int PrevNr;
 
-    if ( !capture.read(frame_buf[CurrNr - 1]) )
+    if ( !capture.read(shared->frame_buf[CurrNr - 1]) )
     {
         printf("E: first capture.read()\n");
         return;
@@ -29,16 +30,16 @@ void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomi
 
     printf("I: thread camera running\n");
 
-    sharedFrameBufSlot->store(1);
+    shared->frame_buf_slot.store(1);
     WorkNr = 1;
     CurrNr = 2;
 
     for (;;)
     {
-        cv::Mat& buf = frame_buf[CurrNr - 1];
+        cv::Mat& buf = shared->frame_buf[CurrNr - 1];
 
         bool read_ok = capture.read(buf);
-        stats->camera_frames++;
+        shared->stats.camera_frames++;
 
         if ( !read_ok )
         {
@@ -47,7 +48,8 @@ void thread_camera(int cameraIdx, Stats* stats, cv::Mat frame_buf[3], std::atomi
         }
         else
         {
-            PrevNr = std::atomic_exchange( sharedFrameBufSlot, CurrNr );
+            PrevNr = std::atomic_exchange( &(shared->frame_buf_slot), CurrNr );
+            shared->camera_frame_ready.notify_one();
             NextNr = ( PrevNr == 0 ) ? 6 - ( WorkNr + CurrNr ) : PrevNr;
             WorkNr = CurrNr;
             CurrNr = NextNr;
