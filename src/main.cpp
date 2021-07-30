@@ -4,9 +4,8 @@
 #include <memory>
 #include <thread>
 
-#include "pistache/endpoint.h"
+#include "httplib.h"
 
-#include "webserver.h"
 #include "shared.h"
 
 int wait_for_signal(void)
@@ -36,27 +35,8 @@ int wait_for_signal(void)
 
     return 0;
 }
-std::unique_ptr<Pistache::Http::Endpoint> startServer(int port, Shared* shared)
-{
-    Pistache::Address addr4(Pistache::Ipv4::any(),     Pistache::Port(port));
 
-    auto opts = Pistache::Http::Endpoint::options()
-        .threads(2);
-
-    auto server4 = std::make_unique<Pistache::Http::Endpoint>(addr4);
-    
-    auto handler = Pistache::Http::make_handler<TraktorHandler>();
-    handler->_shared = shared;
-
-    server4->init(opts);
-    server4->setHandler(handler);
-    server4->serveThreaded();
-    
-    std::cout << "listening on IPv4: " << addr4 << std::endl;
-
-    return server4;
-}
-
+int  thread_webserver(int port, Shared* shared);
 void thread_camera(int cameraIdx, Shared* shared);
 void thread_stats(Stats* stats);
 
@@ -76,13 +56,10 @@ int main(int argc, char* argv[])
 
     std::thread camera(thread_camera, cameraIdx, &shared);
     std::thread stats (thread_stats, &shared.stats);
-    auto server4 = startServer(9080, &shared);
+    std::thread web   (thread_webserver, 9080, &shared);
 
     rc = wait_for_signal();
     
-    printf("I: shutting down webserver... \n");
-    server4->shutdown();
-    printf("I: shutting down webserver done\n");
 
     return rc;
 }

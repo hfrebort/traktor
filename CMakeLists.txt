@@ -10,7 +10,6 @@ enable_testing()
 set(SOURCES 
     src/main.cpp
     src/thread_send_jpeg.cpp
-    src/webserver.h
     src/webserver.cpp
     src/stats.h
     src/detect.h
@@ -36,19 +35,19 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <thread>
   <chrono>
   <opencv2/opencv.hpp>
-  [["pistache/endpoint.h"]]
+  [["httplib.h"]]
 )
 
 target_compile_features(${EXECUTABLE} PRIVATE cxx_std_17)
 
 #target_include_directories(traktor_cpp_test PRIVATE "./deps/boost_1_76_0")
-target_include_directories(${EXECUTABLE} PRIVATE "./deps/pistache/include")
+target_include_directories(${EXECUTABLE} PRIVATE "./deps/cpp-httplib")
 
-add_library(pistache SHARED IMPORTED) # or STATIC instead of SHARED
-set_target_properties(pistache PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/deps/pistache/lib/x86_64-linux-gnu/libpistache.so.0.0.002"
-)
-target_link_libraries(${EXECUTABLE} PRIVATE pistache)
+#add_library(pistache SHARED IMPORTED) # or STATIC instead of SHARED
+#set_target_properties(pistache PROPERTIES
+#  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/deps/pistache/lib/x86_64-linux-gnu/libpistache.so.0.0.002"
+#)
+#target_link_libraries(${EXECUTABLE} PRIVATE pistache)
 
 message(STATUS CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR})
 
