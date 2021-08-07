@@ -13,6 +13,8 @@ int thread_webserver(int port, Shared* shared)
     using namespace httplib;
     Server svr;
 
+    shared->webSvr = &svr;
+
     const char* webroot = "./static";
 
     // Mount /public to ./www directory
@@ -58,9 +60,6 @@ int thread_webserver(int port, Shared* shared)
     svr.listen("localhost", port);
     printf("I: webserver listening on port %d\n", port);
 
-    printf("I: shutting down webserver... \n");
-    svr.stop();
-    printf("I: shutting down webserver done\n");
 
     return 0;
 }

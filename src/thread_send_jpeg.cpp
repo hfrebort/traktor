@@ -24,8 +24,6 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 
         cv::Mat& frame = shared->frame_buf[frameReadyIdx];
         
-        //printf("JPG: arrayIdx: %d, Mat: %dx%d\n", arrayIdx, frame.size().width, frame.size().height );
-
         if ( !cv::imencode(".jpg", frame, jpegImage, JPEGparams))
         {
             printf("E: imencode(jpg)\n");
@@ -38,6 +36,12 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
                 break;
             }
             shared->stats.jpeg_sent++;
+        }
+
+        if ( shared->shutdown_requested.load() )
+        {
+            printf("I: thread send_jpeg \n");
+            break;
         }
     }
 }

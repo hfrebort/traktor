@@ -54,5 +54,11 @@ void thread_camera(int cameraIdx, Shared* shared)
             WorkNr = CurrNr;
             CurrNr = NextNr;
         }
+
+        if (shared->shutdown_requested.load())
+        {
+            printf("I: thread camera shutdown requested\n");
+            break;
+        }
     }
 }

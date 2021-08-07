@@ -21,7 +21,6 @@ int wait_for_signal(void)
         return 1;
     }
 
-    printf("press CTRL-C to quit\n");
     int signal = 0;
     int status = sigwait(&signals, &signal);
     if (status == 0)
@@ -33,12 +32,30 @@ int wait_for_signal(void)
         std::cerr << "sigwait returns " << status << std::endl;
     }
 
+
     return 0;
+}
+
+void shutdown_all_threads(Shared& shared, std::thread& camera, std::thread& stats, std::thread& web)
+{
+    shared.shutdown_requested.store(true);
+
+    printf("I: shutting down webserver... \n");
+    shared.webSvr->stop();
+    printf("I: shutting down webserver done\n");
+
+    camera.join();
+    printf("I: thread ended: camera\n");
+    web.join();
+    printf("I: thread ended: webserver\n");
+    stats.join();
+    printf("I: thread ended: stats\n");
+
 }
 
 int  thread_webserver(int port, Shared* shared);
 void thread_camera(int cameraIdx, Shared* shared);
-void thread_stats(Stats* stats);
+void thread_stats(Shared* ,Stats*);
 
 int main(int argc, char* argv[])
 {
@@ -55,11 +72,11 @@ int main(int argc, char* argv[])
     Shared shared;
 
     std::thread camera(thread_camera, cameraIdx, &shared);
-    std::thread stats (thread_stats, &shared.stats);
+    std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, 9080, &shared);
 
     rc = wait_for_signal();
-    
+    shutdown_all_threads(shared, camera, stats, web);
 
     return rc;
 }
