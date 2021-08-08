@@ -12,8 +12,7 @@ set(SOURCES
     src/thread_send_jpeg.cpp
     src/webserver.cpp
     src/stats.h
-    src/detect.h
-    src/detect.cpp
+    src/thread_detect.cpp
     src/shared.h
     src/thread_camera.cpp
     src/thread_stats

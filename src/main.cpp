@@ -36,7 +36,7 @@ int wait_for_signal(void)
     return 0;
 }
 
-void shutdown_all_threads(Shared& shared, std::thread& camera, std::thread& stats, std::thread& web)
+void shutdown_all_threads(Shared& shared, std::thread& camera, std::thread& stats, std::thread& web, std::thread& detect)
 {
     shared.shutdown_requested.store(true);
 
@@ -46,8 +46,13 @@ void shutdown_all_threads(Shared& shared, std::thread& camera, std::thread& stat
 
     camera.join();
     printf("I: thread ended: camera\n");
+
+    detect.join();
+    printf("I: thread ended: detect\n");
+
     web.join();
     printf("I: thread ended: webserver\n");
+
     stats.join();
     printf("I: thread ended: stats\n");
 
@@ -56,6 +61,7 @@ void shutdown_all_threads(Shared& shared, std::thread& camera, std::thread& stat
 int  thread_webserver(int port, Shared* shared);
 void thread_camera(int cameraIdx, Shared* shared);
 void thread_stats(Shared* ,Stats*);
+void thread_detect(Shared*, Stats*);
 
 int main(int argc, char* argv[])
 {
@@ -72,11 +78,12 @@ int main(int argc, char* argv[])
     Shared shared;
 
     std::thread camera(thread_camera, cameraIdx, &shared);
+    std::thread detect(thread_detect, &shared, &shared.stats);
     std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, 9080, &shared);
 
     rc = wait_for_signal();
-    shutdown_all_threads(shared, camera, stats, web);
+    shutdown_all_threads(shared, camera, stats, web, detect);
 
     return rc;
 }

@@ -12,21 +12,33 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 
     printf("I: thread send_jpeg running\n");
 
+    short idx = -1;
+
     for (;;)
     {
-        int frameReadyIdx;
-        while ( (frameReadyIdx=std::atomic_exchange( &(shared->frame_buf_slot), -1)) == -1 )
+        //
+        // wait to be signaled by detection thread for a new frame
+        //
         {
-            // wait for a frame ready in the frameBuffer
-            std::unique_lock<std::mutex> lk(shared->camera_frame_ready_mutex);
-            shared->camera_frame_ready.wait(lk);
+            std::unique_lock<std::mutex> ul(shared->analyzed_frame_ready_mutex);
+            shared->analyzed_frame_ready.wait(ul, [&idx,&shared]() { return idx != shared->analyzed_frame_ready_idx.load(); });
         }
-
-        cv::Mat& frame = shared->frame_buf[frameReadyIdx];
+        //
+        // load new idx of buffer
+        //
+        idx = shared->analyzed_frame_ready_idx.load();
         
-        if ( !cv::imencode(".jpg", frame, jpegImage, JPEGparams))
+        bool encoded;
         {
-            printf("E: imencode(jpg)\n");
+            //
+            // lock the specific buffer for the duration of the encoding
+            //
+            std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx]);
+            encoded = cv::imencode(".jpg", shared->analyzed_frame_buf[idx], jpegImage, JPEGparams);
+        }
+        if ( !encoded )
+        {
+            printf("E: error encoding frame to JPEG\n");
         }
         else
         {
