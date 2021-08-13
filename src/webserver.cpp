@@ -57,9 +57,8 @@ int thread_webserver(int port, Shared* shared)
         );
     });
 
-    svr.listen("localhost", port);
-    printf("I: webserver listening on port %d\n", port);
-
+    printf("I: webserver start listening on port %d\n", port);
+    svr.listen("0.0.0.0", port);
 
     return 0;
 }

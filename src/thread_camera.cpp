@@ -17,10 +17,10 @@ void thread_camera(int cameraIdx, Shared* shared)
         ,(int)capture.get(cv::CAP_PROP_FRAME_HEIGHT)
         ,(int)capture.get(cv::CAP_PROP_FPS));
 
-    short WorkNr;
-    short CurrNr = 0;
-    short NextNr; 
-    short PrevNr;
+    int WorkNr;
+    int CurrNr = 0;
+    int NextNr; 
+    int PrevNr;
 
     if ( !capture.read(shared->frame_buf[CurrNr]) )
     {
@@ -28,7 +28,7 @@ void thread_camera(int cameraIdx, Shared* shared)
         return;
     }
 
-    printf("I: thread camera running\n");
+    printf("I: thread camera: running\n");
 
     shared->frame_buf_slot.store(0);
     WorkNr = 0;
@@ -57,8 +57,9 @@ void thread_camera(int cameraIdx, Shared* shared)
 
         if (shared->shutdown_requested.load())
         {
-            printf("I: thread camera shutdown requested\n");
+            printf("I: thread camera: shutdown requested\n");
             break;
         }
     }
+    printf("I: thread camera: bye...\n");
 }

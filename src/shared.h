@@ -20,7 +20,7 @@ struct Shared {
         // sync between camera an detection thread
         //
         cv::Mat                 frame_buf[3];
-        std::atomic<short>      frame_buf_slot;
+        std::atomic<int>        frame_buf_slot;
         std::condition_variable camera_frame_ready;
         std::mutex              camera_frame_ready_mutex;
         //
@@ -30,11 +30,13 @@ struct Shared {
         std::mutex              analyzed_frame_buf_mutex[2];
         std::condition_variable analyzed_frame_ready;
         std::mutex              analyzed_frame_ready_mutex;
-        std::atomic<short>      analyzed_frame_ready_idx;
+        std::atomic<int>        analyzed_frame_ready_idx;
 
     Shared()
     {
         shutdown_requested.store(false);
         webSvr = nullptr;
+        frame_buf_slot.store(-1);
+        analyzed_frame_ready_idx.store(-1);
     }
 };

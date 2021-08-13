@@ -1,3 +1,6 @@
+#include <atomic>
+#include <opencv2/opencv.hpp>
+
 #include "shared.h"
 #include "stats.h"
 
@@ -10,7 +13,7 @@ void thread_detect(Shared* shared, Stats* stats)
 {
     printf("I: thread detect running\n");
 
-    short idx = 0;
+    int idx_doubleBuffer = 0;
 
     for (;;)
     {
@@ -22,20 +25,20 @@ void thread_detect(Shared* shared, Stats* stats)
         {
             // wait for a frame ready in the frameBuffer
             std::unique_lock<std::mutex> lk(shared->camera_frame_ready_mutex);
-            shared->camera_frame_ready.wait(lk);
+            shared->camera_frame_ready.wait(lk, [&shared]() { return shared->frame_buf_slot.load() != -1; });
         }
         cv::Mat& cameraFrame = shared->frame_buf[frameReadyIdx];
         //
         // lock an output buffer
         //
         {
-            std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx]);
-            run_detection(cameraFrame,     shared->analyzed_frame_buf[idx]);
+            std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
+            run_detection(cameraFrame,     shared->analyzed_frame_buf[idx_doubleBuffer]);
         }
         //
         // set index for other thread
         //
-        shared->analyzed_frame_ready_idx.store(idx);
+        shared->analyzed_frame_ready_idx.store(idx_doubleBuffer);
         //
         // notify other thread about ready buffer
         // 2021-08-08 Spindler (Moz'ens Geburtstag)
@@ -46,7 +49,7 @@ void thread_detect(Shared* shared, Stats* stats)
             shared->analyzed_frame_ready.notify_one();
         }
         
-        idx = 1 - idx;
+        idx_doubleBuffer = 1 - idx_doubleBuffer;
 
         if (shared->shutdown_requested.load())
         {
