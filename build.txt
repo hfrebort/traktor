@@ -1,0 +1,28 @@
+prerequistites
+--------------
+
+    openCV:
+        + sudo apt install libopencv-dev
+
+    httplib:
+        + mkdir ./deps/cpp-httplib 
+        + cd    ./deps/cpp-httplib
+        + wget https://github.com/yhirose/cpp-httplib/raw/master/httplib.h
+
+
+cmake, make, run
+----------------
+
+    mkdir build
+    cd    build
+    cmake ..
+    make
+
+
+build release Version
+---------------------
+    mkdir Release
+    cd Release
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make
+
