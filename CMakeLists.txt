@@ -2,6 +2,20 @@ cmake_minimum_required(VERSION 3.0.0)
 
 set(EXECUTABLE traktor)
 
+set(CMAKE_SYSTEM_NAME      Linux)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+set(CMAKE_CROSSCOMPILING   TRUE)
+
+# Name of C compiler.
+set(CMAKE_C_COMPILER   "/usr/bin/aarch64-linux-gnu-gcc")
+set(CMAKE_CXX_COMPILER "/usr/bin/aarch64-linux-gnu-g++")
+
+# Where to look for the target environment. (More paths can be added here)
+set(CMAKE_FIND_ROOT_PATH "/usr/aarch64-linux-gnu")
+set(CMAKE_INCLUDE_PATH   "/usr/include/aarch64-linux-gnu")
+set(CMAKE_LIBRARY_PATH   "/usr/lib/aarch64-linux-gnu")
+set(CMAKE_PROGRAM_PATH   "/usr/bin/aarch64-linux-gnu")
+
 project(${EXECUTABLE} VERSION 0.1.0)
 
 include(CTest)
@@ -31,7 +45,6 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <thread>
   <atomic>
   <cstddef>
-  <thread>
   <chrono>
   <opencv2/opencv.hpp>
   [["httplib.h"]]
@@ -57,21 +70,25 @@ target_link_libraries(${EXECUTABLE} PRIVATE Threads::Threads)
 # Find OpenCV, you may need to set OpenCV_DIR variable
 # to the absolute path to the directory containing OpenCVConfig.cmake file
 # via the command line or GUI
-find_package(OpenCV REQUIRED)
+#find_package(OpenCV REQUIRED)
+
+set(OpenCV_LIBS         opencv_core)
+set(OpenCV_INCLUDE_DIRS "/usr/include/opencv4")
 
 # If the package has been found, several variables will
 # be set, you can find the full list with descriptions
 # in the OpenCVConfig.cmake file.
 # Print some message showing some of them
-#message(STATUS "OpenCV library status:")
-#message(STATUS "    config: ${OpenCV_DIR}")
-#message(STATUS "    version: ${OpenCV_VERSION}")
-#message(STATUS "    libraries: ${OpenCV_LIBS}")
-#message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
+message(STATUS "OpenCV library status:")
+message(STATUS "    config:       ${OpenCV_DIR}")
+message(STATUS "    version:      ${OpenCV_VERSION}")
+message(STATUS "    libraries:    ${OpenCV_LIBS}")
+message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Link your application with OpenCV libraries
 target_link_libraries     (${EXECUTABLE} PRIVATE ${OpenCV_LIBS})
 target_include_directories(${EXECUTABLE} PRIVATE ${OpenCV_INCLUDE_DIRS})
+link_directories          ("/home/bee/cross/opencv/build/lib")
 
 set(CPACK_PROJECT_NAME    ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
