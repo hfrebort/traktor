@@ -1,0 +1,31 @@
+#!/bin/sh
+cmake \
+-D BUILD_EXAMPLES=OFF \
+-D BUILD_TESTS=OFF \
+-D BUILD_opencv_apps=ON \
+-D BUILD_opencv_calib3d=ON \
+-D BUILD_opencv_core=ON \
+-D BUILD_opencv_dnn=ON \
+-D BUILD_opencv_features2d=ON \
+-D BUILD_opencv_flann=ON \
+-D BUILD_opencv_gapi=ON \
+-D BUILD_opencv_highgui=ON \
+-D BUILD_opencv_imgcodecs=ON \
+-D BUILD_opencv_imgproc=ON \
+-D BUILD_opencv_java_bindings_generator=ON \
+-D BUILD_opencv_js=OFF \
+-D BUILD_opencv_js_bindings_generator=OFF \
+-D BUILD_opencv_ml=ON \
+-D BUILD_opencv_objc_bindings_generator=OFF \
+-D BUILD_opencv_objdetect=ON \
+-D BUILD_opencv_photo=ON \
+-D BUILD_opencv_python_bindings_generator=OFF \
+-D BUILD_opencv_python_tests=OFF \
+-D BUILD_opencv_stitching=ON \
+-D BUILD_opencv_ts=ON \
+-D BUILD_opencv_video=ON \
+-D BUILD_opencv_videoio=ON \
+-D BUILD_opencv_world=ON \
+-D BUILD_SHARED_LIBS=OFF  \
+-D CMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.musl.toolchain.cmake \
+..
