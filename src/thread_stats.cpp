@@ -17,7 +17,7 @@ void thread_stats(Shared* shared, Stats* stats)
             , stats->camera_frames.exchange(0)
             , prepare_ms);
             
-        std::this_thread::sleep_for( std::chrono::milliseconds(1000) );
+        std::this_thread::sleep_for( std::chrono::milliseconds(2000) );
 
         if ( shared->shutdown_requested.load() )
         {
