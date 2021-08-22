@@ -12,11 +12,6 @@ void thread_camera(int cameraIdx, Shared* shared)
     capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
     //capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
 
-    printf("camera: %dx%d fps: %d\n",
-         (int)capture.get(cv::CAP_PROP_FRAME_WIDTH)
-        ,(int)capture.get(cv::CAP_PROP_FRAME_HEIGHT)
-        ,(int)capture.get(cv::CAP_PROP_FPS));
-
     int WorkNr;
     int CurrNr = 0;
     int NextNr; 
@@ -28,7 +23,10 @@ void thread_camera(int cameraIdx, Shared* shared)
         return;
     }
 
-    printf("I: thread camera: running\n");
+    printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d\n",
+         shared->frame_buf[CurrNr].cols
+        ,shared->frame_buf[CurrNr].rows
+        ,(int)capture.get(cv::CAP_PROP_FPS));
 
     shared->frame_buf_slot.store(0);
     WorkNr = 0;

@@ -182,12 +182,14 @@ void thread_detect(Shared* shared, Stats* stats)
         //
         {
             std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
+            auto start = std::chrono::high_resolution_clock::now();
             run_detection(
                   cameraFrame                                       // input
                 , shared->detectSettings                            // schieberegler
                 , shared->analyzed_frame_buf[idx_doubleBuffer]      // output
                 , stats
                 , true );                                           // show opencv windows with img processing Zwischensteps
+            stats->detect_overall_ns += trk::getDuration_ns(&start);
         }
         stats->fps++;
         //
