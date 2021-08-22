@@ -1,8 +1,11 @@
 #include <atomic>
+#include <optional>
+
 #include <opencv2/opencv.hpp>
 
 #include "shared.h"
 #include "stats.h"
+#include "util.h"
 
 static const cv::Size GaussKernel(5,5);
 
@@ -21,14 +24,32 @@ cv::Mat img_inRange;
 cv::Mat img_GaussianBlur;
 cv::Mat img_threshold;
 cv::Mat img_eroded_dilated;
-std::vector< std::vector<cv::Point> > contours; 
+
+struct FoundStructures
+{
+    std::vector<cv::Point2i>    centers;
+    std::vector<int>            matching_contours_idx;
+    int                         YMax_center_idx;
+    int                         YMax_contour_idx;
+
+    void clear()
+    {
+        centers.clear();
+        matching_contours_idx.clear();
+        YMax_center_idx = -1;
+        YMax_contour_idx = -1;
+    }
+};
+
+std::vector< std::vector<cv::Point> >   g_contours;
+FoundStructures                         g_structures;
 
 void calc_center(const std::vector<cv::Point2i>& points, cv::Point* center)
 {
     size_t sum_x = 0;
     size_t sum_y = 0;
 
-    for ( auto& p : points )
+    for ( const auto& p : points )
     {
         sum_x += p.x;
         sum_y += p.y;
@@ -38,15 +59,57 @@ void calc_center(const std::vector<cv::Point2i>& points, cv::Point* center)
     center->y = sum_y / points.size();
 }
 
-void drawContoursAndCenters(cv::InputOutputArray frame, const std::vector< std::vector<cv::Point2i> >& contours)
+void calc_centers(
+      const std::vector< std::vector<cv::Point2i> >     &contours
+    , const int                                          minimalContourArea
+    , FoundStructures                                   *found)
 {
-    cv::drawContours(frame, contours, -1, cv::Scalar( 0, 0, 255 ) );
+    found->clear();
 
+    int y_max = -1;
     cv::Point2i center;
-    for ( auto& contour : contours )
+
+    for ( int i=0; i < contours.size(); ++i )
     {
-        calc_center(contour, &center);
-        cv::drawMarker(frame, center, cv::Scalar(255,0,0), cv::MarkerTypes::MARKER_CROSS, 20, 2 );
+        const auto& contour = contours[i];
+        if ( cv::contourArea(contour) > minimalContourArea )
+        {
+            found->matching_contours_idx.push_back(i);
+
+            calc_center(contour, &center);
+            found->centers.emplace_back( center.x, center.y );
+
+            if ( center.y > y_max )
+            {
+                y_max = center.y;
+                found->YMax_contour_idx = i;
+                found->YMax_center_idx  = found->centers.size() - 1;
+            }
+        }
+    }
+}
+
+void drawContoursAndCenters(
+      cv::InputOutputArray                              frame
+    , const std::vector< std::vector<cv::Point2i> >    &contours
+    , const FoundStructures                            &found)
+{
+    for (int i=0; i < found.centers.size(); ++i)
+    {
+        const cv::Point2i &center = found.centers[i];
+        if ( i == found.YMax_center_idx)
+        {
+            cv::drawMarker(frame, center, cv::Scalar(0,0,255), cv::MarkerTypes::MARKER_CROSS, 30, 3 );
+        }
+        else
+        {
+            cv::drawMarker(frame, center, cv::Scalar(255,0,0), cv::MarkerTypes::MARKER_CROSS, 20, 2 );
+        }
+    }
+
+    for ( int contour_idx_to_draw : found.matching_contours_idx)
+    {
+        cv::drawContours( frame, contours, contour_idx_to_draw, cv::Scalar(255,0,0), 2 );
     }
 }
 
@@ -64,14 +127,26 @@ void run_detection(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
     cv::erode       (buf1, buf2, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  );
     cv::dilate      (buf2, buf1, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );   if (showWindows) { buf1.copyTo(img_eroded_dilated); }
 
-    auto finish = std::chrono::high_resolution_clock::now();
-    stats->prepare += std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count();
-
-    cv::findContours(buf1, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-    cameraFrame.copyTo(outputFrame);
-    drawContoursAndCenters(outputFrame, contours);
+    stats->prepare_ns += trk::getDuration_ns(&start);
     
+    cv::findContours(buf1, g_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    stats->findContours_ns += trk::getDuration_ns(&start);
+
+    int idx_Ymax_contour;
+    calc_centers(g_contours, settings.minimalContourArea, &g_structures);
+    stats->calcCenters_ns += trk::getDuration_ns(&start);
+    
+    cameraFrame.copyTo(outputFrame);
+    drawContoursAndCenters(outputFrame, g_contours, g_structures );
+    stats->draw_ns += trk::getDuration_ns(&start);
+
+    std::optional<int> offset_px;
+    if ( g_structures.YMax_center_idx > -1 )
+    {
+        auto YMax_point = g_structures.centers[ g_structures.YMax_center_idx ];
+        offset_px = YMax_point.x - ( cameraFrame.cols / 2 );
+    }
+
     if (showWindows)
     {
         cv::imshow("inRange",       img_inRange );
@@ -112,7 +187,7 @@ void thread_detect(Shared* shared, Stats* stats)
                 , shared->detectSettings                            // schieberegler
                 , shared->analyzed_frame_buf[idx_doubleBuffer]      // output
                 , stats
-                , true );
+                , true );                                           // show opencv windows with img processing Zwischensteps
         }
         stats->fps++;
         //

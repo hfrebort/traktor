@@ -17,15 +17,17 @@ struct DetectSettings {
         int         maxZentimeter;
         int         erode_iterations;
         int         dilate_iterations;
+        int         minimalContourArea;
 
     DetectSettings()
     {
-        colorFrom         = cv::Scalar(36,25,25);
-        colorTo           = cv::Scalar(86, 255,255);
-        erode_iterations  = 5;
-        dilate_iterations = 5;
-        maxPlats          = 10;
-        maxZentimeter     = 5;
+        colorFrom          = cv::Scalar(36,25,25);
+        colorTo            = cv::Scalar(86, 255,255);
+        erode_iterations   = 5;
+        dilate_iterations  = 5;
+        maxPlats           = 10;
+        maxZentimeter      = 5;
+        minimalContourArea = 130;
     }
 };
 
