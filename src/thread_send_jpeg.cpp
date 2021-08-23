@@ -1,12 +1,13 @@
 //#include <functional>
 //#include <atomic>
 //#include <opencv2/opencv.hpp>
+//#include <opencv2/imgcodecs.hpp>
 
 #include "shared.h"
 
 void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> sendJPEGbytes)
 {
-    const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 50};
+    const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 65};
 
     std::vector<uchar> jpegImage;
 

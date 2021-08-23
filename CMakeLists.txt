@@ -33,9 +33,11 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <thread>
   <atomic>
   <cstddef>
-  <thread>
   <chrono>
-  <opencv2/opencv.hpp>
+  <opencv2/core.hpp>
+  <opencv2/imgproc.hpp>
+  <opencv2/imgcodecs.hpp>
+  <opencv2/highgui.hpp>
   [["httplib.h"]]
 )
 
