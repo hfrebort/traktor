@@ -9,7 +9,7 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 {
     const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 65};
 
-    std::vector<uchar> jpegImage;
+    
 
     printf("I: thread send_jpeg running\n");
 
@@ -35,7 +35,15 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
             // lock the specific buffer for the duration of the encoding
             //
             std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx]);
-            encoded = cv::imencode(".jpg", shared->analyzed_frame_buf[idx], jpegImage, JPEGparams);
+            if ( shared->analyzed_frame_encoded_to_JPEG.load() == false)
+            {
+                encoded = cv::imencode(".jpg", shared->analyzed_frame_buf[idx], shared->analyzed_frame_jpegImage, JPEGparams);
+                shared->analyzed_frame_encoded_to_JPEG.store(true);
+            }
+            else
+            {
+                encoded = true;
+            }
         }
         if ( !encoded )
         {
@@ -43,7 +51,7 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
         }
         else
         {
-            if ( !sendJPEGbytes(jpegImage) )
+            if ( !sendJPEGbytes(shared->analyzed_frame_jpegImage) )
             {
                 printf("I: send of JPG failed. connection closed. quitting sending thread.\n");
                 break;

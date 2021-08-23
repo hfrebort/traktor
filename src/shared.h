@@ -53,6 +53,8 @@ struct Shared {
         std::condition_variable analyzed_frame_ready;
         std::mutex              analyzed_frame_ready_mutex;
         std::atomic<int>        analyzed_frame_ready_idx;
+        std::atomic<bool>       analyzed_frame_encoded_to_JPEG;
+        std::vector<uchar>      analyzed_frame_jpegImage;
         //
         // 
         //
@@ -63,5 +65,6 @@ struct Shared {
         webSvr = nullptr;
         frame_buf_slot.store(-1);
         analyzed_frame_ready_idx.store(-1);
+        analyzed_frame_encoded_to_JPEG.store(false);
     }
 };

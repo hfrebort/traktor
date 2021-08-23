@@ -47,6 +47,8 @@ struct FoundStructures
 std::vector< std::vector<cv::Point> >   g_contours;
 FoundStructures                         g_structures;
 
+/* 2021-08-23 Spindler
+    nice try but doesn't work as expected
 void calc_center(const std::vector<cv::Point2i>& points, cv::Point* center)
 {
     size_t sum_x = 0;
@@ -60,7 +62,15 @@ void calc_center(const std::vector<cv::Point2i>& points, cv::Point* center)
 
     center->x = sum_x / points.size();
     center->y = sum_y / points.size();
+}*/
+
+void calc_center2(const std::vector<cv::Point2i>& points, cv::Point* center)
+{
+    cv::Moments M = cv::moments(points);
+    center->x = int(M.m10 / M.m00);
+	center->y = int(M.m01 / M.m00);
 }
+
 
 void calc_centers(
       const std::vector< std::vector<cv::Point2i> >     &contours
@@ -79,7 +89,7 @@ void calc_centers(
         {
             found->matching_contours_idx.push_back(i);
 
-            calc_center(contour, &center);
+            calc_center2(contour, &center);
             found->centers.emplace_back( center.x, center.y );
 
             if ( center.y > y_max )
@@ -200,13 +210,14 @@ void thread_detect(Shared* shared, Stats* stats)
         //
         shared->analyzed_frame_ready_idx.store(idx_doubleBuffer);
         //
-        // notify other thread about ready buffer
+        // notify other thread(s) about ready buffer
         // 2021-08-08 Spindler (Moz'ens Geburtstag)
         //   Still don't know if a lock is required to do .notify_xxx()
         //
         {
             std::unique_lock<std::mutex> ul(shared->analyzed_frame_ready_mutex);
-            shared->analyzed_frame_ready.notify_one();
+            shared->analyzed_frame_encoded_to_JPEG.store(false);
+            shared->analyzed_frame_ready.notify_all();
         }
         
         idx_doubleBuffer = 1 - idx_doubleBuffer;
