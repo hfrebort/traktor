@@ -5,9 +5,10 @@ prerequistites
         + sudo apt install libopencv-dev
 
     httplib:
-        + mkdir ./deps/cpp-httplib 
-        + cd    ./deps/cpp-httplib
+        + mkdir ./deps/cpp-httplib && cd ./deps/cpp-httplib
         + wget https://github.com/yhirose/cpp-httplib/raw/master/httplib.h
+        + mkdir ./deps/json && cd ./deps/json
+        + wget https://github.com/nlohmann/json/raw/develop/single_include/nlohmann/json.hpp
 
 
 cmake, make, run

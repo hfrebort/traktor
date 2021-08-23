@@ -11,8 +11,8 @@
 
 struct DetectSettings {
     public:
-        cv::Scalar colorFrom;
-        cv::Scalar colorTo;
+        cv::Scalar  colorFrom;
+        cv::Scalar  colorTo;
         int         maxPlats;
         int         maxZentimeter;
         int         erode_iterations;
@@ -21,8 +21,8 @@ struct DetectSettings {
 
     DetectSettings()
     {
-        colorFrom          = cv::Scalar(36,25,25);
-        colorTo            = cv::Scalar(86, 255,255);
+        colorFrom          = cv::Scalar(36,  25,  25);
+        colorTo            = cv::Scalar(86, 255, 255);
         erode_iterations   = 5;
         dilate_iterations  = 5;
         maxPlats           = 10;

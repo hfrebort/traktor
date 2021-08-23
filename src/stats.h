@@ -7,7 +7,7 @@ struct Stats
 {
     public:
         std::atomic<int>        fps;
-        std::atomic<uint64_t>   camera_frames;
+        std::atomic<int>        camera_frames;
         std::atomic<uint64_t>   camera_read_ns;
         std::atomic<uint64_t>   jpeg_sent;
         std::atomic<uint64_t>   jpeg_bytes_sent;

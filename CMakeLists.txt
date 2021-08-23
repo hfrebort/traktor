@@ -39,12 +39,15 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <opencv2/imgcodecs.hpp>
   <opencv2/highgui.hpp>
   [["httplib.h"]]
+  [["json.hpp"]]
 )
 
 target_compile_features(${EXECUTABLE} PRIVATE cxx_std_17)
 
 #target_include_directories(traktor_cpp_test PRIVATE "./deps/boost_1_76_0")
 target_include_directories(${EXECUTABLE} PRIVATE "./deps/cpp-httplib")
+target_include_directories(${EXECUTABLE} PRIVATE "./deps/json")
+
 
 #add_library(pistache SHARED IMPORTED) # or STATIC instead of SHARED
 #set_target_properties(pistache PROPERTIES

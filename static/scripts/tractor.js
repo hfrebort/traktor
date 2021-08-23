@@ -3,12 +3,19 @@ angular.module('tractor', ['rzSlider'])
     // initialize the content type of post request with text/plaien
     // TO AVOID triggering the pre-flight OPTIONS request
     $http.defaults.headers.post["Content-Type"] = "text/plain";
+
+    // rzSlider - options: "onChange" - Function(sliderId, modelValue, highValue, pointerType): 
+
+    var vm = this;
+
     $scope.colorSlider = {
         minValue: 36,
         maxValue: 80,
         options: {
             floor: 0,
             ceil: 255
+            //,onChange: applyChanges(true)
+            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
         }
     };
     $scope.greenSlider = {
@@ -17,6 +24,8 @@ angular.module('tractor', ['rzSlider'])
         options: {
             floor: 0,
             ceil: 255
+            //,onChange: applyChanges(true)
+            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
         }
     };
     $scope.thresholdSlider = {
@@ -56,7 +65,7 @@ angular.module('tractor', ['rzSlider'])
     };
     const applySliderValues = function () {
         $scope.data.colorFrom = $scope.colorSlider.minValue + ',' + $scope.greenSlider.minValue + ',25';
-        $scope.data.colorTo = $scope.colorSlider.maxValue + ',' + $scope.greenSlider.maxValue + ',255';
+        $scope.data.colorTo   = $scope.colorSlider.maxValue + ',' + $scope.greenSlider.maxValue + ',255';
         $scope.data.threshold = $scope.thresholdSlider.value;
         $scope.data.maximumMarkers = $scope.maxMarkerSlider.value;
     };

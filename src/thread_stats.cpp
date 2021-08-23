@@ -21,7 +21,7 @@ void thread_stats(Shared* shared, Stats* stats)
         int fps = stats->fps.exchange(0);
         if ( fps != 0 )
         {
-            printf("fps (%2d) camera_fps (%2lu) detect (%4.1f) { prepare (%4.1f) contours (%3.1f) calc (%3.1f) draw (%3.1f) } JPEG kB/s (%lu)\n"
+            printf("fps (%2d) camera_fps (%2d) detect (%4.1f) { prepare (%4.1f) contours (%3.1f) calc (%3.1f) draw (%3.1f) } JPEG kB/s (%lu)\n"
                 , fps / secondsToPause
                 , stats->camera_frames.exchange(0) / secondsToPause
                 , ns_to_ms_per_fps(stats->detect_overall_ns   .exchange(0), fps)

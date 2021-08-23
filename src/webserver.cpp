@@ -5,6 +5,7 @@
 //#include "httplib.h"
 
 #include "shared.h"
+#include "util.h"
 
 void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> sendJPEGbytes);
 
@@ -59,6 +60,33 @@ int thread_webserver(int port, Shared* shared)
             },
             [](bool success) {}
         );
+    });
+    /*
+        /applyChanges
+    {
+     "duration":1
+    ,"left":12
+    ,"right":13
+    ,"direction":"center"
+    ,"url":"http://10.3.141.165:8888/video"
+    ,"colorFilter":true
+    ,"detecting":true
+    ,"colorFrom":"36,80,25"
+    ,"colorTo":"80,255,255"
+    ,"erode":10
+    ,"dilate":10
+    ,"contourMode":"POLY"
+    ,"threshold":5
+    ,"maximumMarkers":10
+    }
+    */
+    svr.Post("/applyChanges", [&](const Request &req, Response &res)
+    {
+        nlohmann::json data = nlohmann::json::parse(req.body);
+        printf("applyChanges data: %s\n", data.dump(2).c_str() );
+    
+        trk::setColorFromCSV( data["colorFrom"], shared->detectSettings.colorFrom);
+        trk::setColorFromCSV( data["colorTo"],   shared->detectSettings.colorTo  );
     });
 
     printf("I: webserver start listening on port %d\n", port);
