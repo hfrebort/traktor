@@ -10,6 +10,7 @@ struct Stats
         std::atomic<uint64_t>   camera_frames;
         std::atomic<uint64_t>   camera_read_ns;
         std::atomic<uint64_t>   jpeg_sent;
+        std::atomic<uint64_t>   jpeg_bytes_sent;
         std::atomic<uint64_t>   prepare_ns;
         std::atomic<uint64_t>   detect_overall_ns;
         std::atomic<uint64_t>   findContours_ns;
@@ -24,5 +25,6 @@ struct Stats
         , prepare_ns(0)
         , findContours_ns(0)
         , detect_overall_ns(0)
+        , jpeg_bytes_sent(0)
         {}
 };

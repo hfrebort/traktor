@@ -28,6 +28,8 @@ int thread_webserver(int port, Shared* shared)
         static const std::string boundary("--Ba4oTvQMY8ew04N8dcnM\r\nContent-Type: image/jpeg\r\n\r\n");
         static const std::string CRLF("\r\n");
 
+        Stats &stats = shared->stats;
+
         res.set_content_provider(
             "multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM", // Content type
             [&](size_t offset, DataSink &sink) {
@@ -36,7 +38,7 @@ int thread_webserver(int port, Shared* shared)
                 //
                 thread_send_jpeg(
                     shared,
-                    [&sink](std::vector<unsigned char>& jpegBytes) {
+                    [&sink,&stats](std::vector<unsigned char>& jpegBytes) {
                         // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
                         jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
                         if ( !sink.write( boundary.data(), boundary.length() ) )
@@ -47,6 +49,8 @@ int thread_webserver(int port, Shared* shared)
                         {
                             return false;
                         }
+
+                        stats.jpeg_bytes_sent += boundary.length() + jpegBytes.size();
 
                         return true;
                     });
