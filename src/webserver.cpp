@@ -83,8 +83,7 @@ int thread_webserver(int port, Shared* shared)
     svr.Post("/applyChanges", [&](const Request &req, Response &res)
     {
         nlohmann::json data = nlohmann::json::parse(req.body);
-        printf("applyChanges data: %s\n", data.dump(2).c_str() );
-    
+        //printf("applyChanges data: %s\n", data.dump(2).c_str() );
         trk::setColorFromCSV( data["colorFrom"], shared->detectSettings.colorFrom);
         trk::setColorFromCSV( data["colorTo"],   shared->detectSettings.colorTo  );
     });

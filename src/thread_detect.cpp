@@ -128,21 +128,21 @@ void drawContoursAndCenters(
 
 void run_detection(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat& outputFrame, Stats* stats, const bool showWindows)
 {
-    cv::Mat& buf1 = tmp;
-    cv::Mat& buf2 = outputFrame;
+    cv::Mat* in  = &tmp;
+    cv::Mat* out = &outputFrame;
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    cv::cvtColor    (cameraFrame, buf2, cv::COLOR_BGR2HSV );
-    cv::inRange     (buf2, settings.colorFrom, settings.colorTo, buf1 );                        if (showWindows) { buf1.copyTo(img_inRange); }
-    cv::GaussianBlur(buf1, buf2, GaussKernel, 0);                                               if (showWindows) { buf2.copyTo(img_GaussianBlur); }
-    cv::threshold   (buf2, buf1, 0, 255, cv::THRESH_BINARY );                                   if (showWindows) { buf1.copyTo(img_threshold);}
-    cv::erode       (buf1, buf2, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  );
-    cv::dilate      (buf2, buf1, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );   if (showWindows) { buf1.copyTo(img_eroded_dilated); }
+    cv::cvtColor    (cameraFrame, *out, cv::COLOR_BGR2HSV );                                 std::swap(in,out);
+    cv::GaussianBlur(*in, *out, GaussKernel, 0);                                             std::swap(in,out); if (showWindows) { in->copyTo(img_GaussianBlur); }
+    cv::inRange     (*in, settings.colorFrom, settings.colorTo, *out );                      std::swap(in,out); if (showWindows) { in->copyTo(img_inRange); }
+    cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}
+    cv::erode       (*in, *out, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  ); std::swap(in,out);
+    cv::dilate      (*in, *out, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );                    if (showWindows) { out->copyTo(img_eroded_dilated); }
 
     stats->prepare_ns += trk::getDuration_ns(&start);
     
-    cv::findContours(buf1, g_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(*out, g_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     stats->findContours_ns += trk::getDuration_ns(&start);
 
     int idx_Ymax_contour;
