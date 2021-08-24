@@ -8,6 +8,19 @@
 
 #include "shared.h"
 
+struct Options
+{
+    bool    showDebugWindows;
+    int     cameraIndex;
+    int     httpPort;
+
+    Options() :
+          showDebugWindows(false)
+        , cameraIndex(0)
+        , httpPort(9080)
+    {}
+};
+
 int wait_for_signal(void)
 {
     sigset_t signals;
@@ -73,14 +86,13 @@ void thread_camera(int cameraIdx, Shared* shared);
 void thread_stats(Shared* ,Stats*);
 void thread_detect(Shared*, Stats*,bool showDebugWindows);
 
-int main(int argc, char* argv[])
+int parser_commandline(int argc, char* argv[], Options* options)
 {
-    int rc =0;
-
     const cv::String keys =
-        "{help h usage ? |     | print this message   }"
-        "{c camindex     |  0  | index USB camera     }"
-        "{s showwindow   |     | show opencv          }";
+        "{help h usage ? |     | print this message                      }"
+        "{c camindex     |   0 | index USB camera                        }"
+        "{p port         |9080 | port web server                         }"
+        "{s showwindow   |     | show intermediate results of processing }";
 
     cv::CommandLineParser cmd_parser(argc, argv, keys);
     cmd_parser.about("Traktor v0.2");
@@ -97,15 +109,31 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    int cameraIdx = cmd_parser.get<int>("c");
-    printf("I: using camera #%d\n", cameraIdx);
+    options->showDebugWindows = cmd_parser.has     ("showwindow");
+    options->cameraIndex      = cmd_parser.get<int>("camindex");
+    options->httpPort         = cmd_parser.get<int>("port");
+
+    return 0;
+}
+
+int main(int argc, char* argv[])
+{
+    int rc =0;
+
+    Options options;
+    if ( (rc=parser_commandline(argc, argv, &options)) != 0 )
+    {
+        return rc;
+    }
+
+    printf("I: using camera #%d\n", options.cameraIndex);
 
     Shared shared;
 
-    std::thread camera(thread_camera, cameraIdx, &shared);
-    std::thread detect(thread_detect, &shared, &shared.stats, cmd_parser.has("showwindow"));
+    std::thread camera(thread_camera, options.cameraIndex, &shared);
+    std::thread detect(thread_detect, &shared, &shared.stats, options.showDebugWindows);
     std::thread stats (thread_stats, &shared, &shared.stats);
-    std::thread web   (thread_webserver, 9080, &shared);
+    std::thread web   (thread_webserver, options.httpPort, &shared);
 
     rc = wait_for_signal();
     shutdown_all_threads(shared, &camera, &stats, &web, &detect);
