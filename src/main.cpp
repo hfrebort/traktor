@@ -71,30 +71,44 @@ void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stat
 int  thread_webserver(int port, Shared* shared);
 void thread_camera(int cameraIdx, Shared* shared);
 void thread_stats(Shared* ,Stats*);
-void thread_detect(Shared*, Stats*);
+void thread_detect(Shared*, Stats*,bool showDebugWindows);
 
 int main(int argc, char* argv[])
 {
     int rc =0;
 
-    int cameraIdx = 0;
-    if (argc == 2)
+    const cv::String keys =
+        "{help h usage ? |     | print this message   }"
+        "{c camindex     |  0  | index USB camera     }"
+        "{s showwindow   |     | show opencv          }";
+
+    cv::CommandLineParser cmd_parser(argc, argv, keys);
+    cmd_parser.about("Traktor v0.2");
+
+    if (!cmd_parser.check())
     {
-        cameraIdx = std::stoi(argv[1]);
+        cmd_parser.printErrors();
+        return 2;
     }
 
+    if ( cmd_parser.has("help") )
+    {
+        cmd_parser.printMessage();
+        return 1;
+    }
+
+    int cameraIdx = cmd_parser.get<int>("c");
     printf("I: using camera #%d\n", cameraIdx);
 
     Shared shared;
 
     std::thread camera(thread_camera, cameraIdx, &shared);
-    std::thread detect(thread_detect, &shared, &shared.stats);
+    std::thread detect(thread_detect, &shared, &shared.stats, cmd_parser.has("showwindow"));
     std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, 9080, &shared);
 
     rc = wait_for_signal();
     shutdown_all_threads(shared, &camera, &stats, &web, &detect);
-    //shutdown_all_threads(shared, &camera, &stats, &web, nullptr);
 
     return rc;
 }

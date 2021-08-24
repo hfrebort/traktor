@@ -171,7 +171,7 @@ void run_detection(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
     }
 }
 
-void thread_detect(Shared* shared, Stats* stats)
+void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
 {
     printf("I: thread detect running\n");
 
@@ -201,7 +201,7 @@ void thread_detect(Shared* shared, Stats* stats)
                 , shared->detectSettings                            // schieberegler
                 , shared->analyzed_frame_buf[idx_doubleBuffer]      // output
                 , stats
-                , true );                                           // show opencv windows with img processing Zwischensteps
+                , showDebugWindows );                               // show opencv windows with img processing Zwischensteps
             stats->detect_overall_ns += trk::getDuration_ns(&start);
         }
         stats->fps++;
