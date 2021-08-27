@@ -22,6 +22,9 @@ const cv::Mat dilateKernel = cv::getStructuringElement( cv::MorphShapes::MORPH_R
                     cv::Size( 2*dilate_size + 1, 2*dilate_size + 1 ),
                     cv::Point( dilate_size, dilate_size ) );
 
+const cv::Scalar RED  = cv::Scalar(0,0,255);
+const cv::Scalar BLUE = cv::Scalar(255,0,0);
+
 cv::Mat tmp;
 cv::Mat img_inRange;
 cv::Mat img_GaussianBlur;
@@ -107,22 +110,20 @@ void drawContoursAndCenters(
     , const std::vector< std::vector<cv::Point2i> >    &contours
     , const FoundStructures                            &found)
 {
+
     for (int i=0; i < found.centers.size(); ++i)
     {
         const cv::Point2i &center = found.centers[i];
-        if ( i == found.YMax_center_idx)
-        {
-            cv::drawMarker(frame, center, cv::Scalar(0,0,255), cv::MarkerTypes::MARKER_CROSS, 30, 3 );
-        }
-        else
-        {
-            cv::drawMarker(frame, center, cv::Scalar(255,0,0), cv::MarkerTypes::MARKER_CROSS, 20, 2 );
-        }
+        if ( i == found.YMax_center_idx) 
+              { cv::drawMarker(frame, center, RED,  cv::MarkerTypes::MARKER_CROSS,        30, 3 ); }
+        else  { cv::drawMarker(frame, center, BLUE, cv::MarkerTypes::MARKER_TILTED_CROSS, 20, 2 ); }
     }
 
     for ( int contour_idx_to_draw : found.matching_contours_idx)
     {
-        cv::drawContours( frame, contours, contour_idx_to_draw, cv::Scalar(255,0,0), 2 );
+        if ( contour_idx_to_draw == found.YMax_contour_idx ) 
+              { cv::drawContours( frame, contours, contour_idx_to_draw, RED,  2 ); }
+        else  { cv::drawContours( frame, contours, contour_idx_to_draw, BLUE, 2 ); }
     }
 }
 
@@ -136,22 +137,19 @@ void run_detection(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
     cv::cvtColor    (cameraFrame, *out, cv::COLOR_BGR2HSV );                                 std::swap(in,out);
     cv::GaussianBlur(*in, *out, GaussKernel, 0);                                             std::swap(in,out); if (showWindows) { in->copyTo(img_GaussianBlur); }
     cv::inRange     (*in, settings.colorFrom, settings.colorTo, *out );                      std::swap(in,out); if (showWindows) { in->copyTo(img_inRange); }
-    cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}
+    //cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}
     cv::erode       (*in, *out, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  ); std::swap(in,out);
     cv::dilate      (*in, *out, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );                    if (showWindows) { out->copyTo(img_eroded_dilated); }
 
     stats->prepare_ns += trk::getDuration_ns(&start);
     
-    cv::findContours(*out, g_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-    stats->findContours_ns += trk::getDuration_ns(&start);
+    cv::findContours(*out, g_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);         stats->findContours_ns  += trk::getDuration_ns(&start);
 
     int idx_Ymax_contour;
-    calc_centers(g_contours, settings.minimalContourArea, &g_structures);
-    stats->calcCenters_ns += trk::getDuration_ns(&start);
+    calc_centers(g_contours, settings.minimalContourArea, &g_structures);                   stats->calcCenters_ns   += trk::getDuration_ns(&start);
     
     cameraFrame.copyTo(outputFrame);
-    drawContoursAndCenters(outputFrame, g_contours, g_structures );
-    stats->draw_ns += trk::getDuration_ns(&start);
+    drawContoursAndCenters(outputFrame, g_contours, g_structures );                         stats->draw_ns          += trk::getDuration_ns(&start);
 
     std::optional<int> offset_px;
     if ( g_structures.YMax_center_idx > -1 )
@@ -164,7 +162,7 @@ void run_detection(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
     {
         cv::imshow("inRange",       img_inRange );
         cv::imshow("GaussianBlur",  img_GaussianBlur );
-        cv::imshow("threshold",     img_threshold );
+        //cv::imshow("threshold",     img_threshold );
         cv::imshow("eroded_dilated",img_eroded_dilated );
         cv::imshow("drawContours",  outputFrame );
         cv::waitKey(1);

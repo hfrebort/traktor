@@ -8,18 +8,7 @@
 
 #include "shared.h"
 
-struct Options
-{
-    bool    showDebugWindows;
-    int     cameraIndex;
-    int     httpPort;
 
-    Options() :
-          showDebugWindows(false)
-        , cameraIndex(0)
-        , httpPort(9080)
-    {}
-};
 
 int wait_for_signal(void)
 {
@@ -62,7 +51,7 @@ void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stat
         printf("I: thread ended: webserver\n");
     }
 
-    if (camera != nullptr)
+    if (camera != nullptr && camera->joinable() )
     {
         camera->join();
         printf("I: thread ended: camera\n");
@@ -82,17 +71,19 @@ void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stat
 }
 
 int  thread_webserver(int port, Shared* shared);
-void thread_camera(int cameraIdx, Shared* shared);
+void thread_camera(const Options& options, Shared* shared);
 void thread_stats(Shared* ,Stats*);
 void thread_detect(Shared*, Stats*,bool showDebugWindows);
 
 int parser_commandline(int argc, char* argv[], Options* options)
 {
     const cv::String keys =
-        "{help h usage ? |     | print this message                      }"
-        "{c camindex     |   0 | index USB camera                        }"
-        "{p port         |9080 | port web server                         }"
-        "{s showwindow   |     | show intermediate results of processing }";
+        "{help h usage ? |     | print this message                        }"
+        "{c camindex     |   0 | index USB camera                          }"
+        "{f file         |     | filename video                            }"
+        "{slow           |  1  | slow down playback of videofile by factor }"
+        "{p port         |9080 | port web server                           }"
+        "{s showwindow   |     | show intermediate results of processing   }";
 
     cv::CommandLineParser cmd_parser(argc, argv, keys);
     cmd_parser.about("Traktor v0.2");
@@ -109,9 +100,11 @@ int parser_commandline(int argc, char* argv[], Options* options)
         return 1;
     }
 
-    options->showDebugWindows = cmd_parser.has     ("showwindow");
-    options->cameraIndex      = cmd_parser.get<int>("camindex");
-    options->httpPort         = cmd_parser.get<int>("port");
+    options->showDebugWindows               = cmd_parser.has             ("showwindow");
+    options->cameraIndex                    = cmd_parser.get<int>        ("camindex");
+    options->filename                       = cmd_parser.get<std::string>("file");
+    options->httpPort                       = cmd_parser.get<int>        ("port");
+    options->video_playback_slowdown_factor = cmd_parser.get<int>        ("slow");
 
     return 0;
 }
@@ -126,11 +119,18 @@ int main(int argc, char* argv[])
         return rc;
     }
 
-    printf("I: using camera #%d\n", options.cameraIndex);
+    if (options.filename.empty())
+    {
+        printf("I: using camera #%d\n", options.cameraIndex);
+    }
+    else
+    {
+        printf("I: using file: %s\n", options.filename.c_str() );
+    }
 
     Shared shared;
 
-    std::thread camera(thread_camera, options.cameraIndex, &shared);
+    std::thread camera(thread_camera, options, &shared);
     std::thread detect(thread_detect, &shared, &shared.stats, options.showDebugWindows);
     std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, options.httpPort, &shared);

@@ -9,6 +9,22 @@
 
 #include "stats.h"
 
+struct Options
+{
+    bool        showDebugWindows;
+    int         cameraIndex;
+    int         httpPort;
+    std::string filename;
+    int         video_playback_slowdown_factor;
+
+    Options() :
+          showDebugWindows(false)
+        , cameraIndex(0)
+        , httpPort(9080)
+        , video_playback_slowdown_factor(1)
+    {}
+};
+
 struct DetectSettings {
     public:
         cv::Scalar  colorFrom;

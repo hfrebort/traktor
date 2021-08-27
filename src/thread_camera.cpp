@@ -4,9 +4,9 @@
 #include "shared.h"
 #include "stats.h"
 
-void thread_camera(int cameraIdx, Shared* shared)
+void thread_camera(const Options& options, Shared* shared)
 {
-    cv::VideoCapture capture = cv::VideoCapture(cameraIdx);
+    cv::VideoCapture capture = options.filename.empty() ? cv::VideoCapture(options.cameraIndex) : cv::VideoCapture(options.filename);
     
     capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
@@ -20,10 +20,13 @@ void thread_camera(int cameraIdx, Shared* shared)
         return;
     }
 
+    const int cap_prop_fps = (int)capture.get(cv::CAP_PROP_FPS);
+    const int delay_for_realtime_video_millis = options.filename.empty() ? 0 : 1000 / cap_prop_fps * options.video_playback_slowdown_factor;
+
     printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d\n",
          shared->frame_buf[CurrNr].cols
         ,shared->frame_buf[CurrNr].rows
-        ,(int)capture.get(cv::CAP_PROP_FPS));
+        ,cap_prop_fps);
 
     shared->frame_buf_slot.store(CurrNr);
     
@@ -32,6 +35,11 @@ void thread_camera(int cameraIdx, Shared* shared)
 
     for (;;)
     {
+        if ( delay_for_realtime_video_millis != 0)
+        {
+            std::this_thread::sleep_for( std::chrono::milliseconds(delay_for_realtime_video_millis) );
+        }
+
         if ( ! capture.read( shared->frame_buf[CurrNr] ) )
         {
             printf("E: capture.read()\n");
