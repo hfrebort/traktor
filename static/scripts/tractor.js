@@ -8,17 +8,17 @@ angular.module('tractor', ['rzSlider'])
 
     var vm = this;
 
-    $scope.colorSlider = {
+    $scope.hueSlider = {
         minValue: 36,
         maxValue: 80,
         options: {
             floor: 0,
-            ceil: 255
+            ceil: 180
             //,onChange: applyChanges(true)
             ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
         }
     };
-    $scope.greenSlider = {
+    $scope.saturationSlider = {
         minValue: 80,
         maxValue: 255,
         options: {
@@ -64,8 +64,8 @@ angular.module('tractor', ['rzSlider'])
         $scope.response = angular.toJson(response, true);
     };
     const applySliderValues = function () {
-        $scope.data.colorFrom = $scope.colorSlider.minValue + ',' + $scope.greenSlider.minValue + ',25';
-        $scope.data.colorTo   = $scope.colorSlider.maxValue + ',' + $scope.greenSlider.maxValue + ',255';
+        $scope.data.colorFrom = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
+        $scope.data.colorTo   = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
         $scope.data.threshold = $scope.thresholdSlider.value;
         $scope.data.maximumMarkers = $scope.maxMarkerSlider.value;
     };
@@ -80,10 +80,10 @@ angular.module('tractor', ['rzSlider'])
           console.log('input: ', input);
           const data = angular.fromJson(input, true);
           console.log(data);
-          $scope.colorSlider.minValue = data.colorfrom[0];
-          $scope.colorSlider.maxValue = data.colorto[0];
-          $scope.greenSlider.minValue = data.colorfrom[1];
-          $scope.greenSlider.maxValue = data.colorto[1];
+          $scope.hueSlider.minValue = data.colorfrom[0];
+          $scope.hueSlider.maxValue = data.colorto[0];
+          $scope.saturationSlider.minValue = data.colorfrom[1];
+          $scope.saturationSlider.maxValue = data.colorto[1];
           $scope.thresholdSlider.value = data.threshold;
           $scope.maxMarkerSlider.value = data.maximumMarkers;
           $scope.data.detecting = data.detecting;

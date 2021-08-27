@@ -14,8 +14,11 @@
     .traktor-container { position: relative; }
     .traktor-image { width: 100%; display: block; }
 
-    .custom-slider.rzslider .rz-selection { background: #337ab7; }
-    .custom-slider.rzslider .rz-pointer { background-color: #337ab7; }
+    .custom-slider.rzslider .rz-selection { background:       #337ab7; }
+    .custom-slider.rzslider .rz-pointer   { background-color: #337ab7; }
+    th, td {
+                padding: 3px;
+            }
   </style>
   <script src="scripts/angular.min.js"></script>
   <script src="scripts/rzslider.min.js"></script>
@@ -41,13 +44,26 @@
               <h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1>
             </div>
             <div class="col-xs-12">
-              <label>Farbbereich (Rot, Gr&uuml;n)</label>
-              <rzslider class="custom-slider" rz-slider-model="colorSlider.minValue" rz-slider-high="colorSlider.maxValue" rz-slider-options="colorSlider.options"></rzslider>
-              <rzslider class="custom-slider" rz-slider-model="greenSlider.minValue" rz-slider-high="greenSlider.maxValue" rz-slider-options="greenSlider.options"></rzslider>
-              <label>Maximale Abweichung der Pflanze (cm)</label>
-              <rzslider class="custom-slider" rz-slider-model="thresholdSlider.value" rz-slider-options="thresholdSlider.options"></rzslider>
-              <label>Maximalanzahl Pflanzen/Bild (Stk)</label>
-              <rzslider class="custom-slider" rz-slider-model="maxMarkerSlider.value" rz-slider-options="maxMarkerSlider.options"></rzslider>
+              <table border="1" width="100%">
+                <tr>
+                  <td width="20%"><label>Hue</label></td>
+                  <td><rzslider class="custom-slider" rz-slider-model="hueSlider.minValue" rz-slider-high="hueSlider.maxValue" rz-slider-options="hueSlider.options"></rzslider></td>
+                </tr>
+                <tr>
+                  <td><label>Saturation</label></td>
+                  <td><rzslider class="custom-slider" rz-slider-model="saturationSlider.minValue" rz-slider-high="saturationSlider.maxValue" rz-slider-options="saturationSlider.options"></rzslider></td>
+                </tr>
+                <tr>
+                  <td><label>Max delta (cm)</label></td>
+                  <td><rzslider class="custom-slider" rz-slider-model="thresholdSlider.value" rz-slider-options="thresholdSlider.options"></rzslider></td>
+                </tr>
+                <tr>
+                  <td><label>Max Pflanzen (Stk)</label></td>
+                  <td><rzslider class="custom-slider" rz-slider-model="maxMarkerSlider.value" rz-slider-options="maxMarkerSlider.options"></rzslider></td>
+                </tr>
+
+              </table>
+            </table>
             </div>
           </div>
         </form>
