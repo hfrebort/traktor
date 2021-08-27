@@ -42,6 +42,31 @@ angular.module('tractor', ['rzSlider'])
           ceil: 50
       }
     };
+    $scope.rowCountSlider = {
+        value: 1,
+        options: {
+            floor: 1,
+            ceil: 7, 
+            step: 2
+            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
+        }
+    };
+    $scope.rowSpaceSlider = {
+        value: 160,
+        options: {
+            floor: 0,
+            ceil: 320
+            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
+        }
+    };
+    $scope.rowPerspectiveSlider = {
+        value: 0,
+        options: {
+            floor: 0,
+            ceil: 320
+            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
+        }
+    };
     $scope.data = {
         duration: 1.0,
         left: 12,
@@ -64,10 +89,13 @@ angular.module('tractor', ['rzSlider'])
         $scope.response = angular.toJson(response, true);
     };
     const applySliderValues = function () {
-        $scope.data.colorFrom = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
-        $scope.data.colorTo   = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
-        $scope.data.threshold = $scope.thresholdSlider.value;
-        $scope.data.maximumMarkers = $scope.maxMarkerSlider.value;
+        $scope.data.colorFrom        = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
+        $scope.data.colorTo          = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
+        $scope.data.threshold        = $scope.thresholdSlider.value;
+        $scope.data.maximumMarkers   = $scope.maxMarkerSlider.value;
+        $scope.data.rowCount         = $scope.rowCountSlider.value;
+        $scope.data.rowSpacePx       = $scope.rowSpaceSlider.value;
+        $scope.data.rowPerspectivePx = $scope.rowPerspectiveSlider.value;
     };
     this.getData = function() {
       $http.get('/data').then(function (response) {
