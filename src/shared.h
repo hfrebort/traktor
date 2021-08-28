@@ -25,8 +25,16 @@ struct Options
     {}
 };
 
+/*
+        $scope.data.rowCount         = $scope.rowCountSlider.value;
+        $scope.data.rowSpacePx       = $scope.rowSpaceSlider.value;
+        $scope.data.rowPerspectivePx = $scope.rowPerspectiveSlider.value;
+*/
+
 struct DetectSettings {
     public:
+        int         frame_cols;
+        int         frame_rows;
         cv::Scalar  colorFrom;
         cv::Scalar  colorTo;
         int         maxPlats;
@@ -34,9 +42,14 @@ struct DetectSettings {
         int         erode_iterations;
         int         dilate_iterations;
         int         minimalContourArea;
+        int         rowCount;
+        int         rowSpacePx;
+        int         rowPerspectivePx;
 
     DetectSettings()
     {
+        frame_cols         = 640;
+        frame_rows         = 480;
         colorFrom          = cv::Scalar(36,  25,  25);
         colorTo            = cv::Scalar(86, 255, 255);
         erode_iterations   = 5;
@@ -44,6 +57,10 @@ struct DetectSettings {
         maxPlats           = 10;
         maxZentimeter      = 5;
         minimalContourArea = 130;
+        rowCount           = 3;
+        rowSpacePx         = 160;
+        rowPerspectivePx   = 0;
+
     }
 };
 

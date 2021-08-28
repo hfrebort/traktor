@@ -78,14 +78,20 @@ int thread_webserver(int port, Shared* shared)
     ,"contourMode":"POLY"
     ,"threshold":5
     ,"maximumMarkers":10
+    ,"rowCount": 1
+    ,"rowSpacePx": 160
+    ,"rowPerspectivePx": 0
     }
     */
     svr.Post("/applyChanges", [&](const Request &req, Response &res)
     {
         nlohmann::json data = nlohmann::json::parse(req.body);
         //printf("applyChanges data: %s\n", data.dump(2).c_str() );
-        trk::setColorFromCSV( data["colorFrom"], shared->detectSettings.colorFrom);
-        trk::setColorFromCSV( data["colorTo"],   shared->detectSettings.colorTo  );
+        trk::setColorFromCSV(                     data["colorFrom"], shared->detectSettings.colorFrom);
+        trk::setColorFromCSV(                     data["colorTo"],   shared->detectSettings.colorTo  );
+        shared->detectSettings.rowCount         = data["rowCount"]        .get<int>();
+        shared->detectSettings.rowSpacePx       = data["rowSpacePx"]      .get<int>();
+        shared->detectSettings.rowPerspectivePx = data["rowPerspectivePx"].get<int>();
     });
 
     printf("I: webserver start listening on port %d\n", port);

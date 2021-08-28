@@ -23,6 +23,9 @@ void thread_camera(const Options& options, Shared* shared)
     const int cap_prop_fps = (int)capture.get(cv::CAP_PROP_FPS);
     const int delay_for_realtime_video_millis = options.filename.empty() ? 0 : 1000 / cap_prop_fps * options.video_playback_slowdown_factor;
 
+    shared->detectSettings.frame_cols = shared->frame_buf[CurrNr].cols;
+    shared->detectSettings.frame_rows = shared->frame_buf[CurrNr].rows;
+
     printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d\n",
          shared->frame_buf[CurrNr].cols
         ,shared->frame_buf[CurrNr].rows

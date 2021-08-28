@@ -108,7 +108,8 @@ void calc_centers(
 void drawContoursAndCenters(
       cv::InputOutputArray                              frame
     , const std::vector< std::vector<cv::Point2i> >    &contours
-    , const FoundStructures                            &found)
+    , const FoundStructures                            &found
+    , const DetectSettings                             &settings)
 {
 
     for (int i=0; i < found.centers.size(); ++i)
@@ -124,6 +125,29 @@ void drawContoursAndCenters(
         if ( contour_idx_to_draw == found.YMax_contour_idx ) 
               { cv::drawContours( frame, contours, contour_idx_to_draw, RED,  2 ); }
         else  { cv::drawContours( frame, contours, contour_idx_to_draw, BLUE, 2 ); }
+    }
+    //
+    // Mittn
+    //
+    int x_half = settings.frame_cols / 2;
+    int y_max  = settings.frame_rows;
+    
+    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), cv::Scalar(150,255,255), 2 );
+    //
+    // Reihen rechts und links der Mittellinie zeichnen
+    //
+    if ( settings.rowCount > 1 )
+    {
+        //int x_spacing = settings.rowSpacePx;
+        for ( int r=settings.rowCount-1, x_spacing = settings.rowSpacePx; r > 0; r-=2, x_spacing += settings.rowSpacePx )
+        {
+            // links der Mitte
+            int x_bottom = x_half - x_spacing;
+            cv::line(frame, cv::Point(x_bottom,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), cv::Scalar(150,255,255), 2 );
+            // rechts der Mitte
+            x_bottom = x_half + x_spacing;
+            cv::line(frame, cv::Point(x_bottom,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), cv::Scalar(150,255,255), 2 );
+        }
     }
 }
 
@@ -148,24 +172,11 @@ void run_detection(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
     int idx_Ymax_contour;
     calc_centers(g_contours, settings.minimalContourArea, &g_structures);                   stats->calcCenters_ns   += trk::getDuration_ns(&start);
     
-    cameraFrame.copyTo(outputFrame);
-    drawContoursAndCenters(outputFrame, g_contours, g_structures );                         stats->draw_ns          += trk::getDuration_ns(&start);
-
     std::optional<int> offset_px;
     if ( g_structures.YMax_center_idx > -1 )
     {
         auto YMax_point = g_structures.centers[ g_structures.YMax_center_idx ];
         offset_px = YMax_point.x - ( cameraFrame.cols / 2 );
-    }
-
-    if (showWindows)
-    {
-        cv::imshow("inRange",       img_inRange );
-        cv::imshow("GaussianBlur",  img_GaussianBlur );
-        //cv::imshow("threshold",     img_threshold );
-        cv::imshow("eroded_dilated",img_eroded_dilated );
-        cv::imshow("drawContours",  outputFrame );
-        cv::waitKey(1);
     }
 }
 
@@ -193,6 +204,9 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
         //
         {
             std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
+            //
+            // 1. detect
+            //
             auto start = std::chrono::high_resolution_clock::now();
             run_detection(
                   cameraFrame                                       // input
@@ -201,6 +215,25 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
                 , stats
                 , showDebugWindows );                               // show opencv windows with img processing Zwischensteps
             stats->detect_overall_ns += trk::getDuration_ns(&start);
+            //
+            // draw in picture
+            //
+            cameraFrame.copyTo(shared->analyzed_frame_buf[idx_doubleBuffer]);
+            drawContoursAndCenters(
+                shared->analyzed_frame_buf[idx_doubleBuffer]
+                , g_contours
+                , g_structures
+                , shared->detectSettings );
+            stats->draw_ns += trk::getDuration_ns(&start);
+        }
+        if (showDebugWindows)
+        {
+            cv::imshow("inRange",       img_inRange );
+            cv::imshow("GaussianBlur",  img_GaussianBlur );
+            //cv::imshow("threshold",     img_threshold );
+            cv::imshow("eroded_dilated",img_eroded_dilated );
+            cv::imshow("drawContours",  shared->analyzed_frame_buf[idx_doubleBuffer] );
+            cv::waitKey(1);
         }
         stats->fps++;
         //
