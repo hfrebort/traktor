@@ -44,7 +44,6 @@ struct Structures
     }
 };
 
-
 /* 2021-08-23 Spindler
     nice try but doesn't work as expected
 void calc_center(const std::vector<cv::Point2i>& points, cv::Point* center)
@@ -68,7 +67,6 @@ void calc_center2(const std::vector<cv::Point2i>& points, cv::Point* center)
     center->x = int(M.m10 / M.m00);
 	center->y = int(M.m01 / M.m00);
 }
-
 
 void calc_centers(Structures* found, const int minimalContourArea)
 {
@@ -110,35 +108,36 @@ void drawContoursAndCenters(
     }
 }
 
+/***
+ * 2021-08-30 Spindler
+ *   the lines left and right:
+ *      start point: botton of the frame. +/- x_spacing
+ *      end   point: Fluchtpunkt(!) des Bildes. X ist mittig. Y ist ein Wert "oberhalb" des Bildes. Minus Y!
+ ***/
 void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
 {
+    cv::Scalar rowLineColor(150,255,255);
     //
     // Mittn
     //
     int x_half = settings.frame_cols / 2;
     int y_max  = settings.frame_rows;
     
-    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), cv::Scalar(150,255,255), 2 );
+    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 2 );
     //
     // Reihen rechts und links der Mittellinie zeichnen
     //
     if ( settings.rowCount > 1 )
     {
-        //int x_spacing = settings.rowSpacePx;
         for ( int r=settings.rowCount-1, x_spacing = settings.rowSpacePx; r > 0; r-=2, x_spacing += settings.rowSpacePx )
         {
-            // links der Mitte
-            int x_bottom = x_half - x_spacing;
-            cv::line(frame, cv::Point(x_bottom,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), cv::Scalar(150,255,255), 2 );
-            // rechts der Mitte
-            x_bottom = x_half + x_spacing;
-            cv::line(frame, cv::Point(x_bottom,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), cv::Scalar(150,255,255), 2 );
+            cv::line(frame, cv::Point(x_half - x_spacing,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), rowLineColor, 2 );
+            cv::line(frame, cv::Point(x_half + x_spacing,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), rowLineColor, 2 );
         }
     }
-
 }
 
-void find_contoures_calc_centers(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat& outputFrame, Structures* structures, Stats* stats, const bool showWindows)
+void find_contours(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat& outputFrame, Structures* structures, Stats* stats, const bool showWindows)
 {
     cv::Mat* in  = &tmp;
     cv::Mat* out = &outputFrame;
@@ -155,7 +154,6 @@ void find_contoures_calc_centers(cv::Mat& cameraFrame, const DetectSettings& set
     stats->prepare_ns += trk::getDuration_ns(&start);
     
     cv::findContours(*out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);       stats->findContours_ns  += trk::getDuration_ns(&start);
-    calc_centers(structures, settings.minimalContourArea);                                              stats->calcCenters_ns   += trk::getDuration_ns(&start);
 }
 
 void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
@@ -188,14 +186,15 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             // 1. detect
             //
             auto start = std::chrono::high_resolution_clock::now();
-            find_contoures_calc_centers(
+            find_contours(
                   cameraFrame               
                 , shared->detectSettings    
                 , outFrame                  
                 , &structures
                 , stats
-                , showDebugWindows );                               // show opencv windows with img processing Zwischensteps
+                , showDebugWindows );                               
             stats->detect_overall_ns += trk::getDuration_ns(&start);
+            calc_centers(&structures, shared->detectSettings.minimalContourArea);  stats->calcCenters_ns += trk::getDuration_ns(&start);
             //
             // draw in picture
             //

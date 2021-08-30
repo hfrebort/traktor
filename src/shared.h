@@ -57,7 +57,7 @@ struct DetectSettings {
         maxPlats           = 10;
         maxZentimeter      = 5;
         minimalContourArea = 130;
-        rowCount           = 3;
+        rowCount           = 1;
         rowSpacePx         = 160;
         rowPerspectivePx   = 0;
 
