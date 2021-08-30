@@ -92,10 +92,7 @@ void calc_centers(Structures* found, const int minimalContourArea)
     }
 }
 
-void drawContoursAndCenters(
-      cv::InputOutputArray   frame
-    , const Structures       &found
-    , const DetectSettings   &settings)
+void drawContoursAndCenters(cv::InputOutputArray frame, const DetectSettings &settings, const Structures &found)
 {
     for ( auto const& c : found.centers )
     {
@@ -200,7 +197,7 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             //
             cameraFrame.copyTo(outFrame);
             
-            drawContoursAndCenters(outFrame, structures, shared->detectSettings );
+            drawContoursAndCenters(outFrame, shared->detectSettings, structures );
             drawRowLines          (outFrame, shared->detectSettings );
 
             stats->draw_ns += trk::getDuration_ns(&start);
