@@ -8,8 +8,9 @@ void thread_camera(const Options& options, Shared* shared)
 {
     cv::VideoCapture capture = options.filename.empty() ? cv::VideoCapture(options.cameraIndex) : cv::VideoCapture(options.filename);
     
-    capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+    capture.set(cv::CAP_PROP_FRAME_WIDTH,  640);
     capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    capture.set(cv::CAP_PROP_FPS,           30);
     //capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
 
     int CurrNr = 0;

@@ -61,35 +61,16 @@ void calc_center(const std::vector<cv::Point2i>& points, cv::Point* center)
     center->y = sum_y / points.size();
 }*/
 
+size_t mat_byte_size(const cv::Mat& mat)
+{
+    return mat.total() * mat.elemSize();
+}
+
 void calc_center2(const std::vector<cv::Point2i>& points, cv::Point* center)
 {
     cv::Moments M = cv::moments(points);
     center->x = int(M.m10 / M.m00);
 	center->y = int(M.m01 / M.m00);
-}
-
-void calc_centers(Structures* found, const int minimalContourArea)
-{
-    found->clearCenters();
-
-    cv::Point2i centerPoint;
-
-    for ( int i=0; i < found->all_contours.size(); ++i )
-    {
-        const auto& contour = found->all_contours[i];
-        if ( cv::contourArea(contour) > minimalContourArea )
-        {
-            //
-            // calc center and add it to centers
-            //
-            calc_center2(contour, &centerPoint);
-            found->centers.emplace_back( centerPoint.x, centerPoint.y );
-            //
-            // remeber index of found center to access the corresponding contour afterwards
-            //
-            found->centers_contours_idx.push_back(i);
-        }
-    }
 }
 
 void drawContoursAndCenters(cv::InputOutputArray frame, const DetectSettings &settings, const Structures &found)
@@ -141,16 +122,120 @@ void find_contours(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    cv::cvtColor    (cameraFrame, *out, cv::COLOR_BGR2HSV );                                 std::swap(in,out);
-    cv::GaussianBlur(*in, *out, GaussKernel, 0);                                             std::swap(in,out); if (showWindows) { in->copyTo(img_GaussianBlur); }
-    cv::inRange     (*in, settings.colorFrom, settings.colorTo, *out );                      std::swap(in,out); if (showWindows) { in->copyTo(img_inRange); }
-    //cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}
-    cv::erode       (*in, *out, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  ); std::swap(in,out);
-    cv::dilate      (*in, *out, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );                    if (showWindows) { out->copyTo(img_eroded_dilated); }
+    cv::cvtColor    (cameraFrame, *out, cv::COLOR_BGR2HSV );                                 std::swap(in,out);                                                         stats->frame_bytes_processed += mat_byte_size(cameraFrame);
+    cv::GaussianBlur(*in, *out, GaussKernel, 0);                                             std::swap(in,out); if (showWindows) { in->copyTo(img_GaussianBlur); }      stats->frame_bytes_processed += mat_byte_size(*in);
+    cv::inRange     (*in, settings.colorFrom, settings.colorTo, *out );                      std::swap(in,out); if (showWindows) { in->copyTo(img_inRange); }           stats->frame_bytes_processed += mat_byte_size(*in);
+    //cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}        stats->frame_bytes_processed += mat_byte_size(*in);
+    cv::erode       (*in, *out, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  ); std::swap(in,out);                                                         stats->frame_bytes_processed += mat_byte_size(*in);
+    cv::dilate      (*in, *out, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );                    if (showWindows) { out->copyTo(img_eroded_dilated); }   stats->frame_bytes_processed += mat_byte_size(*in);
 
     stats->prepare_ns += trk::getDuration_ns(&start);
     
-    cv::findContours(*out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);       stats->findContours_ns  += trk::getDuration_ns(&start);
+    cv::findContours(*out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);       stats->findContours_ns  += trk::getDuration_ns(&start);         stats->frame_bytes_processed += mat_byte_size(*out);
+}
+void calc_centers(Structures* found, const int minimalContourArea)
+{
+    found->clearCenters();
+
+    cv::Point2i centerPoint;
+
+    for ( int i=0; i < found->all_contours.size(); ++i )
+    {
+        const auto& contour = found->all_contours[i];
+        if ( cv::contourArea(contour) > minimalContourArea )
+        {
+            //
+            // calc center and add it to centers
+            //
+            calc_center2(contour, &centerPoint);
+            found->centers.emplace_back( centerPoint.x, centerPoint.y );
+            //
+            // remeber index of found center to access the corresponding contour afterwards
+            //
+            found->centers_contours_idx.push_back(i);
+        }
+    }
+}
+/*
+ * y = x * ( 10 / 2 )   
+ * x = y / ( 10 / 2 )
+ * Wolfram Alpha: plot [y = (-x+2) * (10/2), {x,-2,2}]
+ */
+int calc_offset_to_next_refline(const cv::Point& plant, const DetectSettings& settings, cv::InputOutputArray frame)
+{
+    const int frame_x_half   = (settings.frame_cols  / 2);
+    const int half_row_count = (settings.rowCount-1) / 2;
+
+    int plant_x_offset_from_middle = plant.x - frame_x_half;
+    const float plant_x_abs_offset_from_0 = abs( plant_x_offset_from_middle );
+    const float plant_y               = settings.frame_rows - plant.y;
+
+          int   refline_x_width  = settings.rowSpacePx;
+    const float refline_y_height = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
+
+    int found_row_idx = -1;
+    float px_delta_to_row;
+
+    float x_ref1 = 0;    // start with the middle
+    float x_ref2;
+
+    int refline_x_found;
+
+    for ( int r=0; r < half_row_count; ++r, refline_x_width += settings.rowSpacePx)
+    {
+        const float refline_steigung = refline_y_height / (float)refline_x_width;
+        x_ref2 = -plant_y / refline_steigung ;
+        x_ref2 +=  refline_x_width;
+
+        if ( x_ref1 < plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
+        {
+            // plant is between rows
+            // which row is closer?
+            float px_delta_to_row1 = abs(x_ref1 - plant_x_abs_offset_from_0);
+            float px_delta_to_row2 = abs(x_ref2 - plant_x_abs_offset_from_0);
+
+            if ( px_delta_to_row1 <= px_delta_to_row2 )
+            {
+                found_row_idx = 1;
+                px_delta_to_row = px_delta_to_row1;
+                refline_x_found = (int)x_ref1;
+            }
+            else
+            {
+                found_row_idx = 2;
+                px_delta_to_row = px_delta_to_row2;
+                refline_x_found = (int)x_ref2;
+            }
+            break;
+        }
+        else
+        {
+            // try next rows
+            x_ref1 = x_ref2;
+        }
+    }
+    
+    if ( found_row_idx > -1)
+    {
+        cv::Point pointOnRefLine(refline_x_found, plant.y);
+
+        if ( plant_x_offset_from_middle < 0 )
+        {
+            pointOnRefLine.x = -pointOnRefLine.x;
+        }
+        pointOnRefLine.x += frame_x_half;
+
+        cv::line(frame, pointOnRefLine, plant, RED, 2);
+    }
+    
+}
+void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::InputOutputArray frame)
+{
+    for ( const cv::Point& plant : structures->centers )
+    {
+        // hier bitte mit Magie befüllen!
+        int offset_cm = calc_offset_to_next_refline(plant, settings, frame);
+    }
 }
 
 void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
@@ -191,12 +276,12 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
                 , stats
                 , showDebugWindows );                               
             stats->detect_overall_ns += trk::getDuration_ns(&start);
-            calc_centers(&structures, shared->detectSettings.minimalContourArea);  stats->calcCenters_ns += trk::getDuration_ns(&start);
+            calc_centers            (&structures, shared->detectSettings.minimalContourArea);  stats->calcCenters_ns += trk::getDuration_ns(&start);
+            cameraFrame.copyTo(outFrame);
+            calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame);
             //
             // draw in picture
             //
-            cameraFrame.copyTo(outFrame);
-            
             drawContoursAndCenters(outFrame, shared->detectSettings, structures );
             drawRowLines          (outFrame, shared->detectSettings );
 

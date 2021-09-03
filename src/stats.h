@@ -16,6 +16,7 @@ struct Stats
         std::atomic<uint64_t>   findContours_ns;
         std::atomic<uint64_t>   calcCenters_ns;
         std::atomic<uint64_t>   draw_ns;
+        std::atomic<uint64_t>   frame_bytes_processed;
 
     Stats() :
         fps(0)
@@ -26,5 +27,6 @@ struct Stats
         , findContours_ns(0)
         , detect_overall_ns(0)
         , jpeg_bytes_sent(0)
+        , frame_bytes_processed(0)
         {}
 };

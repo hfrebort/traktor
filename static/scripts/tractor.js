@@ -63,7 +63,7 @@ angular.module('tractor', ['rzSlider'])
         value: 0,
         options: {
             floor: 0,
-            ceil: 320
+            ceil: 500
             ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
         }
     };
