@@ -243,9 +243,12 @@ bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings&
 
 void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::InputOutputArray frame)
 {
+    const int x_half   = (settings.frame_cols  / 2);
+    const cv::Point Fluchtpunkt(x_half, -settings.rowPerspectivePx);
     const float threshold_percent = (float)settings.rowThresholdPx / (float)settings.rowSpacingPx;
 
     cv::Point nearest_refLine_point;
+    float sum_threshold = 0;
     for ( const cv::Point& plant : structures->centers )
     {
         // hier bitte mit Magie befüllen!
@@ -254,10 +257,17 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
         if ( find_point_on_nearest_refline(plant, settings, &nearest_refLine_point, &deltaPx, &refLines_distance_px) )
         {
             const float threshold = (float)deltaPx / (float)refLines_distance_px;
+            sum_threshold += nearest_refLine_point.x > x_half ? threshold : -threshold;
             const cv::Scalar& color_delta_line = threshold < threshold_percent ? GREEN : RED;
             cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
         }
     }
+    const float avg_threshold = sum_threshold / (float)structures->centers.size();
+    int x_overall_threshold_px = (float)avg_threshold * (float)settings.rowSpacingPx;
+
+    const cv::Scalar& color_overall_delta_line = abs(x_overall_threshold_px) < settings.rowThresholdPx ? GREEN : RED;
+    cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
+
 }
 
 void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
