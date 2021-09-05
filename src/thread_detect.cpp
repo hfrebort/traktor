@@ -22,8 +22,9 @@ const cv::Mat dilateKernel = cv::getStructuringElement( cv::MorphShapes::MORPH_R
                     cv::Size( 2*dilate_size + 1, 2*dilate_size + 1 ),
                     cv::Point( dilate_size, dilate_size ) );
 
-const cv::Scalar RED  = cv::Scalar(0,0,255);
-const cv::Scalar BLUE = cv::Scalar(255,0,0);
+const cv::Scalar RED   = cv::Scalar(0,0,255);
+const cv::Scalar BLUE  = cv::Scalar(255,0,0);
+const cv::Scalar GREEN = cv::Scalar(0,255,0);
 
 cv::Mat tmp;
 cv::Mat img_inRange;
@@ -242,6 +243,8 @@ bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings&
 
 void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::InputOutputArray frame)
 {
+    const float threshold_percent = (float)settings.rowThresholdPx / (float)settings.rowSpacingPx;
+
     cv::Point nearest_refLine_point;
     for ( const cv::Point& plant : structures->centers )
     {
@@ -250,8 +253,9 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
         float deltaPx;
         if ( find_point_on_nearest_refline(plant, settings, &nearest_refLine_point, &deltaPx, &refLines_distance_px) )
         {
-            float pixel_pro_cm = (float)refLines_distance_px / (float)settings.rowSpacingCm;
-            cv::line(frame, plant, nearest_refLine_point, RED, 2);
+            const float threshold = (float)deltaPx / (float)refLines_distance_px;
+            const cv::Scalar& color_delta_line = threshold < threshold_percent ? GREEN : RED;
+            cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
         }
     }
 }
