@@ -94,14 +94,20 @@ void drawContoursAndCenters(cv::InputOutputArray frame, const DetectSettings &se
  ***/
 void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
 {
-    cv::Scalar rowLineColor(150,255,255);
-    //
-    // Mittn
-    //
-    int x_half = settings.frame_cols / 2;
-    int y_max  = settings.frame_rows;
+    const cv::Scalar rowLineColor         (150,255,255);
+    const cv::Scalar rowToleranceLineColor( 60,255,128);
+
+    const int x_half = settings.frame_cols / 2;
+    const int y_max  = settings.frame_rows;
+
+    const int       deltapx = settings.rowThresholdPx;
+    const cv::Point Fluchtpunkt(x_half, -settings.rowPerspectivePx);
     
-    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 2 );
+    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 3 );
+
+    cv::line(frame, cv::Point(x_half-deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+    cv::line(frame, cv::Point(x_half+deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+
     //
     // Reihen rechts und links der Mittellinie zeichnen
     //
@@ -109,8 +115,14 @@ void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
     {
         for ( int r=settings.rowCount-1, x_spacing = settings.rowSpacingPx; r > 0; r-=2, x_spacing += settings.rowSpacingPx )
         {
-            cv::line(frame, cv::Point(x_half - x_spacing,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), rowLineColor, 2 );
-            cv::line(frame, cv::Point(x_half + x_spacing,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), rowLineColor, 2 );
+            // rows
+            cv::line(frame, cv::Point(x_half - x_spacing,y_max),            Fluchtpunkt, rowLineColor, 3 );
+            cv::line(frame, cv::Point(x_half + x_spacing,y_max),            Fluchtpunkt, rowLineColor, 3 );
+            // row tolerance
+            cv::line(frame, cv::Point(x_half - x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+            cv::line(frame, cv::Point(x_half - x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+            cv::line(frame, cv::Point(x_half + x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+            cv::line(frame, cv::Point(x_half + x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
         }
     }
 }
