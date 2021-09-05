@@ -107,7 +107,7 @@ void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
     //
     if ( settings.rowCount > 1 )
     {
-        for ( int r=settings.rowCount-1, x_spacing = settings.rowSpacePx; r > 0; r-=2, x_spacing += settings.rowSpacePx )
+        for ( int r=settings.rowCount-1, x_spacing = settings.rowSpacingPx; r > 0; r-=2, x_spacing += settings.rowSpacingPx )
         {
             cv::line(frame, cv::Point(x_half - x_spacing,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), rowLineColor, 2 );
             cv::line(frame, cv::Point(x_half + x_spacing,y_max), cv::Point(x_half, -settings.rowPerspectivePx ), rowLineColor, 2 );
@@ -161,16 +161,16 @@ void calc_centers(Structures* found, const int minimalContourArea)
  * x = y / ( 10 / 2 )
  * Wolfram Alpha: plot [y = (-x+2) * (10/2), {x,-2,2}]
  */
-int calc_offset_to_next_refline(const cv::Point& plant, const DetectSettings& settings, cv::InputOutputArray frame)
+bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings& settings, cv::Point* nearest_refLine_point, float* deltaPx, int* refLines_distance_px)
 {
     const int frame_x_half   = (settings.frame_cols  / 2);
     const int half_row_count = (settings.rowCount-1) / 2;
 
-    int plant_x_offset_from_middle = plant.x - frame_x_half;
-    const float plant_x_abs_offset_from_0 = abs( plant_x_offset_from_middle );
-    const float plant_y               = settings.frame_rows - plant.y;
+    const int   plant_x_offset_from_middle = plant.x - frame_x_half;
+    const float plant_x_abs_offset_from_0  = abs( plant_x_offset_from_middle );
+    const float plant_y                    = settings.frame_rows - plant.y;
 
-          int   refline_x_width  = settings.rowSpacePx;
+          int   refline_x_width  = settings.rowSpacingPx;
     const float refline_y_height = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
 
     int found_row_idx = -1;
@@ -181,7 +181,7 @@ int calc_offset_to_next_refline(const cv::Point& plant, const DetectSettings& se
 
     int refline_x_found;
 
-    for ( int r=0; r < half_row_count; ++r, refline_x_width += settings.rowSpacePx)
+    for ( int r=0; r < half_row_count; ++r, refline_x_width += settings.rowSpacingPx)
     {
         const float refline_steigung = refline_y_height / (float)refline_x_width;
         x_ref2 = -plant_y / refline_steigung ;
@@ -194,19 +194,29 @@ int calc_offset_to_next_refline(const cv::Point& plant, const DetectSettings& se
             float px_delta_to_row1 = abs(x_ref1 - plant_x_abs_offset_from_0);
             float px_delta_to_row2 = abs(x_ref2 - plant_x_abs_offset_from_0);
 
-            if ( px_delta_to_row1 <= px_delta_to_row2 )
+            if ( px_delta_to_row1 < px_delta_to_row2 )
             {
-                found_row_idx = 1;
-                px_delta_to_row = px_delta_to_row1;
-                refline_x_found = (int)x_ref1;
+                nearest_refLine_point->x = (int)x_ref1;
+                *deltaPx = px_delta_to_row1;
             }
             else
             {
-                found_row_idx = 2;
-                px_delta_to_row = px_delta_to_row2;
-                refline_x_found = (int)x_ref2;
+                nearest_refLine_point->x = (int)x_ref2;
+                *deltaPx = px_delta_to_row2;
             }
-            break;
+
+            nearest_refLine_point->y = plant.y;
+            *refLines_distance_px    = (int)x_ref2 - (int)x_ref1;
+
+            if ( plant_x_offset_from_middle < 0 )
+            {
+                // plant is on the left side. Mirror the x value to minus
+                nearest_refLine_point->x = -nearest_refLine_point->x;
+            }
+            // shift it to the right pixel-image-value
+            nearest_refLine_point->x += frame_x_half;
+
+            return true;
         }
         else
         {
@@ -215,26 +225,22 @@ int calc_offset_to_next_refline(const cv::Point& plant, const DetectSettings& se
         }
     }
     
-    if ( found_row_idx > -1)
-    {
-        cv::Point pointOnRefLine(refline_x_found, plant.y);
-
-        if ( plant_x_offset_from_middle < 0 )
-        {
-            pointOnRefLine.x = -pointOnRefLine.x;
-        }
-        pointOnRefLine.x += frame_x_half;
-
-        cv::line(frame, pointOnRefLine, plant, RED, 2);
-    }
-    
+    return false;
 }
+
 void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::InputOutputArray frame)
 {
+    cv::Point nearest_refLine_point;
     for ( const cv::Point& plant : structures->centers )
     {
         // hier bitte mit Magie befüllen!
-        int offset_cm = calc_offset_to_next_refline(plant, settings, frame);
+        int refLines_distance_px;
+        float deltaPx;
+        if ( find_point_on_nearest_refline(plant, settings, &nearest_refLine_point, &deltaPx, &refLines_distance_px) )
+        {
+            float pixel_pro_cm = (float)refLines_distance_px / (float)settings.rowSpacingCm;
+            cv::line(frame, plant, nearest_refLine_point, RED, 2);
+        }
     }
 }
 

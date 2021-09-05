@@ -38,13 +38,15 @@ struct DetectSettings {
         cv::Scalar  colorFrom;
         cv::Scalar  colorTo;
         int         maxPlats;
-        int         maxZentimeter;
+        //int         maxZentimeter;
         int         erode_iterations;
         int         dilate_iterations;
         int         minimalContourArea;
         int         rowCount;
-        int         rowSpacePx;
+        int         rowSpacingPx;
+        int         rowSpacingCm;
         int         rowPerspectivePx;
+        int         rowThresholdPx;
 
     DetectSettings()
     {
@@ -52,15 +54,17 @@ struct DetectSettings {
         frame_rows         = 480;
         colorFrom          = cv::Scalar(36,  25,  25);
         colorTo            = cv::Scalar(86, 255, 255);
-        erode_iterations   = 5;
-        dilate_iterations  = 5;
+        erode_iterations   = 3;
+        dilate_iterations  = 3;
         maxPlats           = 10;
-        maxZentimeter      = 5;
+        //maxZentimeter      = 5;
         minimalContourArea = 130;
-        rowCount           = 3;
-        rowSpacePx         = 160;
-        rowPerspectivePx   = 0;
 
+        rowCount           = 3;
+        rowSpacingPx       = 160;
+        rowSpacingCm       = 40;
+        rowPerspectivePx   = 0;
+        rowThresholdPx     = 1;
     }
 };
 

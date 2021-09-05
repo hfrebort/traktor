@@ -8,65 +8,17 @@ angular.module('tractor', ['rzSlider'])
 
     var vm = this;
 
-    $scope.hueSlider = {
-        minValue: 36,
-        maxValue: 80,
-        options: {
-            floor: 0,
-            ceil: 180
-            //,onChange: applyChanges(true)
-            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
-        }
-    };
-    $scope.saturationSlider = {
-        minValue: 80,
-        maxValue: 255,
-        options: {
-            floor: 0,
-            ceil: 255
-            //,onChange: applyChanges(true)
-            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
-        }
-    };
-    $scope.thresholdSlider = {
-        value: 5,
-        options: {
-            floor: 2,
-            ceil: 20
-        }
-    };
-    $scope.maxMarkerSlider = {
-      value: 10,
-      options: {
-          floor: 1,
-          ceil: 50
-      }
-    };
-    $scope.rowCountSlider = {
-        value: 1,
-        options: {
-            floor: 1,
-            ceil: 7, 
-            step: 2
-            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
-        }
-    };
-    $scope.rowSpaceSlider = {
-        value: 160,
-        options: {
-            floor: 0,
-            ceil: 320
-            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
-        }
-    };
-    $scope.rowPerspectiveSlider = {
-        value: 0,
-        options: {
-            floor: 0,
-            ceil: 500
-            ,onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); }
-        }
-    };
+    $scope.hueSlider        = { minValue: 36, maxValue:  80, options: { floor: 0, ceil: 180, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.saturationSlider = { minValue: 80, maxValue: 255, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    
+    $scope.maxMarkerSlider      = { value: 10, options: { floor: 1, ceil:  50 } };
+
+    $scope.rowThresholdPxSlider = { value:   5, options: { floor: 1, ceil: 320,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.rowCountSlider       = { value:   3, options: { floor: 3, ceil:   9, step: 2,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 1, ceil: 640,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.rowSpacingCmSlider   = { value:   1, options: { floor: 1, ceil: 100,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+
     $scope.data = {
         duration: 1.0,
         left: 12,
@@ -91,11 +43,14 @@ angular.module('tractor', ['rzSlider'])
     const applySliderValues = function () {
         $scope.data.colorFrom        = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
         $scope.data.colorTo          = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
-        $scope.data.threshold        = $scope.thresholdSlider.value;
-        $scope.data.maximumMarkers   = $scope.maxMarkerSlider.value;
+
+        $scope.data.rowThresholdPx   = $scope.rowThresholdPxSlider.value;
         $scope.data.rowCount         = $scope.rowCountSlider.value;
-        $scope.data.rowSpacePx       = $scope.rowSpaceSlider.value;
+        $scope.data.rowSpacingPx     = $scope.rowSpacingPxSlider.value;
+        $scope.data.rowSpacingCm     = $scope.rowSpacingCmSlider.value;
         $scope.data.rowPerspectivePx = $scope.rowPerspectiveSlider.value;
+
+        $scope.data.maximumMarkers   = $scope.maxMarkerSlider.value;
     };
     this.getData = function() {
       $http.get('/data').then(function (response) {

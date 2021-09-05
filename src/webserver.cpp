@@ -89,9 +89,13 @@ int thread_webserver(int port, Shared* shared)
         //printf("applyChanges data: %s\n", data.dump(2).c_str() );
         trk::setColorFromCSV(                     data["colorFrom"], shared->detectSettings.colorFrom);
         trk::setColorFromCSV(                     data["colorTo"],   shared->detectSettings.colorTo  );
+        
         shared->detectSettings.rowCount         = data["rowCount"]        .get<int>();
-        shared->detectSettings.rowSpacePx       = data["rowSpacePx"]      .get<int>();
+        shared->detectSettings.rowSpacingPx     = data["rowSpacingPx"]    .get<int>();
+        shared->detectSettings.rowSpacingCm     = data["rowSpacingCm"]    .get<int>();
         shared->detectSettings.rowPerspectivePx = data["rowPerspectivePx"].get<int>();
+        shared->detectSettings.rowThresholdPx   = data["rowThresholdPx"].get<int>();
+
     });
 
     printf("I: webserver start listening on port %d\n", port);
