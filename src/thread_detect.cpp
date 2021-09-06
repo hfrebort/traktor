@@ -241,16 +241,17 @@ bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings&
     return false;
 }
 
-void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::InputOutputArray frame)
+void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::Mat& frame)
 {
     const int x_half   = (settings.frame_cols  / 2);
     const cv::Point Fluchtpunkt(x_half, -settings.rowPerspectivePx);
     const float threshold_percent = (float)settings.rowThresholdPx / (float)settings.rowSpacingPx;
 
-    cv::Point nearest_refLine_point;
-    float sum_threshold = 0;
-    for ( const cv::Point& plant : structures->centers )
+    cv::Point   nearest_refLine_point;
+    float       sum_threshold = 0;
+    for ( int i=0; i < structures->centers.size(); ++i )
     {
+        const cv::Point& plant = structures->centers[i];
         // hier bitte mit Magie befüllen!
         int refLines_distance_px;
         float deltaPx;
@@ -259,16 +260,22 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
             const float threshold = (float)deltaPx / (float)refLines_distance_px;
             sum_threshold += nearest_refLine_point.x > x_half ? threshold : -threshold;
             
-            const cv::Scalar& color_delta_line = threshold < threshold_percent ? GREEN : RED;
-            cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
+            const cv::Scalar& plant_color = threshold < threshold_percent ? BLUE : RED;
+            //cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
+            cv::drawMarker  ( frame, plant , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
+            cv::drawContours( frame, structures->all_contours, structures->centers_contours_idx[i], plant_color, 1 );
         }
     }
     const float avg_threshold = sum_threshold / (float)structures->centers.size();
     int x_overall_threshold_px = (float)avg_threshold * (float)settings.rowSpacingPx;
 
-    const cv::Scalar& color_overall_delta_line = abs(x_overall_threshold_px) < settings.rowThresholdPx ? GREEN : RED;
-    cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
+    const cv::Scalar& color_overall_delta = abs(x_overall_threshold_px) < settings.rowThresholdPx ? GREEN : RED;
+    //cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
 
+    cv::Mat arrow = cv::Mat::zeros(20, frame.cols, frame.type() );
+    const int delta_status_px = (float)avg_threshold * (float)x_half;
+    cv::rectangle(arrow, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,arrow.rows), color_overall_delta, 8);
+    frame.push_back(arrow);
 }
 
 void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
@@ -314,9 +321,9 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             cameraFrame.copyTo(outFrame);
             calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame);
             //
-            // draw in picture
+            // draw 
             //
-            drawContoursAndCenters(outFrame, shared->detectSettings, structures );
+            //drawContoursAndCenters(outFrame, shared->detectSettings, structures );
             drawRowLines          (outFrame, shared->detectSettings );
 
             stats->draw_ns += trk::getDuration_ns(&start);
