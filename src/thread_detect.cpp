@@ -272,10 +272,11 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
     const cv::Scalar& color_overall_delta = abs(x_overall_threshold_px) < settings.rowThresholdPx ? GREEN : RED;
     //cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
 
-    cv::Mat arrow = cv::Mat::zeros(20, frame.cols, frame.type() );
+    static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
+    offset_bar.setTo( cv::Scalar(0,0,0) );
     const int delta_status_px = (float)avg_threshold * (float)x_half;
-    cv::rectangle(arrow, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,arrow.rows), color_overall_delta, 8);
-    frame.push_back(arrow);
+    cv::rectangle(offset_bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
+    frame.push_back(offset_bar);
 }
 
 void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
