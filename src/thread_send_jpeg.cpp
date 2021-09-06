@@ -9,8 +9,6 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 {
     const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 65};
 
-    
-
     printf("I: thread send_jpeg running\n");
 
     short idx = -1;

@@ -258,6 +258,7 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
         {
             const float threshold = (float)deltaPx / (float)refLines_distance_px;
             sum_threshold += nearest_refLine_point.x > x_half ? threshold : -threshold;
+            
             const cv::Scalar& color_delta_line = threshold < threshold_percent ? GREEN : RED;
             cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
         }
@@ -306,9 +307,10 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
                 , outFrame                  
                 , &structures
                 , stats
-                , showDebugWindows );                               
-            stats->detect_overall_ns += trk::getDuration_ns(&start);
-            calc_centers            (&structures, shared->detectSettings.minimalContourArea);  stats->calcCenters_ns += trk::getDuration_ns(&start);
+                , showDebugWindows );                                                           stats->detect_overall_ns += trk::getDuration_ns(&start);
+
+            calc_centers            (&structures, shared->detectSettings.minimalContourArea);   stats->calcCenters_ns += trk::getDuration_ns(&start);
+
             cameraFrame.copyTo(outFrame);
             calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame);
             //
