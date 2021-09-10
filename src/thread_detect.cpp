@@ -98,7 +98,8 @@ void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
     const cv::Scalar rowLineColor         (150,255,255);
     const cv::Scalar rowToleranceLineColor( 60,255,128);
 
-    const int x_half = frame.cols() / 2;
+    //const int x_half = frame.cols() / 2;
+    const int x_half = settings.frame_cols / 2;
     const int y_max  = settings.frame_rows;
 
     const int       deltapx = settings.rowThresholdPx;

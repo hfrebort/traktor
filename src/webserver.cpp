@@ -103,7 +103,7 @@ int thread_webserver(int port, Shared* shared)
 
         const int rows_calculated_on_one_side = x_max_outer_row / set.rowSpacingPx;
         set.rowCount = rows_calculated_on_one_side * 2 + 1;
-        printf("rows_calculated: %d\n", set.rowCount);
+        //printf("rows_calculated: %d\n", set.rowCount);
 
     });
 
