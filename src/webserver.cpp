@@ -90,11 +90,21 @@ int thread_webserver(int port, Shared* shared)
         trk::setColorFromCSV(                     data["colorFrom"], shared->detectSettings.colorFrom);
         trk::setColorFromCSV(                     data["colorTo"],   shared->detectSettings.colorTo  );
         
-        shared->detectSettings.rowCount         = data["rowCount"]        .get<int>();
+        //shared->detectSettings.rowCount         = data["rowCount"]        .get<int>();
         shared->detectSettings.rowSpacingPx     = data["rowSpacingPx"]    .get<int>();
-        shared->detectSettings.rowSpacingCm     = data["rowSpacingCm"]    .get<int>();
+        //shared->detectSettings.rowSpacingCm     = data["rowSpacingCm"]    .get<int>();
         shared->detectSettings.rowPerspectivePx = data["rowPerspectivePx"].get<int>();
-        shared->detectSettings.rowThresholdPx   = data["rowThresholdPx"].get<int>();
+        shared->detectSettings.rowThresholdPx   = data["rowThresholdPx"]  .get<int>();
+
+        DetectSettings& set = shared->detectSettings;
+
+        const int x_half        = set.frame_cols / 2;
+        const int fluchtpunkt_y = set.frame_rows + set.rowPerspectivePx;
+        const int x_max_outer_row = ( set.frame_rows / x_half ) * fluchtpunkt_y;
+
+        const int rows_calculated_on_one_side = x_max_outer_row / set.rowSpacingPx;
+        set.rowCount = rows_calculated_on_one_side * 2 + 1;
+        printf("rows_calculated: %d\n", set.rowCount);
 
     });
 
