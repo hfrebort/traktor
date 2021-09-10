@@ -24,8 +24,10 @@ void thread_camera(const Options& options, Shared* shared)
     const int cap_prop_fps = (int)capture.get(cv::CAP_PROP_FPS);
     const int delay_for_realtime_video_millis = options.filename.empty() ? 0 : 1000 / cap_prop_fps * options.video_playback_slowdown_factor;
 
-    shared->detectSettings.frame_cols = shared->frame_buf[CurrNr].cols;
-    shared->detectSettings.frame_rows = shared->frame_buf[CurrNr].rows;
+    DetectSettings& decset = shared->detectSettings;
+
+    decset.frame_cols = shared->frame_buf[CurrNr].cols;
+    decset.frame_rows = shared->frame_buf[CurrNr].rows;
 
     printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d\n",
          shared->frame_buf[CurrNr].cols
@@ -36,6 +38,14 @@ void thread_camera(const Options& options, Shared* shared)
     
     int WorkNr = CurrNr;
         CurrNr = 1;
+
+    cv::Rect region( options.cropPx, 0, decset.frame_cols - (2*options.cropPx), decset.frame_rows);
+
+    if ( options.cropPx > 0 )
+    {
+        shared->detectSettings.frame_cols -= 2 * options.cropPx;
+        printf("set frame_cols to: %d\n", decset.frame_cols);
+    }
 
     for (;;)
     {
@@ -51,6 +61,15 @@ void thread_camera(const Options& options, Shared* shared)
         }
         else
         {
+            if (options.cropPx > 0)
+            {   
+                if ( region.x + decset.hydroPx > 0 && region.x + decset.hydroPx < (2*options.cropPx) )
+                {
+                    region.x += decset.hydroPx;
+                }
+                shared->frame_buf[CurrNr] = shared->frame_buf[CurrNr](region);   
+            }
+
             int PrevNr = std::atomic_exchange( &(shared->frame_buf_slot), CurrNr );
             int NextNr = ( PrevNr == -1 ) ? 3 - ( WorkNr + CurrNr ) : PrevNr;
                 WorkNr = CurrNr;

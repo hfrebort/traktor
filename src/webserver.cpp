@@ -90,11 +90,10 @@ int thread_webserver(int port, Shared* shared)
         trk::setColorFromCSV(                     data["colorFrom"], shared->detectSettings.colorFrom);
         trk::setColorFromCSV(                     data["colorTo"],   shared->detectSettings.colorTo  );
         
-        //shared->detectSettings.rowCount         = data["rowCount"]        .get<int>();
         shared->detectSettings.rowSpacingPx     = data["rowSpacingPx"]    .get<int>();
-        //shared->detectSettings.rowSpacingCm     = data["rowSpacingCm"]    .get<int>();
         shared->detectSettings.rowPerspectivePx = data["rowPerspectivePx"].get<int>();
         shared->detectSettings.rowThresholdPx   = data["rowThresholdPx"]  .get<int>();
+        shared->detectSettings.hydroPx          = data["hydroPx"]         .get<int>();
 
         DetectSettings& set = shared->detectSettings;
 

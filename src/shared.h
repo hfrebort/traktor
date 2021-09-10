@@ -16,20 +16,16 @@ struct Options
     int         httpPort;
     std::string filename;
     int         video_playback_slowdown_factor;
+    int         cropPx;
 
     Options() :
           showDebugWindows(false)
         , cameraIndex(0)
         , httpPort(9080)
         , video_playback_slowdown_factor(1)
+        , cropPx(0)
     {}
 };
-
-/*
-        $scope.data.rowCount         = $scope.rowCountSlider.value;
-        $scope.data.rowSpacePx       = $scope.rowSpaceSlider.value;
-        $scope.data.rowPerspectivePx = $scope.rowPerspectiveSlider.value;
-*/
 
 struct DetectSettings {
     public:
@@ -47,6 +43,7 @@ struct DetectSettings {
         int         rowSpacingCm;
         int         rowPerspectivePx;
         int         rowThresholdPx;
+        int         hydroPx;
 
     DetectSettings()
     {
@@ -65,6 +62,7 @@ struct DetectSettings {
         rowSpacingCm       = 40;
         rowPerspectivePx   = 0;
         rowThresholdPx     = 1;
+        hydroPx            = 0;
     }
 };
 
