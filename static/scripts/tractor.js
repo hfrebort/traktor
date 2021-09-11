@@ -17,7 +17,7 @@ angular.module('tractor', ['rzSlider'])
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 640,             onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
 
-    $scope.hydroPxSlider        = { value:   0, options: { floor: -2, ceil: 2,           onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.hydroPxSlider        = { value:   0, options: { floor: -100, ceil: 100,           onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
 
     $scope.data = {
         duration: 1.0,

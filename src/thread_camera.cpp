@@ -39,8 +39,6 @@ void thread_camera(const Options& options, Shared* shared)
     int WorkNr = CurrNr;
         CurrNr = 1;
 
-    cv::Rect region( options.cropPx, 0, decset.frame_cols - (2*options.cropPx), decset.frame_rows);
-
     if ( options.cropPx > 0 )
     {
         shared->detectSettings.frame_cols -= 2 * options.cropPx;
@@ -63,10 +61,8 @@ void thread_camera(const Options& options, Shared* shared)
         {
             if (options.cropPx > 0)
             {   
-                if ( region.x + decset.hydroPx > 0 && region.x + decset.hydroPx < (2*options.cropPx) )
-                {
-                    region.x += decset.hydroPx;
-                }
+                const int x_start =  options.cropPx + decset.hydroPx;
+                cv::Rect region( x_start, 0, decset.frame_cols, decset.frame_rows);
                 shared->frame_buf[CurrNr] = shared->frame_buf[CurrNr](region);   
             }
 
