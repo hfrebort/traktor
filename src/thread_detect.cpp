@@ -175,7 +175,12 @@ void calc_centers(Structures* found, const int minimalContourArea)
  * x = y / ( 10 / 2 )
  * Wolfram Alpha: plot [y = (-x+2) * (10/2), {x,-2,2}]
  */
-bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings& settings, cv::Point* nearest_refLine_point, float* deltaPx, int* refLines_distance_px)
+bool find_point_on_nearest_refline(
+      const cv::Point& plant
+    , const DetectSettings& settings
+    , float  *nearest_refLine_x
+    , float  *deltaPx
+    , float  *refLines_distance_px)
 {
     const int frame_x_half   = (settings.frame_cols  / 2);
     const int half_row_count = (settings.rowCount-1) / 2;
@@ -184,10 +189,10 @@ bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings&
     const float plant_x_abs_offset_from_0  = abs( plant_x_offset_from_middle );
     const float plant_y                    = settings.frame_rows - plant.y;
 
-          int   refline_x_width  = settings.rowSpacingPx;
-    const float refline_y_height = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
+          int   refline_x = settings.rowSpacingPx;
+    const float refline_y = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
 
-    int found_row_idx = -1;
+    //int found_row_idx = -1;
     float px_delta_to_row;
 
     float x_ref1 = 0;    // start with the middle
@@ -195,40 +200,43 @@ bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings&
 
     int refline_x_found;
 
-    for ( int r=0; r < half_row_count; ++r, refline_x_width += settings.rowSpacingPx)
+    for ( int r=0; r < half_row_count; ++r, refline_x += settings.rowSpacingPx)
     {
-        const float refline_steigung = refline_y_height / (float)refline_x_width;
+        const float refline_steigung = refline_y / (float)refline_x;
         x_ref2 = -plant_y / refline_steigung ;
-        x_ref2 +=  refline_x_width;
+        x_ref2 +=  refline_x;
 
         if ( x_ref1 < plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
         {
             // plant is between rows
             // which row is closer?
-            float px_delta_to_row1 = abs(x_ref1 - plant_x_abs_offset_from_0);
-            float px_delta_to_row2 = abs(x_ref2 - plant_x_abs_offset_from_0);
+            const float delta_to_row1_px = plant_x_abs_offset_from_0 - x_ref1;
+            const float delta_to_row2_px = x_ref2 - plant_x_abs_offset_from_0;
 
-            if ( px_delta_to_row1 < px_delta_to_row2 )
+            assert(delta_to_row1_px >= 0);
+            assert(delta_to_row2_px >= 0);
+
+            if ( delta_to_row1_px < delta_to_row2_px )
             {
-                nearest_refLine_point->x = (int)x_ref1;
-                *deltaPx = px_delta_to_row1;
+                *nearest_refLine_x = x_ref1;
+                *deltaPx = delta_to_row1_px;        // row 1 --> positive
             }
             else
             {
-                nearest_refLine_point->x = (int)x_ref2;
-                *deltaPx = px_delta_to_row2;
+                *nearest_refLine_x = x_ref2;
+                *deltaPx = -delta_to_row2_px;       // row 2 --> negative
             }
 
-            nearest_refLine_point->y = plant.y;
-            *refLines_distance_px    = (int)x_ref2 - (int)x_ref1;
+            *refLines_distance_px = x_ref2 - x_ref1;
+            assert(refLines_distance_px > 0);
 
             if ( plant_x_offset_from_middle < 0 )
             {
                 // plant is on the left side. Mirror the x value to minus
-                nearest_refLine_point->x = -nearest_refLine_point->x;
+                *nearest_refLine_x = -*nearest_refLine_x;
             }
             // shift it to the right pixel-image-value
-            nearest_refLine_point->x += frame_x_half;
+            *nearest_refLine_x += frame_x_half;
 
             return true;
         }
@@ -245,23 +253,22 @@ bool find_point_on_nearest_refline(const cv::Point& plant, const DetectSettings&
 void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::Mat& frame)
 {
     const int x_half   = (settings.frame_cols  / 2);
-    const cv::Point Fluchtpunkt(x_half, -settings.rowPerspectivePx);
     const float threshold_percent = (float)settings.rowThresholdPx / (float)settings.rowSpacingPx;
 
-    cv::Point   nearest_refLine_point;
-    float       sum_threshold = 0;
+    float   nearest_refLine_x;
+    float   sum_threshold = 0;
     for ( int i=0; i < structures->centers.size(); ++i )
     {
         const cv::Point& plant = structures->centers[i];
         // hier bitte mit Magie befüllen!
-        int refLines_distance_px;
+        float refLines_distance_px;
         float deltaPx;
-        if ( find_point_on_nearest_refline(plant, settings, &nearest_refLine_point, &deltaPx, &refLines_distance_px) )
+        if ( find_point_on_nearest_refline(plant, settings, &nearest_refLine_x, &deltaPx, &refLines_distance_px) )
         {
-            const float threshold = (float)deltaPx / (float)refLines_distance_px;
-            sum_threshold += nearest_refLine_point.x > x_half ? threshold : -threshold;
+            const float threshold = deltaPx / refLines_distance_px;
+            sum_threshold += threshold;
             
-            const cv::Scalar& plant_color = threshold < threshold_percent ? BLUE : RED;
+            const cv::Scalar& plant_color = abs(threshold) < threshold_percent ? BLUE : RED;
             //cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
             cv::drawMarker  ( frame, plant , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
             cv::drawContours( frame, structures->all_contours, structures->centers_contours_idx[i], plant_color, 1 );
