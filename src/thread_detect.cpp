@@ -228,7 +228,7 @@ bool find_point_on_nearest_refline(
             }
 
             *refLines_distance_px = x_ref2 - x_ref1;
-            assert(refLines_distance_px > 0);
+            assert(*refLines_distance_px > 0);
 
             if ( plant_x_offset_from_middle < 0 )
             {
