@@ -316,16 +316,18 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             //
             // 1. detect
             //
-            auto start = std::chrono::high_resolution_clock::now();
+            auto overallstart = std::chrono::high_resolution_clock::now();
+
             find_contours(
                   cameraFrame               
                 , shared->detectSettings    
                 , outFrame                  
                 , &structures
                 , stats
-                , showDebugWindows );                                                           stats->detect_overall_ns += trk::getDuration_ns(&start);
+                , showDebugWindows );                                                           
 
-            calc_centers            (&structures, shared->detectSettings.minimalContourArea);   stats->calcCenters_ns += trk::getDuration_ns(&start);
+            auto start = std::chrono::high_resolution_clock::now();
+            calc_centers(&structures, shared->detectSettings.minimalContourArea);
 
             cameraFrame.copyTo(outFrame);
             calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame);
@@ -335,7 +337,8 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             //drawContoursAndCenters(outFrame, shared->detectSettings, structures );
             drawRowLines          (outFrame, shared->detectSettings );
 
-            stats->draw_ns += trk::getDuration_ns(&start);
+            stats->calc_draw_ns      += trk::getDuration_ns(&start);
+            stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
         }
         if (showDebugWindows)
         {
