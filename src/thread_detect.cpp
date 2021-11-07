@@ -268,7 +268,7 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
             const float threshold = deltaPx / refLines_distance_px;
             sum_threshold += threshold;
             
-            const cv::Scalar& plant_color = abs(threshold) < threshold_percent ? BLUE : RED;
+            const cv::Scalar& plant_color = std::abs(threshold) < threshold_percent ? BLUE : RED;
             //cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
             cv::drawMarker  ( frame, plant , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
             cv::drawContours( frame, structures->all_contours, structures->centers_contours_idx[i], plant_color, 1 );
