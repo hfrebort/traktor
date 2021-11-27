@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 set(EXECUTABLE traktor)
+set(CMAKE_CXX_FLAGS "-march=native")
 
 project(${EXECUTABLE} VERSION 0.1.0)
 
@@ -26,7 +27,6 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <signal.h>
   <sys/stat.h>
   <stdio.h>
-  <iostream>
   <functional>
   <memory>
   <condition_variable>

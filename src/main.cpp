@@ -1,5 +1,4 @@
 //#include <signal.h>
-//#include <iostream>
 //#include <functional>
 //#include <memory>
 //#include <thread>
@@ -25,11 +24,11 @@ int wait_for_signal(void)
     int status = sigwait(&signals, &signal);
     if (status == 0)
     {
-        std::cout << "received signal " << signal << std::endl;
+        printf("received signal: %d\n",signal);
     }
     else
     {
-        std::cerr << "sigwait returns " << status << std::endl;
+        printf("sigwait returns: %d\n", status);
     }
 
 
