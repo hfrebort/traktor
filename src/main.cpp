@@ -81,7 +81,6 @@ int parser_commandline(int argc, char* argv[], Options* options)
         "{f file         |     | filename video                            }"
         "{slow           |   1 | slow down playback of videofile by factor }"
         "{p port         |9080 | port web server                           }"
-        "{crop           |   0 | pixel to crop from left/right of the video}"
         "{s showwindow   |     | show intermediate results of processing   }";
 
     cv::CommandLineParser cmd_parser(argc, argv, keys);
@@ -104,7 +103,6 @@ int parser_commandline(int argc, char* argv[], Options* options)
     options->filename                       = cmd_parser.get<std::string>("file");
     options->httpPort                       = cmd_parser.get<int>        ("port");
     options->video_playback_slowdown_factor = cmd_parser.get<int>        ("slow");
-    options->cropPx                         = cmd_parser.get<int>        ("crop");
 
     return 0;
 }

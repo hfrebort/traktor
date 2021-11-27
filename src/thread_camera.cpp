@@ -39,12 +39,6 @@ void thread_camera(const Options& options, Shared* shared)
     int WorkNr = CurrNr;
         CurrNr = 1;
 
-    if ( options.cropPx > 0 )
-    {
-        shared->detectSettings.frame_cols -= 2 * options.cropPx;
-        printf("set frame_cols to: %d\n", decset.frame_cols);
-    }
-
     for (;;)
     {
         if ( delay_for_realtime_video_millis != 0)
@@ -59,13 +53,6 @@ void thread_camera(const Options& options, Shared* shared)
         }
         else
         {
-            if (options.cropPx > 0)
-            {   
-                const int x_start =  options.cropPx + decset.hydroPx;
-                cv::Rect region( x_start, 0, decset.frame_cols, decset.frame_rows);
-                shared->frame_buf[CurrNr] = shared->frame_buf[CurrNr](region);   
-            }
-
             int PrevNr = std::atomic_exchange( &(shared->frame_buf_slot), CurrNr );
             int NextNr = ( PrevNr == -1 ) ? 3 - ( WorkNr + CurrNr ) : PrevNr;
                 WorkNr = CurrNr;
@@ -77,7 +64,6 @@ void thread_camera(const Options& options, Shared* shared)
 
         if (shared->shutdown_requested.load())
         {
-            printf("I: thread camera: shutdown requested\n");
             break;
         }
     }

@@ -17,8 +17,6 @@ angular.module('tractor', ['rzSlider'])
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 640,             onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
 
-    $scope.hydroPxSlider        = { value:   0, options: { floor: -100, ceil: 100,           onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
-
     $scope.data = {
         duration: 1.0,
         left: 12,
@@ -28,7 +26,7 @@ angular.module('tractor', ['rzSlider'])
         colorFilter: true,
         detecting: false,
         colorFrom: '36,80,25',
-        colorTo: '80,255,255',
+        colorTo: '20,255,255',
         erode: 10,
         dilate: 10,
         contourMode: 'POLY',
@@ -47,7 +45,6 @@ angular.module('tractor', ['rzSlider'])
         $scope.data.rowThresholdPx   = $scope.rowThresholdPxSlider.value;
         $scope.data.rowSpacingPx     = $scope.rowSpacingPxSlider.value;
         $scope.data.rowPerspectivePx = $scope.rowPerspectiveSlider.value;
-        $scope.data.hydroPx          = $scope.hydroPxSlider.value;
 
         $scope.data.maximumMarkers   = $scope.maxMarkerSlider.value;
     };

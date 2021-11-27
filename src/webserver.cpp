@@ -93,7 +93,6 @@ int thread_webserver(int port, Shared* shared)
         shared->detectSettings.rowSpacingPx     = data["rowSpacingPx"]    .get<int>();
         shared->detectSettings.rowPerspectivePx = data["rowPerspectivePx"].get<int>();
         shared->detectSettings.rowThresholdPx   = data["rowThresholdPx"]  .get<int>();
-        shared->detectSettings.hydroPx          = data["hydroPx"]         .get<int>();
 
         DetectSettings& set = shared->detectSettings;
 
@@ -107,7 +106,7 @@ int thread_webserver(int port, Shared* shared)
 
     });
 
-    printf("I: webserver start listening on port %d\n", port);
+    printf("I: webserver start listening on 0.0.0.0:%d\n", port);
     svr.listen("0.0.0.0", port);
 
     return 0;
