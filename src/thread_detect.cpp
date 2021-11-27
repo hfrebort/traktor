@@ -147,6 +147,7 @@ void find_contours(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat
     
     cv::findContours(*out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);       stats->findContours_ns  += trk::getDuration_ns(&start);         stats->frame_bytes_processed += mat_byte_size(*out);
 }
+
 void calc_centers(Structures* found, const int minimalContourArea)
 {
     found->clearCenters();
@@ -182,24 +183,19 @@ bool find_point_on_nearest_refline(
     , float  *deltaPx
     , float  *refLines_distance_px)
 {
-    const int frame_x_half   = (settings.frame_cols  / 2);
-    const int half_row_count = (settings.rowCount-1) / 2;
+    const int frame_x_half                 = (settings.frame_cols  / 2);
+    const int half_row_count               = (settings.rowCount-1) / 2;
 
     const int   plant_x_offset_from_middle = plant.x - frame_x_half;
-    const float plant_x_abs_offset_from_0  = abs( plant_x_offset_from_middle );
+    const float plant_x_abs_offset_from_0  = std::abs<int>( plant_x_offset_from_middle );
     const float plant_y                    = settings.frame_rows - plant.y;
+    const float refline_y                  = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
 
-          int   refline_x = settings.rowSpacingPx;
-    const float refline_y = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
-
-    //int found_row_idx = -1;
     float px_delta_to_row;
-
     float x_ref1 = 0;    // start with the middle
     float x_ref2;
 
-    int refline_x_found;
-
+    int refline_x = settings.rowSpacingPx;
     for ( int r=0; r < half_row_count; ++r, refline_x += settings.rowSpacingPx)
     {
         const float refline_steigung = refline_y / (float)refline_x;
@@ -208,8 +204,7 @@ bool find_point_on_nearest_refline(
 
         if ( x_ref1 < plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
         {
-            // plant is between rows
-            // which row is closer?
+            // plant is between rows. which row is closer?
             const float delta_to_row1_px = plant_x_abs_offset_from_0 - x_ref1;
             const float delta_to_row2_px = x_ref2 - plant_x_abs_offset_from_0;
 
@@ -219,12 +214,12 @@ bool find_point_on_nearest_refline(
             if ( delta_to_row1_px < delta_to_row2_px )
             {
                 *nearest_refLine_x = x_ref1;
-                *deltaPx = delta_to_row1_px;        // row 1 --> positive
+                *deltaPx = delta_to_row1_px;        // row 1 is left from the plant. delta is positive.
             }
             else
             {
                 *nearest_refLine_x = x_ref2;
-                *deltaPx = -delta_to_row2_px;       // row 2 --> negative
+                *deltaPx = -delta_to_row2_px;       // row 2 is right from the plant. delta is negative.
             }
 
             *refLines_distance_px = x_ref2 - x_ref1;
@@ -232,8 +227,9 @@ bool find_point_on_nearest_refline(
 
             if ( plant_x_offset_from_middle < 0 )
             {
-                // plant is on the left side. Mirror the x value to minus
+                // plant is on the left side. Mirror the value
                 *nearest_refLine_x = -*nearest_refLine_x;
+                *deltaPx = -*deltaPx;
             }
             // shift it to the right pixel-image-value
             *nearest_refLine_x += frame_x_half;
