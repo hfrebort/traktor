@@ -8,6 +8,7 @@
 //#include "httplib.h"
 
 #include "stats.h"
+#include "util.h"
 
 struct Options
 {
@@ -25,7 +26,7 @@ struct Options
     {}
 };
 
-struct DetectSettings {
+struct ImageSettings {
     public:
         int         frame_cols;
         int         frame_rows;
@@ -36,30 +37,95 @@ struct DetectSettings {
         int         erode_iterations;
         int         dilate_iterations;
         int         minimalContourArea;
-        int         rowCount;
-        int         rowSpacingPx;
-        int         rowSpacingCm;
-        int         rowPerspectivePx;
-        int         rowThresholdPx;
 
-    DetectSettings()
+    ImageSettings()
     {
-        frame_cols         = 640;
-        frame_rows         = 480;
         colorFrom          = cv::Scalar(36,  25,  25);
         colorTo            = cv::Scalar(86, 255, 255);
         erode_iterations   = 3;
         dilate_iterations  = 3;
         maxPlats           = 10;
-        //maxZentimeter      = 5;
         minimalContourArea = 130;
+    }
+};
 
+struct ReflinesSettings {
+    public:
+        int         rowCount;
+        int         rowSpacingPx;
+        int         rowPerspectivePx;
+        int         rowThresholdPx;
+        
+        int         x_half;
+        int         y_fluchtpunkt;
+        int         half_row_count;
+
+    ReflinesSettings()
+    {
         rowCount           = 3;
+        half_row_count     = 1;
         rowSpacingPx       = 160;
-        rowSpacingCm       = 40;
         rowPerspectivePx   = 0;
         rowThresholdPx     = 1;
+
+        y_fluchtpunkt      = 0;
     }
+};
+
+struct DetectSettings {
+    private:
+        ImageSettings       imageSettings;
+        ReflinesSettings    reflineSettings;
+
+        void recalculate_rowCount()
+        {
+            //const int x_half        = set.frame_cols / 2;
+            //const int fluchtpunkt_y = set.frame_rows + set.rowPerspectivePx;
+            const int x_max_outer_row = ( imageSettings.frame_rows / reflineSettings.x_half ) * reflineSettings.y_fluchtpunkt;
+
+            const int rows_calculated_on_one_side = x_max_outer_row / reflineSettings.rowSpacingPx;
+            reflineSettings.rowCount = rows_calculated_on_one_side * 2 + 1;
+
+            reflineSettings.half_row_count  = (reflineSettings.rowCount-1) / 2;
+        }
+
+    public:
+
+        const ImageSettings&    getImageSettings()   { return imageSettings;   }
+        const ReflinesSettings& getReflineSettings() { return reflineSettings; }
+
+        void set_frame(const int newCols, const int newRows) {  
+            imageSettings.frame_cols = newCols;
+            imageSettings.frame_rows = newRows;
+
+            reflineSettings.x_half = newCols / 2;
+            reflineSettings.y_fluchtpunkt = reflineSettings.rowPerspectivePx + imageSettings.frame_rows;
+
+            recalculate_rowCount();
+        }
+
+        void set_rowPerspectivePx(const int perspectivePx) {  
+            reflineSettings.rowPerspectivePx = perspectivePx;
+            reflineSettings.y_fluchtpunkt = reflineSettings.rowPerspectivePx + imageSettings.frame_rows;
+            recalculate_rowCount();
+        }
+
+        void set_colorFrom(const std::string& csvValues) {
+            trk::setColorFromCSV( csvValues, imageSettings.colorFrom);
+        }
+
+        void set_colorTo(const std::string& csvValues) {
+            trk::setColorFromCSV( csvValues, imageSettings.colorTo);
+        }
+
+        void set_rowSpacingPx(const int newRowSpacingPx) {
+            reflineSettings.rowSpacingPx = newRowSpacingPx;
+            recalculate_rowCount();
+        }
+
+        void set_rowThresholdPx(const int newRowThresholdPx) {
+            reflineSettings.rowThresholdPx = newRowThresholdPx;
+        }
 };
 
 struct Shared {

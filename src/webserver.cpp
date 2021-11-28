@@ -87,23 +87,15 @@ int thread_webserver(int port, Shared* shared)
     {
         nlohmann::json data = nlohmann::json::parse(req.body);
         //printf("applyChanges data: %s\n", data.dump(2).c_str() );
-        trk::setColorFromCSV(                     data["colorFrom"], shared->detectSettings.colorFrom);
-        trk::setColorFromCSV(                     data["colorTo"],   shared->detectSettings.colorTo  );
         
-        shared->detectSettings.rowSpacingPx     = data["rowSpacingPx"]    .get<int>();
-        shared->detectSettings.rowPerspectivePx = data["rowPerspectivePx"].get<int>();
-        shared->detectSettings.rowThresholdPx   = data["rowThresholdPx"]  .get<int>();
+        DetectSettings& settings = shared->detectSettings;
+        
+        settings.set_colorFrom( data["colorFrom"] );
+        settings.set_colorTo  ( data["colorTo"]   );
 
-        DetectSettings& set = shared->detectSettings;
-
-        const int x_half        = set.frame_cols / 2;
-        const int fluchtpunkt_y = set.frame_rows + set.rowPerspectivePx;
-        const int x_max_outer_row = ( set.frame_rows / x_half ) * fluchtpunkt_y;
-
-        const int rows_calculated_on_one_side = x_max_outer_row / set.rowSpacingPx;
-        set.rowCount = rows_calculated_on_one_side * 2 + 1;
-        //printf("rows_calculated: %d\n", set.rowCount);
-
+        settings.set_rowSpacingPx    ( data["rowSpacingPx"]    .get<int>() );
+        settings.set_rowPerspectivePx( data["rowPerspectivePx"].get<int>() );
+        settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );
     });
 
     printf("I: webserver start listening on 0.0.0.0:%d\n", port);

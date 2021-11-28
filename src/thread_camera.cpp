@@ -8,9 +8,9 @@ void thread_camera(const Options& options, Shared* shared)
 {
     cv::VideoCapture capture = options.filename.empty() ? cv::VideoCapture(options.cameraIndex) : cv::VideoCapture(options.filename);
     
-    capture.set(cv::CAP_PROP_FRAME_WIDTH,  640);
-    capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-    capture.set(cv::CAP_PROP_FPS,           30);
+    //capture.set(cv::CAP_PROP_FRAME_WIDTH,  640);
+    //capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    //capture.set(cv::CAP_PROP_FPS,           30);
     //capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
 
     int CurrNr = 0;
@@ -21,13 +21,12 @@ void thread_camera(const Options& options, Shared* shared)
         return;
     }
 
-    const int cap_prop_fps = (int)capture.get(cv::CAP_PROP_FPS);
+    const int cap_prop_fps                    = (int)capture.get(cv::CAP_PROP_FPS);
     const int delay_for_realtime_video_millis = options.filename.empty() ? 0 : 1000 / cap_prop_fps * options.video_playback_slowdown_factor;
 
-    DetectSettings& decset = shared->detectSettings;
-
-    decset.frame_cols = shared->frame_buf[CurrNr].cols;
-    decset.frame_rows = shared->frame_buf[CurrNr].rows;
+    DetectSettings& settings = shared->detectSettings;
+    settings.set_frame( shared->frame_buf[CurrNr].cols
+                      , shared->frame_buf[CurrNr].rows );
 
     printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d\n",
          shared->frame_buf[CurrNr].cols

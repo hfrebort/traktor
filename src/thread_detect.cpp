@@ -93,17 +93,16 @@ void drawContoursAndCenters(cv::InputOutputArray frame, const DetectSettings &se
  *      start point: botton of the frame. +/- x_spacing
  *      end   point: Fluchtpunkt(!) des Bildes. X ist mittig. Y ist ein Wert "oberhalb" des Bildes. Minus Y!
  ***/
-void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
+void drawRowLines(cv::InputOutputArray frame, const ImageSettings &imgSettings, const ReflinesSettings& refSettings)
 {
     const cv::Scalar rowLineColor         (150,255,255);
     const cv::Scalar rowToleranceLineColor( 60,255,128);
 
-    //const int x_half = frame.cols() / 2;
-    const int x_half = settings.frame_cols / 2;
-    const int y_max  = settings.frame_rows;
+    const int x_half = refSettings.x_half;
+    const int y_max  = imgSettings.frame_rows;
 
-    const int       deltapx = settings.rowThresholdPx;
-    const cv::Point Fluchtpunkt(x_half, -settings.rowPerspectivePx);
+    const int       deltapx = refSettings.rowThresholdPx;
+    const cv::Point Fluchtpunkt(x_half, -refSettings.rowPerspectivePx);
     
     cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 3 );
 
@@ -113,9 +112,9 @@ void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
     //
     // Reihen rechts und links der Mittellinie zeichnen
     //
-    if ( settings.rowCount > 1 )
+    if ( refSettings.rowCount > 1 )
     {
-        for ( int r=settings.rowCount-1, x_spacing = settings.rowSpacingPx; r > 0; r-=2, x_spacing += settings.rowSpacingPx )
+        for ( int r=refSettings.rowCount-1, x_spacing = refSettings.rowSpacingPx; r > 0; r-=2, x_spacing += refSettings.rowSpacingPx )
         {
             // rows
             cv::line(frame, cv::Point(x_half - x_spacing,y_max),            Fluchtpunkt, rowLineColor, 3 );
@@ -129,7 +128,7 @@ void drawRowLines(cv::InputOutputArray frame, const DetectSettings &settings)
     }
 }
 
-void find_contours(cv::Mat& cameraFrame, const DetectSettings& settings, cv::Mat& outputFrame, Structures* structures, Stats* stats, const bool showWindows)
+void find_contours(cv::Mat& cameraFrame, const ImageSettings& settings, cv::Mat& outputFrame, Structures* structures, Stats* stats, const bool showWindows)
 {
     cv::Mat* in  = &tmp;
     cv::Mat* out = &outputFrame;
@@ -177,29 +176,23 @@ void calc_centers(Structures* found, const int minimalContourArea)
  * Wolfram Alpha: plot [y = (-x+2) * (10/2), {x,-2,2}]
  */
 bool find_point_on_nearest_refline(
-      const cv::Point& plant
-    , const DetectSettings& settings
+      const cv::Point&        plant
+    , const ReflinesSettings& settings
     , float  *nearest_refLine_x
     , float  *deltaPx
     , float  *refLines_distance_px)
 {
-    const int frame_x_half                 = (settings.frame_cols  / 2);
-    const int half_row_count               = (settings.rowCount-1) / 2;
-
-    const int   plant_x_offset_from_middle = plant.x - frame_x_half;
-    const float plant_x_abs_offset_from_0  = std::abs<int>( plant_x_offset_from_middle );
-    const float plant_y                    = settings.frame_rows - plant.y;
-    const float refline_y                  = settings.frame_rows + settings.rowPerspectivePx; // Höhe Fluchtpunkt
+    const float plant_x_abs_offset_from_0  = std::abs<int>( plant.x );
 
     float px_delta_to_row;
     float x_ref1 = 0;    // start with the middle
     float x_ref2;
 
     int refline_x = settings.rowSpacingPx;
-    for ( int r=0; r < half_row_count; ++r, refline_x += settings.rowSpacingPx)
+    for ( int r=0; r < settings.half_row_count; ++r, refline_x += settings.rowSpacingPx)
     {
-        const float refline_steigung = refline_y / (float)refline_x;
-        x_ref2 = -plant_y / refline_steigung ;
+        const float refline_steigung = settings.y_fluchtpunkt / (float)refline_x;
+        x_ref2 = -plant.y / refline_steigung ;
         x_ref2 +=  refline_x;
 
         if ( x_ref1 < plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
@@ -207,9 +200,6 @@ bool find_point_on_nearest_refline(
             // plant is between rows. which row is closer?
             const float delta_to_row1_px = plant_x_abs_offset_from_0 - x_ref1;
             const float delta_to_row2_px = x_ref2 - plant_x_abs_offset_from_0;
-
-            assert(delta_to_row1_px >= 0);
-            assert(delta_to_row2_px >= 0);
 
             if ( delta_to_row1_px < delta_to_row2_px )
             {
@@ -225,14 +215,14 @@ bool find_point_on_nearest_refline(
             *refLines_distance_px = x_ref2 - x_ref1;
             assert(*refLines_distance_px > 0);
 
-            if ( plant_x_offset_from_middle < 0 )
+            if ( plant.x < 0 )
             {
                 // plant is on the left side. Mirror the value
                 *nearest_refLine_x = -*nearest_refLine_x;
                 *deltaPx = -*deltaPx;
             }
             // shift it to the right pixel-image-value
-            *nearest_refLine_x += frame_x_half;
+            *nearest_refLine_x += settings.x_half;
 
             return true;
         }
@@ -246,20 +236,29 @@ bool find_point_on_nearest_refline(
     return false;
 }
 
-void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& settings, cv::Mat& frame)
+void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, cv::Mat& frame)
 {
-    const int x_half   = (settings.frame_cols  / 2);
-    const float threshold_percent = (float)settings.rowThresholdPx / (float)settings.rowSpacingPx;
+    const ReflinesSettings& refSettings = settings.getReflineSettings();
+    const ImageSettings&    imgSettings = settings.getImageSettings();
+
+    //const int x_half   = (settings.frame_cols  / 2);
+    const float threshold_percent = (float)refSettings.rowThresholdPx / (float)refSettings.rowSpacingPx;
 
     float   nearest_refLine_x;
     float   sum_threshold = 0;
+    cv::Point plant_coord;
+
     for ( int i=0; i < structures->centers.size(); ++i )
     {
         const cv::Point& plant = structures->centers[i];
         // hier bitte mit Magie befüllen!
         float refLines_distance_px;
         float deltaPx;
-        if ( find_point_on_nearest_refline(plant, settings, &nearest_refLine_x, &deltaPx, &refLines_distance_px) )
+
+        plant_coord.x = plant.x - refSettings.x_half;
+        plant_coord.y = imgSettings.frame_rows - plant.y;
+            
+        if ( find_point_on_nearest_refline(plant_coord, refSettings, &nearest_refLine_x, &deltaPx, &refLines_distance_px) )
         {
             const float threshold = deltaPx / refLines_distance_px;
             sum_threshold += threshold;
@@ -271,15 +270,15 @@ void calc_deltas_to_ref_lines(Structures* structures, const DetectSettings& sett
         }
     }
     const float avg_threshold = sum_threshold / (float)structures->centers.size();
-    int x_overall_threshold_px = (float)avg_threshold * (float)settings.rowSpacingPx;
+    int x_overall_threshold_px = (float)avg_threshold * (float)(settings.getReflineSettings().rowSpacingPx);
 
-    const cv::Scalar& color_overall_delta = abs(x_overall_threshold_px) < settings.rowThresholdPx ? GREEN : RED;
+    const cv::Scalar& color_overall_delta = abs(x_overall_threshold_px) < refSettings.rowThresholdPx ? GREEN : RED;
     //cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
 
     static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
     offset_bar.setTo( cv::Scalar(0,0,0) );
-    const int delta_status_px = (float)avg_threshold * (float)x_half;
-    cv::rectangle(offset_bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
+    const int delta_status_px = (float)avg_threshold * (float)(refSettings.x_half);
+    cv::rectangle(offset_bar, cv::Point(refSettings.x_half,0), cv::Point(refSettings.x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
     frame.push_back(offset_bar);
 }
 
@@ -289,6 +288,8 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
 
     Structures structures;
     int idx_doubleBuffer = 0;
+    const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
+    const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
 
     for (;;)
     {
@@ -316,22 +317,18 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
 
             find_contours(
                   cameraFrame               
-                , shared->detectSettings    
+                , imageSettings   
                 , outFrame                  
                 , &structures
                 , stats
                 , showDebugWindows );                                                           
 
             auto start = std::chrono::high_resolution_clock::now();
-            calc_centers(&structures, shared->detectSettings.minimalContourArea);
+            calc_centers(&structures, imageSettings.minimalContourArea);
 
             cameraFrame.copyTo(outFrame);
             calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame);
-            //
-            // draw 
-            //
-            //drawContoursAndCenters(outFrame, shared->detectSettings, structures );
-            drawRowLines          (outFrame, shared->detectSettings );
+            drawRowLines          (outFrame, imageSettings, reflineSettings );
 
             stats->calc_draw_ns      += trk::getDuration_ns(&start);
             stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
