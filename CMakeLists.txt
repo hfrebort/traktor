@@ -19,11 +19,14 @@ set(SOURCES
     src/thread_stats
     src/util.h
     src/util.cpp
+    src/harrow.h
+    src/harrow.cpp
 )
 
 add_executable(${EXECUTABLE} ${SOURCES})
 
 target_precompile_headers(${EXECUTABLE} PRIVATE
+  <string>
   <signal.h>
   <sys/stat.h>
   <stdio.h>
@@ -44,16 +47,14 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
 
 target_compile_features(${EXECUTABLE} PRIVATE cxx_std_17)
 
-#target_include_directories(traktor_cpp_test PRIVATE "./deps/boost_1_76_0")
 target_include_directories(${EXECUTABLE} PRIVATE "./deps/cpp-httplib")
 target_include_directories(${EXECUTABLE} PRIVATE "./deps/json")
 
-
-#add_library(pistache SHARED IMPORTED) # or STATIC instead of SHARED
-#set_target_properties(pistache PROPERTIES
-#  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/deps/pistache/lib/x86_64-linux-gnu/libpistache.so.0.0.002"
-#)
-#target_link_libraries(${EXECUTABLE} PRIVATE pistache)
+#
+# libgpiod
+#
+target_include_directories(${EXECUTABLE} PRIVATE "/usr/local/include")
+target_link_libraries     (${EXECUTABLE} PRIVATE "gpiod"    )
 
 message(STATUS CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR})
 
@@ -75,6 +76,8 @@ find_package(OpenCV REQUIRED)
 #message(STATUS "    version: ${OpenCV_VERSION}")
 #message(STATUS "    libraries: ${OpenCV_LIBS}")
 #message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
+
+message(STATUS "OPENCV target_link_libraries: ${OpenCV_LIBS}")
 
 # Link your application with OpenCV libraries
 target_link_libraries     (${EXECUTABLE} PRIVATE ${OpenCV_LIBS})

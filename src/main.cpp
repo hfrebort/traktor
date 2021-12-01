@@ -6,6 +6,7 @@
 //#include "httplib.h"
 
 #include "shared.h"
+#include "harrow.h"
 
 int wait_for_signal(void)
 {
@@ -70,7 +71,7 @@ void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stat
 int  thread_webserver(int port, Shared* shared);
 void thread_camera(const Options& options, Shared* shared);
 void thread_stats(Shared* ,Stats*);
-void thread_detect(Shared*, Stats*,bool showDebugWindows);
+void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
 
 int parser_commandline(int argc, char* argv[], Options* options)
 {
@@ -125,10 +126,20 @@ int main(int argc, char* argv[])
         printf("I: using file: %s\n", options.filename.c_str() );
     }
 
+    std::unique_ptr<Harrow> harrow;
+    
+    try {
+        harrow = std::make_unique<Harrow>();
+    }
+    catch (std::exception& ex) {
+        harrow.reset(nullptr);
+        fprintf(stderr, "Hack Steuerung sagt: %s\n", ex.what());
+    }
+
     Shared shared;
 
     std::thread camera(thread_camera, options, &shared);
-    std::thread detect(thread_detect, &shared, &shared.stats, options.showDebugWindows);
+    std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
     std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, options.httpPort, &shared);
 

@@ -152,10 +152,9 @@ struct Shared {
         std::atomic<int>        analyzed_frame_ready_idx;
         std::atomic<bool>       analyzed_frame_encoded_to_JPEG;
         std::vector<uchar>      analyzed_frame_jpegImage;
-        //
-        // 
-        //
-        DetectSettings         detectSettings;
+
+        DetectSettings          detectSettings;
+
     Shared()
     {
         shutdown_requested.store(false);

@@ -9,6 +9,7 @@
 #include "shared.h"
 #include "stats.h"
 #include "util.h"
+#include "harrow.h"
 //
 static const cv::Size GaussKernel(5,5);
 
@@ -236,7 +237,7 @@ bool find_point_on_nearest_refline(
     return false;
 }
 
-void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, cv::Mat& frame)
+void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, cv::Mat& frame, HARROW_DIRECTION& direction)
 {
     const ReflinesSettings& refSettings = settings.getReflineSettings();
     const ImageSettings&    imgSettings = settings.getImageSettings();
@@ -272,7 +273,18 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
     const float avg_threshold = sum_threshold / (float)structures->centers.size();
     int x_overall_threshold_px = (float)avg_threshold * (float)(settings.getReflineSettings().rowSpacingPx);
 
-    const cv::Scalar& color_overall_delta = abs(x_overall_threshold_px) < refSettings.rowThresholdPx ? GREEN : RED;
+    const bool is_within_threshold = std::abs(x_overall_threshold_px) < refSettings.rowThresholdPx;
+    if ( is_within_threshold ) {
+        direction = HARROW_DIRECTION::STOP;
+    }
+    else if ( x_overall_threshold_px > 0 ) {
+        direction = HARROW_DIRECTION::RIGHT;
+    }
+    else {
+        direction = HARROW_DIRECTION::LEFT;
+    }
+
+    const cv::Scalar& color_overall_delta = is_within_threshold ? GREEN : RED;
     //cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
 
     static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
@@ -282,7 +294,7 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
     frame.push_back(offset_bar);
 }
 
-void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
+void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugWindows)
 {
     printf("I: thread detect running\n");
 
@@ -290,6 +302,7 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
     int idx_doubleBuffer = 0;
     const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
     const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
+    HARROW_DIRECTION direction;
 
     for (;;)
     {
@@ -327,7 +340,7 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             calc_centers(&structures, imageSettings.minimalContourArea);
 
             cameraFrame.copyTo(outFrame);
-            calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame);
+            calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame, direction);
             drawRowLines          (outFrame, imageSettings, reflineSettings );
 
             stats->calc_draw_ns      += trk::getDuration_ns(&start);
@@ -337,7 +350,6 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
         {
             cv::imshow("inRange",       img_inRange );
             cv::imshow("GaussianBlur",  img_GaussianBlur );
-            //cv::imshow("threshold",     img_threshold );
             cv::imshow("eroded_dilated",img_eroded_dilated );
             cv::imshow("drawContours",  shared->analyzed_frame_buf[idx_doubleBuffer] );
             cv::waitKey(1);
@@ -356,6 +368,12 @@ void thread_detect(Shared* shared, Stats* stats, bool showDebugWindows)
             std::unique_lock<std::mutex> ul(shared->analyzed_frame_ready_mutex);
             shared->analyzed_frame_encoded_to_JPEG.store(false);
             shared->analyzed_frame_ready.notify_all();
+        }
+        //
+        // kontroll se Hacke
+        //
+        if ( harrow != nullptr ) {
+            harrow->move(direction);
         }
         
         idx_doubleBuffer = 1 - idx_doubleBuffer;
