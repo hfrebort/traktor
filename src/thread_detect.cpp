@@ -129,6 +129,7 @@ void drawRowLines(cv::InputOutputArray frame, const ImageSettings &imgSettings, 
     }
 }
 
+//cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}        stats->frame_bytes_processed += mat_byte_size(*in);
 void find_contours(cv::Mat& cameraFrame, const ImageSettings& settings, cv::Mat& outputFrame, Structures* structures, Stats* stats, const bool showWindows)
 {
     cv::Mat* in  = &tmp;
@@ -136,12 +137,12 @@ void find_contours(cv::Mat& cameraFrame, const ImageSettings& settings, cv::Mat&
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    cv::cvtColor    (cameraFrame, *out, cv::COLOR_BGR2HSV );                                 std::swap(in,out);                                                         stats->frame_bytes_processed += mat_byte_size(cameraFrame);
-    cv::GaussianBlur(*in, *out, GaussKernel, 0);                                             std::swap(in,out); if (showWindows) { in->copyTo(img_GaussianBlur); }      stats->frame_bytes_processed += mat_byte_size(*in);
-    cv::inRange     (*in, settings.colorFrom, settings.colorTo, *out );                      std::swap(in,out); if (showWindows) { in->copyTo(img_inRange); }           stats->frame_bytes_processed += mat_byte_size(*in);
-    //cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}        stats->frame_bytes_processed += mat_byte_size(*in);
-    cv::erode       (*in, *out, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  ); std::swap(in,out);                                                         stats->frame_bytes_processed += mat_byte_size(*in);
-    cv::dilate      (*in, *out, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations );                    if (showWindows) { out->copyTo(img_eroded_dilated); }   stats->frame_bytes_processed += mat_byte_size(*in);
+    auto prep_start = start;
+    cv::cvtColor    (cameraFrame, *out, cv::COLOR_BGR2HSV );                                 stats->prepare_cvtColor_ns     += trk::getDuration_ns(&prep_start);   std::swap(in,out);                                                         stats->frame_bytes_processed += mat_byte_size(cameraFrame);
+    cv::GaussianBlur(*in, *out, GaussKernel, 0);                                             stats->prepare_GaussianBlur_ns += trk::getDuration_ns(&prep_start);   std::swap(in,out); if (showWindows) { in->copyTo(img_GaussianBlur); }      stats->frame_bytes_processed += mat_byte_size(*in);
+    cv::inRange     (*in, settings.colorFrom, settings.colorTo, *out );                      stats->prepare_inRange_ns      += trk::getDuration_ns(&prep_start);   std::swap(in,out); if (showWindows) { in->copyTo(img_inRange); }           stats->frame_bytes_processed += mat_byte_size(*in);
+    cv::erode       (*in, *out, erodeKernel, cv::Point(-1,-1), settings.erode_iterations  ); stats->prepare_erode_ns        += trk::getDuration_ns(&prep_start);   std::swap(in,out);                                                         stats->frame_bytes_processed += mat_byte_size(*in);
+    cv::dilate      (*in, *out, dilateKernel,cv::Point(-1,-1), settings.dilate_iterations ); stats->prepare_dilate_ns       += trk::getDuration_ns(&prep_start);                      if (showWindows) { out->copyTo(img_eroded_dilated); }   stats->frame_bytes_processed += mat_byte_size(*in);
 
     stats->prepare_ns += trk::getDuration_ns(&start);
     

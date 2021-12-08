@@ -19,6 +19,13 @@ struct Stats
         
         std::atomic<uint64_t>   frame_bytes_processed;
 
+        std::atomic<uint64_t>   prepare_cvtColor_ns;
+        std::atomic<uint64_t>   prepare_GaussianBlur_ns;
+        std::atomic<uint64_t>   prepare_inRange_ns;
+        std::atomic<uint64_t>   prepare_erode_ns;
+        std::atomic<uint64_t>   prepare_dilate_ns;
+
+
     Stats() :
         fps(0)
         , camera_frames(0)
@@ -29,5 +36,10 @@ struct Stats
         , detect_overall_ns(0)
         , jpeg_bytes_sent(0)
         , frame_bytes_processed(0)
+        , prepare_cvtColor_ns(0)
+        , prepare_GaussianBlur_ns(0)
+        , prepare_inRange_ns(0)
+        , prepare_erode_ns(0)
+        , prepare_dilate_ns(0)
         {}
 };
