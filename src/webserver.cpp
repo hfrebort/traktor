@@ -98,8 +98,10 @@ int thread_webserver(int port, Shared* shared)
         settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );
     });
 
-    printf("I: webserver start listening on 0.0.0.0:%d\n", port);
-    svr.listen("0.0.0.0", port);
+    const char* host = "0.0.0.0";
+    printf("I: webserver start listening on %s:%d\n", host, port);
+    //svr.listen("0.0.0.0", port);
+    svr.listen(host, port);
 
     return 0;
 }
