@@ -42,29 +42,27 @@ void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stat
 
     if (web != nullptr)
     {
-        printf("I: stopping webserver... \n");
         shared.webSvr->stop();
-        printf("I: stopping webserver done\n");
         web->join();
-        printf("I: thread ended: webserver\n");
+        puts("I: thread ended: webserver");
     }
 
     if (camera != nullptr && camera->joinable() )
     {
         camera->join();
-        printf("I: thread ended: camera\n");
+        puts("I: thread ended: camera");
     }
 
     if (detect != nullptr)
     {
         detect->join();
-        printf("I: thread ended: detect\n");
+        puts("I: thread ended: detect");
     }
 
     if (stats != nullptr)
     {
         stats->join();
-        printf("I: thread ended: stats\n");
+        puts("I: thread ended: stats");
     }
 }
 
@@ -116,6 +114,8 @@ int main(int argc, char* argv[])
     {
         return rc;
     }
+
+    printf("I: opencv version: %s\n", cv::getVersionString().c_str());
 
     if (options.filename.empty())
     {

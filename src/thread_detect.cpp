@@ -381,7 +381,6 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
 
         if (shared->shutdown_requested.load())
         {
-            printf("I: thread detect quitting...\n");
             break;
         }
     }

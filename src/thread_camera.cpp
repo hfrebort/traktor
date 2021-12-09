@@ -66,5 +66,4 @@ void thread_camera(const Options& options, Shared* shared)
             break;
         }
     }
-    printf("I: thread camera: bye...\n");
 }
