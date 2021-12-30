@@ -17,12 +17,16 @@ struct Options
     int         httpPort;
     std::string filename;
     int         video_playback_slowdown_factor;
+    int         camera_width;
+    int         camera_fps;
 
     Options() :
           showDebugWindows(false)
         , cameraIndex(0)
         , httpPort(9080)
         , video_playback_slowdown_factor(1)
+        , camera_width(640)
+        , camera_fps(25)
     {}
 };
 

@@ -1,6 +1,4 @@
 CMakeFiles/**
 deps/**
 release/**
-build/**
-build2/**
-build_cross/**
+build*/**

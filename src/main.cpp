@@ -76,6 +76,8 @@ int parser_commandline(int argc, char* argv[], Options* options)
     const cv::String keys =
         "{help h usage ? |     | print this message                        }"
         "{c camindex     |   0 | index USB camera                          }"
+        "{width          | 640 | cv::CAP_PROP_FRAME_WIDTH                  }"
+        "{fps            |  25 | cv::CAP_PROP_FPS                          }"
         "{f file         |     | filename video                            }"
         "{slow           |   1 | slow down playback of videofile by factor }"
         "{p port         |9080 | port web server                           }"
@@ -101,6 +103,8 @@ int parser_commandline(int argc, char* argv[], Options* options)
     options->filename                       = cmd_parser.get<std::string>("file");
     options->httpPort                       = cmd_parser.get<int>        ("port");
     options->video_playback_slowdown_factor = cmd_parser.get<int>        ("slow");
+    options->camera_width                   = cmd_parser.get<int>        ("width");
+    options->camera_fps                     = cmd_parser.get<int>        ("fps");
 
     return 0;
 }
