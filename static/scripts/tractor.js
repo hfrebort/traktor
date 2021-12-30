@@ -14,7 +14,7 @@ angular.module('tractor', ['rzSlider'])
     $scope.maxMarkerSlider      = { value: 10, options: { floor: 1, ceil:  50 } };
 
     $scope.rowThresholdPxSlider = { value:   5, options: { floor: 1, ceil: 320,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
-    $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 640,             onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000,             onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
 
     $scope.data = {
