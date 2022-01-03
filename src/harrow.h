@@ -23,8 +23,6 @@ private:
 
     struct gpiod_chip *_chip;
 
-    struct gpiod_line *_lineDummyMiddle; 
-
     struct gpiod_line *_lineHydraulicRight; 
     struct gpiod_line *_lineHydraulicLeft; 
 

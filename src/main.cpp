@@ -36,9 +36,15 @@ int wait_for_signal(void)
     return 0;
 }
 
-void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stats, std::thread* web, std::thread* detect)
+void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stats, std::thread* web, std::thread* detect, std::thread* center)
 {
     shared.shutdown_requested.store(true);
+
+    if (center != nullptr && center->joinable() )
+    {
+        center->join();
+        puts("I: thread ended: center_harrow");
+    }
 
     if (web != nullptr)
     {
@@ -70,6 +76,7 @@ int  thread_webserver(int port, Shared* shared);
 void thread_camera(const Options& options, Shared* shared);
 void thread_stats(Shared* ,Stats*);
 void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
+void thread_centerHarrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, const std::atomic<bool>* shutdown_requested);
 
 int parser_commandline(int argc, char* argv[], Options* options)
 {
@@ -84,7 +91,7 @@ int parser_commandline(int argc, char* argv[], Options* options)
         "{s showwindow   |     | show intermediate results of processing   }";
 
     cv::CommandLineParser cmd_parser(argc, argv, keys);
-    cmd_parser.about("Traktor v0.2");
+    cmd_parser.about("Traktor v0.3");
 
     if (!cmd_parser.check())
     {
@@ -137,7 +144,7 @@ int main(int argc, char* argv[])
     }
     catch (std::exception& ex) {
         harrow.reset(nullptr);
-        fprintf(stderr, "Hack Steuerung sagt: %s\n", ex.what());
+        fprintf(stderr, "E: Hack Steuerung sagt: %s\n", ex.what());
     }
 
     Shared shared;
@@ -146,9 +153,10 @@ int main(int argc, char* argv[])
     std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
     std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, options.httpPort, &shared);
+    std::thread center(thread_centerHarrow, harrow.get(), &(shared.shouldMoveHarrow), &(shared.shutdown_requested));
 
     rc = wait_for_signal();
-    shutdown_all_threads(shared, &camera, &stats, &web, &detect);
+    shutdown_all_threads(shared, &camera, &stats, &web, &detect, &center);
 
     return rc;
 }

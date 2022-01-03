@@ -156,8 +156,14 @@ struct Shared {
         std::atomic<int>        analyzed_frame_ready_idx;
         std::atomic<bool>       analyzed_frame_encoded_to_JPEG;
         std::vector<uchar>      analyzed_frame_jpegImage;
-
+        //
+        //
+        //
         DetectSettings          detectSettings;
+        //
+        //
+        //
+        std::atomic<bool>       shouldMoveHarrow;
 
     Shared()
     {
@@ -166,5 +172,6 @@ struct Shared {
         frame_buf_slot.store(-1);
         analyzed_frame_ready_idx.store(-1);
         analyzed_frame_encoded_to_JPEG.store(false);
+        shouldMoveHarrow = true;
     }
 };

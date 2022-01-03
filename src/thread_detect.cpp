@@ -374,7 +374,9 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         // kontroll se Hacke
         //
         if ( harrow != nullptr ) {
-            harrow->move(direction);
+            if ( shared->shouldMoveHarrow.load() == true ) {
+                harrow->move(direction);
+            }
         }
         
         idx_doubleBuffer = 1 - idx_doubleBuffer;

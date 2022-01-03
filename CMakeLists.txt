@@ -21,6 +21,7 @@ set(SOURCES
     src/util.cpp
     src/harrow.h
     src/harrow.cpp
+    src/thread_centerHarrow.cpp
 )
 
 add_executable(${EXECUTABLE} ${SOURCES})

@@ -34,12 +34,6 @@ Harrow::Harrow()
         perror("chip_open failed");
         throw std::runtime_error("gpiod_chip_open(" + chipname + ")");
     }
-
-    //
-    // is just for testing purpose to light a LED when there is no movement to do
-    //
-    _lineDummyMiddle     = open_pin(_chip, 14);
-    set_pin_to_output(_lineDummyMiddle);
     //
     // setup lines/pins for hydraulic
     //
@@ -58,6 +52,11 @@ Harrow::Harrow()
     set_pin_to_input(_lineSensorUp);
     set_pin_to_input(_lineSensorRight);
     set_pin_to_input(_lineSensorLeft);
+    //
+    // turn hydraulic movement "off"
+    //
+    gpiod_line_set_value(_lineHydraulicRight,  0);
+    gpiod_line_set_value(_lineHydraulicLeft,   0);
 
 }
 
@@ -65,28 +64,33 @@ Harrow::~Harrow()
 {
     gpiod_line_release(_lineHydraulicRight);
     gpiod_line_release(_lineHydraulicLeft);
-    gpiod_line_release(_lineDummyMiddle);
+
+    gpiod_line_release(_lineSensorUp);
+    gpiod_line_release(_lineSensorLeft);
+    gpiod_line_release(_lineSensorRight);
 
     gpiod_chip_close(_chip);
 }
 
 void Harrow::move(HARROW_DIRECTION direction)
 {
-    gpiod_line_set_value(_lineHydraulicRight,  0);
-    gpiod_line_set_value(_lineHydraulicLeft,   0);
-    gpiod_line_set_value(_lineDummyMiddle,     0);
 
     gpiod_line* line = nullptr;
-    switch (direction) {
-        case HARROW_DIRECTION::RIGHT:  line = _lineHydraulicRight;  break;
-        case HARROW_DIRECTION::LEFT:   line = _lineHydraulicLeft;   break;
-        case HARROW_DIRECTION::STOP:   line = _lineDummyMiddle;     break;
+
+    if (direction == HARROW_DIRECTION::STOP)
+    {
+        gpiod_line_set_value(_lineHydraulicRight,  0);
+        gpiod_line_set_value(_lineHydraulicLeft,   0);
     }
-    if ( line != nullptr) {
-        if ( gpiod_line_set_value(line, 1) == -1 )
-        {
-            perror("E: error setting line to 1. gpiod_line_set_value()");
-        }
+    else if (direction == HARROW_DIRECTION::LEFT)
+    {
+        gpiod_line_set_value(_lineHydraulicRight,  0);
+        gpiod_line_set_value(_lineHydraulicLeft,   1);
+    }
+    else if (direction == HARROW_DIRECTION::RIGHT)
+    {
+        gpiod_line_set_value(_lineHydraulicLeft,   0);
+        gpiod_line_set_value(_lineHydraulicRight,  1);
     }
 }
 
