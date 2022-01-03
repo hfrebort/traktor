@@ -7,8 +7,9 @@
 
 cmake \
     -DCMAKE_TOOLCHAIN_FILE="../platform/jetson.cmake"                   \
-    -DCMAKE_C_FLAGS="-fuse-ld=lld"                                      \
-    -DCMAKE_CXX_FLAGS="-fuse-ld=lld"                                    \
+    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld"                            \
+    -DCMAKE_C_FLAGS="-Wunused-command-line-argument"       \
+    -DCMAKE_CXX_FLAGS="-Wunused-command-line-argument"     \
     -DCUDA_TOOLKIT_ROOT_DIR="/home/bee/dev/jetroot/usr/local/cuda-10.2" \
     -DCUDAToolkit_ROOT="/home/bee/dev/jetroot/usr/local/cuda-10.2"      \
     -S . -B buildJetson
