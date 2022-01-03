@@ -1,5 +1,8 @@
-//#include <atomic>
-//#include <opencv2/opencv.hpp>
+#include <atomic>
+#include <thread>
+#include <chrono>
+
+#include <opencv2/opencv.hpp>
 
 #include "shared.h"
 #include "stats.h"

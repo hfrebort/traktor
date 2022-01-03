@@ -1,9 +1,10 @@
-//#include <signal.h>
-//#include <functional>
-//#include <memory>
-//#include <thread>
-//
-//#include "httplib.h"
+#include <signal.h>
+#include <functional>
+#include <memory>
+#include <thread>
+
+#include <opencv2/opencv.hpp>
+#include "httplib.h"
 
 #include "shared.h"
 #include "harrow.h"

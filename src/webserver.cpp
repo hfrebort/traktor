@@ -1,8 +1,11 @@
-//#include <stdio.h>
-//#include <vector>
-//#include <functional>
-//
-//#include "httplib.h"
+#include <stdio.h>
+#include <vector>
+#include <functional>
+
+#include "httplib.h"
+
+#define JSON_NO_IO
+#include "json.hpp"
 
 #include "shared.h"
 #include "util.h"

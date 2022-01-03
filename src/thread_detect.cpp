@@ -1,16 +1,16 @@
-//#include <atomic>
-//#include <optional>
-//
-////#include <opencv2/opencv.hpp>
-//#include <opencv2/core.hpp>
-//#include <opencv2/imgproc.hpp>
-//#include <opencv2/highgui.hpp>
-//
+#include <atomic>
+#include <optional>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+
 #include "shared.h"
 #include "stats.h"
 #include "util.h"
 #include "harrow.h"
-//
+
 static const cv::Size GaussKernel(5,5);
 
 const int erosion_size = 2;

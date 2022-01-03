@@ -1,11 +1,12 @@
-//#include <stdio.h>
-//#include <thread>
-//#include <chrono>
+#include <stdio.h>
+#include <thread>
+#include <chrono>
+#include <cstdint>
 
 #include "stats.h"
 #include "shared.h"
 
-float ns_to_ms_per_fps(uint64 ns, int fps)
+float ns_to_ms_per_fps(uint64_t ns, int fps)
 {
     return fps > 0 ? 
                   ( ( (float)ns / (float)fps ) / 1000000.0 ) 

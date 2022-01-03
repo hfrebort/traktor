@@ -1,7 +1,8 @@
-//#include <functional>
-//#include <atomic>
-//#include <opencv2/opencv.hpp>
-//#include <opencv2/imgcodecs.hpp>
+#include <functional>
+#include <atomic>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 #include "shared.h"
 

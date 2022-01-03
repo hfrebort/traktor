@@ -1,7 +1,8 @@
 #pragma once
 
-//#include <cstddef>
-//#include <atomic>
+#include <cstdint>
+#include <atomic>
+#include <condition_variable>
 
 struct Stats
 {
