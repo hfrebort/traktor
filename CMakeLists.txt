@@ -45,7 +45,7 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   [["json.hpp"]]
 )
 
-target_compile_features(${EXECUTABLE} PRIVATE cxx_std_17)
+target_compile_features(${EXECUTABLE} PRIVATE cxx_std_14)
 
 target_include_directories(${EXECUTABLE} PRIVATE "./deps/cpp-httplib")
 target_include_directories(${EXECUTABLE} PRIVATE "./deps/json")
