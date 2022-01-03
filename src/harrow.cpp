@@ -19,6 +19,13 @@ void set_pin_to_output(gpiod_line* line)
     }
 }
 
+void set_pin_to_input(gpiod_line* line)
+{
+    if ( gpiod_line_request_input(line, "BumsMichl") == -1 ) {
+        throw std::runtime_error( "gpiod_line_request_imput" );
+    }
+}
+
 Harrow::Harrow()
 {
     const std::string chipname("/dev/gpiochip0");
@@ -28,39 +35,84 @@ Harrow::Harrow()
         throw std::runtime_error("gpiod_chip_open(" + chipname + ")");
     }
 
-    _lineRight  = open_pin(_chip, 23);
-    _lineLeft   = open_pin(_chip, 24);
-    _lineMiddle = open_pin(_chip, 14);
+    //
+    // is just for testing purpose to light a LED when there is no movement to do
+    //
+    _lineDummyMiddle     = open_pin(_chip, 14);
+    set_pin_to_output(_lineDummyMiddle);
+    //
+    // setup lines/pins for hydraulic
+    //
+    _lineHydraulicRight  = open_pin(_chip, 23);
+    _lineHydraulicLeft   = open_pin(_chip, 24);
 
-    set_pin_to_output(_lineRight);
-    set_pin_to_output(_lineLeft);
-    set_pin_to_output(_lineMiddle);
+    set_pin_to_output(_lineHydraulicRight);
+    set_pin_to_output(_lineHydraulicLeft);
+    //
+    // setup lines/pins for "ReCenter sensors"
+    //
+    _lineSensorUp    = open_pin(_chip, 17);     // when harrow is lifted up
+    _lineSensorRight = open_pin(_chip, 22);
+    _lineSensorLeft  = open_pin(_chip, 27);
+
+    set_pin_to_input(_lineSensorUp);
+    set_pin_to_input(_lineSensorRight);
+    set_pin_to_input(_lineSensorLeft);
 
 }
 
 Harrow::~Harrow()
 {
-    gpiod_line_release(_lineRight);
-    gpiod_line_release(_lineLeft);
-    gpiod_line_release(_lineMiddle);
+    gpiod_line_release(_lineHydraulicRight);
+    gpiod_line_release(_lineHydraulicLeft);
+    gpiod_line_release(_lineDummyMiddle);
 
     gpiod_chip_close(_chip);
 }
 
 void Harrow::move(HARROW_DIRECTION direction)
 {
-    gpiod_line_set_value(_lineRight,  0);
-    gpiod_line_set_value(_lineLeft,   0);
-    gpiod_line_set_value(_lineMiddle, 0);
+    gpiod_line_set_value(_lineHydraulicRight,  0);
+    gpiod_line_set_value(_lineHydraulicLeft,   0);
+    gpiod_line_set_value(_lineDummyMiddle,     0);
 
     gpiod_line* line = nullptr;
     switch (direction) {
-        case HARROW_DIRECTION::RIGHT:  line = _lineRight;  break;
-        case HARROW_DIRECTION::LEFT:   line = _lineLeft;   break;
-        case HARROW_DIRECTION::STOP:   line = _lineMiddle; break;
+        case HARROW_DIRECTION::RIGHT:  line = _lineHydraulicRight;  break;
+        case HARROW_DIRECTION::LEFT:   line = _lineHydraulicLeft;   break;
+        case HARROW_DIRECTION::STOP:   line = _lineDummyMiddle;     break;
     }
     if ( line != nullptr) {
-        gpiod_line_set_value(line, 1);
+        if ( gpiod_line_set_value(line, 1) == -1 )
+        {
+            perror("E: error setting line to 1. gpiod_line_set_value()");
+        }
+    }
+}
+
+int readSensor(struct gpiod_line *line)
+{
+    const int val = gpiod_line_get_value(line);
+    
+    if ( val == -1 )
+    {
+        perror("E: error reading from line. gpiod_line_get_value()");
     }
 
+    return val;
+}
+
+int Harrow::isLifted()
+{
+    return readSensor(_lineSensorUp);
+}
+
+int Harrow::isZweitRechts()
+{
+    return readSensor(_lineSensorRight);
+}
+
+int Harrow::isZweitLinks()
+{
+    return readSensor(_lineSensorLeft);
 }
