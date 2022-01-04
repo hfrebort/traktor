@@ -72,35 +72,40 @@ Harrow::~Harrow()
     gpiod_chip_close(_chip);
 }
 
-void Harrow::move(HARROW_DIRECTION direction)
+void line_set_value(struct gpiod_line *line, const int value, const char* linename)
 {
-
-    gpiod_line* line = nullptr;
-
-    if (direction == HARROW_DIRECTION::STOP)
+    if ( gpiod_line_set_value(line,  value) == -1 )
     {
-        gpiod_line_set_value(_lineHydraulicRight,  0);
-        gpiod_line_set_value(_lineHydraulicLeft,   0);
-    }
-    else if (direction == HARROW_DIRECTION::LEFT)
-    {
-        gpiod_line_set_value(_lineHydraulicRight,  0);
-        gpiod_line_set_value(_lineHydraulicLeft,   1);
-    }
-    else if (direction == HARROW_DIRECTION::RIGHT)
-    {
-        gpiod_line_set_value(_lineHydraulicLeft,   0);
-        gpiod_line_set_value(_lineHydraulicRight,  1);
+        fprintf(stderr, "E: line_set_value. (%s)\n", linename);
     }
 }
 
-int readSensor(struct gpiod_line *line)
+void Harrow::move(HARROW_DIRECTION direction)
+{
+    if (direction == HARROW_DIRECTION::STOP)
+    {
+        line_set_value(_lineHydraulicRight,  0, "HydraulicRight");
+        line_set_value(_lineHydraulicLeft,   0, "HydraulicLeft");
+    }
+    else if (direction == HARROW_DIRECTION::LEFT)
+    {
+        line_set_value(_lineHydraulicRight,  0, "HydraulicRight");
+        line_set_value(_lineHydraulicLeft,   1, "HydraulicLeft");
+    }
+    else if (direction == HARROW_DIRECTION::RIGHT)
+    {
+        line_set_value(_lineHydraulicLeft,   0, "HydraulicLeft");
+        line_set_value(_lineHydraulicRight,  1, "HydraulicRight");
+    }
+}
+
+int line_get_value(struct gpiod_line *line, const char* linename)
 {
     const int val = gpiod_line_get_value(line);
     
     if ( val == -1 )
     {
-        perror("E: error reading from line. gpiod_line_get_value()");
+        fprintf(stderr, "E: line_get_value. (%s)\n", linename);
     }
 
     return val;
@@ -108,15 +113,15 @@ int readSensor(struct gpiod_line *line)
 
 int Harrow::isLifted()
 {
-    return readSensor(_lineSensorUp);
+    return line_get_value(_lineSensorUp, "SensorUp");
 }
 
 int Harrow::isZweitRechts()
 {
-    return readSensor(_lineSensorRight);
+    return line_get_value(_lineSensorRight, "SensorRight");
 }
 
 int Harrow::isZweitLinks()
 {
-    return readSensor(_lineSensorLeft);
+    return line_get_value(_lineSensorLeft, "SensorLeft");
 }

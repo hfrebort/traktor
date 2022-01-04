@@ -76,7 +76,7 @@ int  thread_webserver(int port, Shared* shared);
 void thread_camera(const Options& options, Shared* shared);
 void thread_stats(Shared* ,Stats*);
 void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
-void thread_centerHarrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, const std::atomic<bool>* shutdown_requested);
+void thread_center_harrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, const std::atomic<bool>* shutdown_requested);
 
 int parser_commandline(int argc, char* argv[], Options* options)
 {
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
     std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
     std::thread stats (thread_stats, &shared, &shared.stats);
     std::thread web   (thread_webserver, options.httpPort, &shared);
-    std::thread center(thread_centerHarrow, harrow.get(), &(shared.shouldMoveHarrow), &(shared.shutdown_requested));
+    std::thread center(thread_center_harrow, harrow.get(), &(shared.shouldMoveHarrow), &(shared.shutdown_requested));
 
     rc = wait_for_signal();
     shutdown_all_threads(shared, &camera, &stats, &web, &detect, &center);

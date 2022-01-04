@@ -16,7 +16,7 @@ void move_harrow_towards_center(Harrow* harrow)
     }
 }
 
-void thread_centerHarrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, const std::atomic<bool>* shutdown_requested)
+void thread_center_harrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, const std::atomic<bool>* shutdown_requested)
 {
     if ( harrow == nullptr )
     {
@@ -31,7 +31,7 @@ void thread_centerHarrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, co
         const int lifted = harrow->isLifted();
         if      ( lifted == -1 )
         {
-            perror("could not read value from sensor LIFTED");
+            perror("E: could not read sensor LIFTED");
             break;
         }
 
