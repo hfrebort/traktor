@@ -30,4 +30,6 @@ private:
     struct gpiod_line *_lineSensorRight;
     struct gpiod_line *_lineSensorLeft;
 
+    std::mutex _mutex_move;
+
 };
