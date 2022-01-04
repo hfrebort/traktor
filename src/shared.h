@@ -18,6 +18,7 @@ struct Options
     std::string filename;
     int         video_playback_slowdown_factor;
     int         camera_width;
+    int         camera_height;
     int         camera_fps;
 
     Options() :
@@ -25,7 +26,8 @@ struct Options
         , cameraIndex(0)
         , httpPort(9080)
         , video_playback_slowdown_factor(1)
-        , camera_width(640)
+        , camera_width(0)
+        , camera_height(0)
         , camera_fps(25)
     {}
 };

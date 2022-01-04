@@ -73,6 +73,7 @@ int parser_commandline(int argc, char* argv[], Options* options)
         "{help h usage ? |     | print this message                        }"
         "{c camindex     |   0 | index USB camera                          }"
         "{width          | 640 | cv::CAP_PROP_FRAME_WIDTH                  }"
+        "{height         | 480 | cv::CAP_PROP_FRAME_HEIGHT                 }"
         "{fps            |  25 | cv::CAP_PROP_FPS                          }"
         "{f file         |     | filename video                            }"
         "{slow           |   1 | slow down playback of videofile by factor }"
@@ -100,6 +101,7 @@ int parser_commandline(int argc, char* argv[], Options* options)
     options->httpPort                       = cmd_parser.get<int>        ("port");
     options->video_playback_slowdown_factor = cmd_parser.get<int>        ("slow");
     options->camera_width                   = cmd_parser.get<int>        ("width");
+    options->camera_height                  = cmd_parser.get<int>        ("height");
     options->camera_fps                     = cmd_parser.get<int>        ("fps");
 
     return 0;

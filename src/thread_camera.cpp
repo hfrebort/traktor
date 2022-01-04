@@ -10,11 +10,13 @@ void thread_camera(const Options& options, Shared* shared)
     
     if ( options.filename.empty() ) 
     {
-        printf("I: set cv::CAP_PROP_FRAME_WIDTH = %d\n", options.camera_width);
+        
         capture.set(cv::CAP_PROP_FRAME_WIDTH,  (double)options.camera_width);
-        //capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-        capture.set(cv::CAP_PROP_FPS,           (double)options.camera_fps);
-        capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+        capture.set(cv::CAP_PROP_FRAME_HEIGHT, (double)options.camera_height);
+        printf("I: set CAP_PROP_FRAME_WIDTH x CAP_PROP_FRAME_HEIGHT = %dx%d\n", options.camera_width, options.camera_height);
+
+        //capture.set(cv::CAP_PROP_FPS,           (double)options.camera_fps);
+        //capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
     }
 
     int CurrNr = 0;
