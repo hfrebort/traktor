@@ -291,7 +291,14 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
     static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
     offset_bar.setTo( cv::Scalar(0,0,0) );
     const int delta_status_px = (float)avg_threshold * (float)(refSettings.x_half);
-    cv::rectangle(offset_bar, cv::Point(refSettings.x_half,0), cv::Point(refSettings.x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
+    if ( settings.detecting.load() )
+    {
+        cv::rectangle(offset_bar, cv::Point(refSettings.x_half,0), cv::Point(refSettings.x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
+    }
+    else
+    {
+        cv::putText(offset_bar, "DETECTION OFF", cv::Point(frame.cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);
+    }
     frame.push_back(offset_bar);
 }
 
@@ -301,8 +308,11 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
 
     Structures structures;
     int idx_doubleBuffer = 0;
+
+    const DetectSettings   &detectSettings  = shared->detectSettings;
     const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
     const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
+    
     HARROW_DIRECTION direction;
 
     for (;;)
@@ -324,9 +334,6 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         //
         {
             std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
-            //
-            // 1. detect
-            //
             auto overallstart = std::chrono::high_resolution_clock::now();
 
             find_contours(
@@ -373,10 +380,11 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         //
         // kontroll se Hacke
         //
-        if ( harrow != nullptr ) {
-            if ( shared->shouldMoveHarrow.load() == true ) {
+        if (        harrow != nullptr 
+                && shared->harrowLifted.load()     == false 
+                && detectSettings.detecting.load() == true)
+        {
                 harrow->move(direction);
-            }
         }
         
         idx_doubleBuffer = 1 - idx_doubleBuffer;

@@ -97,6 +97,11 @@ struct DetectSettings {
 
         const ImageSettings&    getImageSettings()   { return imageSettings;   }
         const ReflinesSettings& getReflineSettings() { return reflineSettings; }
+        std::atomic<bool>   detecting;
+
+        DetectSettings() {
+            detecting.store(true);
+        }
 
         void set_frame(const int newCols, const int newRows) {  
             imageSettings.frame_cols = newCols;
@@ -130,6 +135,7 @@ struct DetectSettings {
         void set_rowThresholdPx(const int newRowThresholdPx) {
             reflineSettings.rowThresholdPx = newRowThresholdPx;
         }
+
 };
 
 struct Shared {
@@ -163,7 +169,7 @@ struct Shared {
         //
         //
         //
-        std::atomic<bool>       shouldMoveHarrow;
+        std::atomic<bool>       harrowLifted;
 
     Shared()
     {
@@ -172,6 +178,6 @@ struct Shared {
         frame_buf_slot.store(-1);
         analyzed_frame_ready_idx.store(-1);
         analyzed_frame_encoded_to_JPEG.store(false);
-        shouldMoveHarrow = true;
+        harrowLifted = true;
     }
 };

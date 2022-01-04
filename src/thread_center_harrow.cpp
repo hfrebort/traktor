@@ -16,7 +16,7 @@ void move_harrow_towards_center(Harrow* harrow)
     }
 }
 
-void thread_center_harrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, const std::atomic<bool>* shutdown_requested)
+void thread_center_harrow(Harrow* harrow, std::atomic<bool>* harrowLifted, const std::atomic<bool>* shutdown_requested)
 {
     if ( harrow == nullptr )
     {
@@ -37,11 +37,11 @@ void thread_center_harrow(Harrow* harrow, std::atomic<bool>* shouldMoveHarrow, c
 
         if ( lifted == 0 )
         {
-            shouldMoveHarrow->store(true);
+            harrowLifted->store(false);
         }
         else if ( lifted == 1 )
         {
-            shouldMoveHarrow->store(false);
+            harrowLifted->store(true);
             move_harrow_towards_center(harrow);
         }
 

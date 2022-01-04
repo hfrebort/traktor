@@ -18,7 +18,6 @@ int thread_webserver(int port, Shared* shared)
 
     const char* webroot = "./static";
 
-    // Mount /public to ./www directory
     if ( !svr.set_mount_point("/", webroot)) {
         printf("E: web root dir does not exist\n");
         return 1;
@@ -96,6 +95,13 @@ int thread_webserver(int port, Shared* shared)
         settings.set_rowSpacingPx    ( data["rowSpacingPx"]    .get<int>() );
         settings.set_rowPerspectivePx( data["rowPerspectivePx"].get<int>() );
         settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );
+
+        bool detectNewValue = data["detecting"].get<bool>();
+        if ( detectNewValue != settings.detecting.load() )
+        {
+            settings.detecting.store ( detectNewValue );
+            printf("I: detecting is now: %s\n", detectNewValue ? "ON" : "OFF");
+        }
     });
 
     const char* host = "0.0.0.0";

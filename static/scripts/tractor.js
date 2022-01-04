@@ -71,6 +71,9 @@ angular.module('tractor', ['rzSlider'])
     this.stop = function () {
         this.applyChanges(false);
     };
+    this.start = function () {
+        this.applyChanges(true);
+    };
     this.perform = function (direction) {
         $scope.data.direction = direction;
         $http.post('/perform', $scope.data).then(handleResponse);
