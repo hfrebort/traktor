@@ -59,7 +59,7 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 
         if ( shared->shutdown_requested.load() )
         {
-            printf("I: thread send_jpeg \n");
+            puts("I: thread ended: send_jpeg\n");
             break;
         }
     }

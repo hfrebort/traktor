@@ -36,40 +36,29 @@ int wait_for_signal(void)
     return 0;
 }
 
+void join_thread(std::thread* t, const char* name)
+{
+    if ( t != nullptr && t->joinable() )
+    {
+        t->join();
+        printf("I: thread ended: %s\n", name);
+    }
+}
+
 void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stats, std::thread* web, std::thread* detect, std::thread* center)
 {
     shared.shutdown_requested.store(true);
 
-    if (center != nullptr && center->joinable() )
-    {
-        center->join();
-        puts("I: thread ended: center_harrow");
-    }
-
-    if (web != nullptr)
+    if (shared.webSvr != nullptr)
     {
         shared.webSvr->stop();
-        web->join();
-        puts("I: thread ended: webserver");
     }
 
-    if (camera != nullptr && camera->joinable() )
-    {
-        camera->join();
-        puts("I: thread ended: camera");
-    }
-
-    if (detect != nullptr)
-    {
-        detect->join();
-        puts("I: thread ended: detect");
-    }
-
-    if (stats != nullptr)
-    {
-        stats->join();
-        puts("I: thread ended: stats");
-    }
+    join_thread(center, "center_harrow");
+    join_thread(web,    "webserver");
+    join_thread(camera, "camera");
+    join_thread(detect, "detect");
+    join_thread(stats,  "stats");
 }
 
 int  thread_webserver(int port, Shared* shared);
