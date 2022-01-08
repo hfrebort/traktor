@@ -313,6 +313,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
     const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
     const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
     
+    HARROW_DIRECTION directionLast = HARROW_DIRECTION::STOP;
     HARROW_DIRECTION direction;
 
     for (;;)
@@ -384,7 +385,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
                 && shared->harrowLifted.load()     == false 
                 && detectSettings.detecting.load() == true)
         {
-                harrow->move(direction);
+                harrow->move(direction, "detect");
         }
         
         idx_doubleBuffer = 1 - idx_doubleBuffer;

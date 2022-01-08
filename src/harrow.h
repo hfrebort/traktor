@@ -10,7 +10,7 @@ class Harrow {
 
 public:
 
-    void move(HARROW_DIRECTION);
+    void move(HARROW_DIRECTION, const char*);
 
     int isLifted();
     int isZweitRechts();

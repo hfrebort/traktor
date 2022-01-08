@@ -2,17 +2,17 @@
 
 void move_harrow_towards_center(Harrow* harrow)
 {
-    if ( harrow->isZweitLinks() )
+    if ( harrow->isZweitLinks() == 0 )
     {
-        harrow->move(HARROW_DIRECTION::RIGHT);
+        harrow->move(HARROW_DIRECTION::RIGHT, "center");
     }
-    else if ( harrow->isZweitRechts() )
+    else if ( harrow->isZweitRechts() == 0 )
     {
-        harrow->move(HARROW_DIRECTION::LEFT);
+        harrow->move(HARROW_DIRECTION::LEFT, "center");
     }
     else 
     {
-        harrow->move(HARROW_DIRECTION::STOP);
+        harrow->move(HARROW_DIRECTION::STOP, "center");
     }
 }
 
@@ -35,11 +35,11 @@ void thread_center_harrow(Harrow* harrow, std::atomic<bool>* harrowLifted, const
             break;
         }
 
-        if ( lifted == 0 )
+        if ( lifted == 1 )
         {
             harrowLifted->store(false);
         }
-        else if ( lifted == 1 )
+        else if ( lifted == 0 )
         {
             harrowLifted->store(true);
             move_harrow_towards_center(harrow);
@@ -50,6 +50,6 @@ void thread_center_harrow(Harrow* harrow, std::atomic<bool>* harrowLifted, const
             break;
         }
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+        std::this_thread::sleep_for( std::chrono::milliseconds(50) );
     }
 }

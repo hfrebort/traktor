@@ -80,22 +80,25 @@ void line_set_value(struct gpiod_line *line, const int value, const char* linena
     }
 }
 
-void Harrow::move(HARROW_DIRECTION direction)
+void Harrow::move(HARROW_DIRECTION direction, const char* source)
 {
     const std::lock_guard<std::mutex> lock(this->_mutex_move);
 
     if (direction == HARROW_DIRECTION::STOP)
     {
+        printf("hydraulic stop  - %s\n", source);
         line_set_value(_lineHydraulicRight,  0, "HydraulicRight");
         line_set_value(_lineHydraulicLeft,   0, "HydraulicLeft");
     }
     else if (direction == HARROW_DIRECTION::LEFT)
     {
+        printf("hydraulic left  - %s\n", source);
         line_set_value(_lineHydraulicRight,  0, "HydraulicRight");
         line_set_value(_lineHydraulicLeft,   1, "HydraulicLeft");
     }
     else if (direction == HARROW_DIRECTION::RIGHT)
     {
+        printf("hydraulic right - %s\n", source);
         line_set_value(_lineHydraulicLeft,   0, "HydraulicLeft");
         line_set_value(_lineHydraulicRight,  1, "HydraulicRight");
     }
