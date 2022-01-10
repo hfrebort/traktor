@@ -12,17 +12,17 @@ gpiod_line* open_pin(gpiod_chip* chip, unsigned int gpio_number)
     return line;
 }
 
-void set_pin_to_output(gpiod_line* line)
+void set_pin_to_output(gpiod_line* line, const char* consumer)
 {
-    if ( gpiod_line_request_output(line, "BumsMichl", 0) == -1 ) {
-        throw std::runtime_error( "gpiod_line_request_output" );
+    if ( gpiod_line_request_output(line, consumer, 0) == -1 ) {
+        throw std::runtime_error( std::string("gpiod_line_request_output: ") + consumer );
     }
 }
 
-void set_pin_to_input(gpiod_line* line)
+void set_pin_to_input_pullup(gpiod_line* line, const char* consumer)
 {
-    if ( gpiod_line_request_input(line, "BumsMichl") == -1 ) {
-        throw std::runtime_error( "gpiod_line_request_imput" );
+    if ( gpiod_line_request_input_flags(line, consumer, GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP) == -1 ) {
+        throw std::runtime_error( std::string("gpiod_line_request_input_flags: ") + consumer );
     }
 }
 
@@ -40,8 +40,8 @@ Harrow::Harrow()
     _lineHydraulicRight  = open_pin(_chip, 23);
     _lineHydraulicLeft   = open_pin(_chip, 24);
 
-    set_pin_to_output(_lineHydraulicRight);
-    set_pin_to_output(_lineHydraulicLeft);
+    set_pin_to_output(_lineHydraulicRight, "hydraulic_right");
+    set_pin_to_output(_lineHydraulicLeft,  "hydraulic_left");
     //
     // setup lines/pins for "ReCenter sensors"
     //
@@ -49,9 +49,9 @@ Harrow::Harrow()
     _lineSensorRight = open_pin(_chip, 22);
     _lineSensorLeft  = open_pin(_chip, 27);
 
-    set_pin_to_input(_lineSensorUp);
-    set_pin_to_input(_lineSensorRight);
-    set_pin_to_input(_lineSensorLeft);
+    set_pin_to_input_pullup(_lineSensorUp,    "sensor_up");
+    set_pin_to_input_pullup(_lineSensorRight, "sensor_zweit_rechts");
+    set_pin_to_input_pullup(_lineSensorLeft,  "sensor_zweit_links");
     //
     // turn hydraulic movement "off"
     //
