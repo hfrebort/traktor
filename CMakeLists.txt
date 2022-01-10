@@ -57,6 +57,9 @@ target_include_directories(${EXECUTABLE} PRIVATE "./deps/json")
 target_include_directories(${EXECUTABLE} PRIVATE "/usr/local/include")
 target_link_libraries     (${EXECUTABLE} PRIVATE "gpiod"    )
 
+find_library(GPIOD_LIBRARY NAMES gpiod)
+message(STATUS GPIOD_LIBRARY:      ${GPIOD_LIBRARY})
+
 message(STATUS CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
