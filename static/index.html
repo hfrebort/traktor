@@ -2,87 +2,106 @@
 <html data-ng-app="tractor">
 
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+   <!-- Required meta tags -->
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- Bootstrap CSS -->
-  <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/rzslider.min.css">
-  <style>
-    .traktor-container { position: relative; }
-    .traktor-image { width: 100%; display: block; }
+   <!-- Bootstrap CSS -->
+   <!-- Latest compiled and minified CSS -->
+   <link rel="stylesheet" href="css/bootstrap.min.css">
+   <link rel="stylesheet" href="css/rzslider.min.css">
+   <style>
+      .traktor-container {
+         position: relative;
+      }
 
-    .custom-slider.rzslider .rz-selection { background:       #337ab7; }
-    .custom-slider.rzslider .rz-pointer   { background-color: #337ab7; }
-    th, td {
-                padding: 3px;
-            }
-  </style>
-  <script src="scripts/angular.min.js"></script>
-  <script src="scripts/rzslider.min.js"></script>
-  <script src="scripts/tractor.js"></script>
-  <title>Traktor</title>
+      .traktor-image {
+         width: 100%;
+         display: block;
+      }
+
+      .custom-slider.rzslider .rz-selection {
+         background: #337ab7;
+      }
+
+      .custom-slider.rzslider .rz-pointer {
+         background-color: #337ab7;
+      }
+
+      th,
+      td {
+         padding: 3px;
+      }
+   </style>
+   <script src="scripts/angular.min.js"></script>
+   <script src="scripts/rzslider.min.js"></script>
+   <script src="scripts/tractor.js"></script>
+   <title>Traktor</title>
 </head>
 
 <body data-ng-controller="TractorController as ctrl">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-7">
-        <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>
-      </div>
-      <div class="col-sm-5">
-        <form name="tractorForm" method="post">
-          <div class="row">
-            <div class="col-xs-6"><button name="stop"  data-ng-click="ctrl.stop()"  class="btn btn-block btn-sm btn-danger"><span class="glyphicon glyphicon-off"></span></button></div>
-            <div class="col-xs-6"><button name="start" data-ng-click="ctrl.start()" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col-sm-7">
+            <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>
+         </div>
+         <div class="col-sm-5">
+            <form name="tractorForm" method="post">
+               <div class="row">
+                  <div class="col-xs-6"><button name="stop" data-ng-click="ctrl.stop()" class="btn btn-block btn-sm btn-danger"><span class="glyphicon glyphicon-off"></span></button></div>
+                  <div class="col-xs-6"><button name="start" data-ng-click="ctrl.start()" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-ok"></span></button></div>
 
-            <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button></div>
-            <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button></div>
-            <div class="col-xs-6">
-              <h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1>
-            </div>
-            <div class="col-xs-12">
-              <table border="1" width="100%">
-                <tr>
-                  <td width="20%"><label>Hue</label></td>
-                  <td><rzslider class="custom-slider" rz-slider-model="hueSlider.minValue" rz-slider-high="hueSlider.maxValue" rz-slider-options="hueSlider.options"></rzslider></td>
-                </tr>
-                <tr>
-                  <td><label>Saturation</label></td>
-                  <td><rzslider class="custom-slider" rz-slider-model="saturationSlider.minValue" rz-slider-high="saturationSlider.maxValue" rz-slider-options="saturationSlider.options"></rzslider></td>
-                </tr>
-                <tr>
-                  <td><label>Max Pflanzen (Stk)</label></td>
-                  <td><rzslider class="custom-slider" rz-slider-model="maxMarkerSlider.value" rz-slider-options="maxMarkerSlider.options"></rzslider></td>
-                </tr>
-                <tr>
-                  <td><label>Reihen Abstand</label></td>
-                  <td><rzslider class="custom-slider" rz-slider-model="rowSpacingPxSlider.value" rz-slider-options="rowSpacingPxSlider.options"></rzslider></td>
-                </tr>
-                <tr>
-                  <td><label>Reihen Perspektive</label></td>
-                  <td><rzslider class="custom-slider" rz-slider-model="rowPerspectiveSlider.value" rz-slider-options="rowPerspectiveSlider.options"></rzslider></td>
-                </tr>
-                <tr>
-                  <td><label>Reihen Toleranz</label></td>
-                  <td><rzslider class="custom-slider" rz-slider-model="rowThresholdPxSlider.value" rz-slider-options="rowThresholdPxSlider.options"></rzslider></td>
-                </tr>
-              </table>
-            </table>
-            </div>
-          </div>
-        </form>
+                  <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('left')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-left"></span></button></div>
+                  <div class="col-xs-6"><button name="direction" data-ng-click="ctrl.perform('right')" class="btn btn-block btn-sm btn-primary"><span class="glyphicon glyphicon-chevron-right"></span></button></div>
+                  <div class="col-xs-6">
+                     <h1>{{data.detecting ? 'LÄUFT': 'STEHT'}}</h1>
+                  </div>
+                  <div class="col-xs-12">
+                     <table border="1" width="100%">
+                        <tr>
+                           <td width="20%"><label>Farbbereich (hue)</label></td>
+                           <td>
+                              <rzslider class="custom-slider" rz-slider-model="hueSlider.minValue" rz-slider-high="hueSlider.maxValue" rz-slider-options="hueSlider.options"></rzslider>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td><label>S&auml;ttigung (saturation)</label></td>
+                           <td>
+                              <rzslider class="custom-slider" rz-slider-model="saturationSlider.minValue" rz-slider-high="saturationSlider.maxValue" rz-slider-options="saturationSlider.options"></rzslider>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td><label>Min Pflanzen (Stk)</label></td>
+                           <td>
+                              <rzslider class="custom-slider" rz-slider-model="maxMarkerSlider.value" rz-slider-options="maxMarkerSlider.options"></rzslider>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td><label>Reihen Abstand</label></td>
+                           <td>
+                              <rzslider class="custom-slider" rz-slider-model="rowSpacingPxSlider.value" rz-slider-options="rowSpacingPxSlider.options"></rzslider>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td><label>Reihen Perspektive</label></td>
+                           <td>
+                              <rzslider class="custom-slider" rz-slider-model="rowPerspectiveSlider.value" rz-slider-options="rowPerspectiveSlider.options"></rzslider>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td><label>Reihen Toleranz</label></td>
+                           <td>
+                              <rzslider class="custom-slider" rz-slider-model="rowThresholdPxSlider.value" rz-slider-options="rowThresholdPxSlider.options"></rzslider>
+                           </td>
+                        </tr>
+                     </table>
+                     </table>
+                  </div>
+               </div>
+            </form>
+         </div>
       </div>
-    </div>
-    <div class="row"><div class="col-sm-12">&nbsp;</div></div>
-    <div class="row">
-      <div class="col-sm-12">
-        <pre>{{response}}</pre>
-      </div>
-    </div>
-  </div>
+   </div>
 </body>
 
 </html>

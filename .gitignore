@@ -2,3 +2,6 @@ CMakeFiles/**
 deps/**
 release/**
 build*/**
+.vscode/**
+__pycache__/**
+tests/**
