@@ -372,6 +372,9 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         // notify other thread(s) about ready buffer
         // 2021-08-08 Spindler (Moz'ens Geburtstag)
         //   Still don't know if a lock is required to do .notify_xxx()
+        // 2022-03-31 Spindler (Sternzeit: -300754.4210426179)
+        //  hob jetzt no amoi nochgschaut: https://en.cppreference.com/w/cpp/thread/condition_variable
+        //  "3. execute notify_one or notify_all on the std::condition_variable (the lock does not need to be held for notification)"
         //
         {
             std::unique_lock<std::mutex> ul(shared->analyzed_frame_ready_mutex);
