@@ -266,13 +266,12 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
             sum_threshold += threshold;
             
             const cv::Scalar& plant_color = std::abs(threshold) < threshold_percent ? BLUE : RED;
-            //cv::line(frame, plant, nearest_refLine_point, color_delta_line, 2);
             cv::drawMarker  ( frame, plant , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
             cv::drawContours( frame, structures->all_contours, structures->centers_contours_idx[i], plant_color, 1 );
         }
     }
     const float avg_threshold = sum_threshold / (float)structures->centers.size();
-    int x_overall_threshold_px = (float)avg_threshold * (float)(settings.getReflineSettings().rowSpacingPx);
+    const int x_overall_threshold_px = (float)avg_threshold * (float)(settings.getReflineSettings().rowSpacingPx);
 
     const bool is_within_threshold = std::abs(x_overall_threshold_px) < refSettings.rowThresholdPx;
     if ( is_within_threshold ) {
@@ -286,7 +285,6 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
     }
 
     const cv::Scalar& color_overall_delta = is_within_threshold ? GREEN : RED;
-    //cv::line(frame, cv::Point(x_overall_threshold_px + x_half, settings.frame_rows), Fluchtpunkt, color_overall_delta_line, 3 );
 
     static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
     offset_bar.setTo( cv::Scalar(0,0,0) );
@@ -301,6 +299,8 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
     }
     frame.push_back(offset_bar);
 }
+
+
 
 void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugWindows)
 {
