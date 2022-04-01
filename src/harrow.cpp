@@ -57,7 +57,6 @@ Harrow::Harrow()
     //
     gpiod_line_set_value(_lineHydraulicRight,  0);
     gpiod_line_set_value(_lineHydraulicLeft,   0);
-
 }
 
 Harrow::~Harrow()

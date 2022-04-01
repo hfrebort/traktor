@@ -238,15 +238,60 @@ bool find_point_on_nearest_refline(
     return false;
 }
 
-void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, cv::Mat& frame, HARROW_DIRECTION& direction)
+void draw_status_bar(const bool is_detecting, const bool harrow_lifted, const bool within_threshold, const float avg_threshold, const int x_half,  cv::Mat& frame) 
+{
+    static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
+    offset_bar.setTo( cv::Scalar(0,0,0) );
+    
+    if ( harrow_lifted )
+    {
+        cv::putText(offset_bar, "LIFTED", cv::Point(frame.cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);
+    }
+    else if ( is_detecting )
+    {
+        const cv::Scalar& color_overall_delta = within_threshold ? GREEN : RED;
+        const int delta_status_px = (float)avg_threshold * (float)x_half;
+        cv::rectangle(offset_bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
+    }
+    else
+    {
+        cv::putText(offset_bar, "DETECTION OFF", cv::Point(frame.cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);    
+    }
+    frame.push_back(offset_bar);
+}
+
+bool is_within_threshold(const float avg_threshold, const int rowSpacingPx, const int rowThresholdPx)
+{
+    const int x_overall_threshold_px = (float)avg_threshold * (float)rowSpacingPx;
+    const bool is_within_threshold = std::abs(x_overall_threshold_px) < rowThresholdPx;
+
+    return is_within_threshold;
+}
+
+HARROW_DIRECTION get_harrow_direction(const bool is_within_threshold, const float avg_threshold)
+{
+    HARROW_DIRECTION direction;
+
+    if ( is_within_threshold ) {
+        direction = HARROW_DIRECTION::STOP;
+    }
+    else if ( avg_threshold > 0 ) {
+        direction = HARROW_DIRECTION::RIGHT;
+    }
+    else {
+        direction = HARROW_DIRECTION::LEFT;
+    }
+
+    return direction;
+}
+
+float calc_overall_threshold_draw_plants(Structures* structures, DetectSettings& settings, cv::Mat& frame)
 {
     const ReflinesSettings& refSettings = settings.getReflineSettings();
     const ImageSettings&    imgSettings = settings.getImageSettings();
 
-    //const int x_half   = (settings.frame_cols  / 2);
     const float threshold_percent = (float)refSettings.rowThresholdPx / (float)refSettings.rowSpacingPx;
 
-    float   nearest_refLine_x;
     float   sum_threshold = 0;
     cv::Point plant_coord;
 
@@ -254,12 +299,13 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
     {
         const cv::Point& plant = structures->centers[i];
         // hier bitte mit Magie befüllen!
-        float refLines_distance_px;
-        float deltaPx;
 
         plant_coord.x = plant.x - refSettings.x_half;
         plant_coord.y = imgSettings.frame_rows - plant.y;
-            
+
+        float nearest_refLine_x;
+        float deltaPx;
+        float refLines_distance_px;
         if ( find_point_on_nearest_refline(plant_coord, refSettings, &nearest_refLine_x, &deltaPx, &refLines_distance_px) )
         {
             const float threshold = deltaPx / refLines_distance_px;
@@ -271,36 +317,9 @@ void calc_deltas_to_ref_lines(Structures* structures, DetectSettings& settings, 
         }
     }
     const float avg_threshold = sum_threshold / (float)structures->centers.size();
-    const int x_overall_threshold_px = (float)avg_threshold * (float)(settings.getReflineSettings().rowSpacingPx);
 
-    const bool is_within_threshold = std::abs(x_overall_threshold_px) < refSettings.rowThresholdPx;
-    if ( is_within_threshold ) {
-        direction = HARROW_DIRECTION::STOP;
-    }
-    else if ( x_overall_threshold_px > 0 ) {
-        direction = HARROW_DIRECTION::RIGHT;
-    }
-    else {
-        direction = HARROW_DIRECTION::LEFT;
-    }
-
-    const cv::Scalar& color_overall_delta = is_within_threshold ? GREEN : RED;
-
-    static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
-    offset_bar.setTo( cv::Scalar(0,0,0) );
-    const int delta_status_px = (float)avg_threshold * (float)(refSettings.x_half);
-    if ( settings.detecting.load() )
-    {
-        cv::rectangle(offset_bar, cv::Point(refSettings.x_half,0), cv::Point(refSettings.x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
-    }
-    else
-    {
-        cv::putText(offset_bar, "DETECTION OFF", cv::Point(frame.cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);
-    }
-    frame.push_back(offset_bar);
+    return avg_threshold;
 }
-
-
 
 void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugWindows)
 {
@@ -313,9 +332,6 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
     const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
     const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
     
-    HARROW_DIRECTION directionLast = HARROW_DIRECTION::STOP;
-    HARROW_DIRECTION direction;
-
     for (;;)
     {
         //
@@ -333,6 +349,10 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         //
         // lock an output buffer
         //
+        bool is_in_threshold;
+        HARROW_DIRECTION direction;
+        const bool detecting = detectSettings.detecting.load();
+        const bool harrow_lifted = shared->harrowLifted.load();
         {
             std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
             auto overallstart = std::chrono::high_resolution_clock::now();
@@ -349,8 +369,16 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
             calc_centers(&structures, imageSettings.minimalContourArea);
 
             cameraFrame.copyTo(outFrame);
-            calc_deltas_to_ref_lines(&structures, shared->detectSettings, outFrame, direction);
-            drawRowLines          (outFrame, imageSettings, reflineSettings );
+
+            const float avg_threshold = calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame);
+            is_in_threshold           = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
+            direction                 = get_harrow_direction(is_in_threshold, avg_threshold);
+
+            draw_status_bar(detecting, harrow_lifted, is_in_threshold, avg_threshold, reflineSettings.x_half, outFrame);
+            if ( detecting && !harrow_lifted )
+            {
+                drawRowLines(outFrame, imageSettings, reflineSettings );
+            }
 
             stats->calc_draw_ns      += trk::getDuration_ns(&start);
             stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
@@ -384,9 +412,9 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         //
         // kontroll se Hacke
         //
-        if (        harrow != nullptr 
-                && shared->harrowLifted.load()     == false 
-                && detectSettings.detecting.load() == true)
+        if (       harrow         != nullptr 
+                && harrow_lifted  == false 
+                && detecting      == true)
         {
                 harrow->move(direction, "detect");
         }

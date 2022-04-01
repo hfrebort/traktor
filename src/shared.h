@@ -186,6 +186,6 @@ struct Shared {
         frame_buf_slot.store(-1);
         analyzed_frame_ready_idx.store(-1);
         analyzed_frame_encoded_to_JPEG.store(false);
-        harrowLifted = true;
+        harrowLifted = false;
     }
 };
