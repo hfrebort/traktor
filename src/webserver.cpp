@@ -94,6 +94,8 @@ int thread_webserver(int port, Shared* shared)
             settings.set_colorFrom( data["colorFrom"] );
             settings.set_colorTo  ( data["colorTo"]   );
 
+            settings.set_erode_dilate( data["erode"].get<int>(), data["dilate"].get<int>() );
+
             settings.set_rowSpacingPx    ( data["rowSpacingPx"]    .get<int>() );
             settings.set_rowPerspectivePx( data["rowPerspectivePx"].get<int>() );
             settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );

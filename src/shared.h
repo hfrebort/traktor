@@ -129,6 +129,12 @@ struct DetectSettings {
             trk::setColorFromCSV( csvValues, imageSettings.colorTo);
         }
 
+        void set_erode_dilate(int erode_iterations, int dilate_iterations)
+        {
+            this->imageSettings.erode_iterations = erode_iterations;
+            this->imageSettings.dilate_iterations = dilate_iterations;
+        }
+
         void set_rowSpacingPx(const int newRowSpacingPx) {
             reflineSettings.rowSpacingPx = newRowSpacingPx;
             recalculate_rowCount();
