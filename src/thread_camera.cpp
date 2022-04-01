@@ -34,10 +34,11 @@ void thread_camera(const Options& options, Shared* shared)
     settings.set_frame( shared->frame_buf[CurrNr].cols
                       , shared->frame_buf[CurrNr].rows );
 
-    printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d\n",
+    printf("I: thread camera: running. framesize: %dx%d, CAP_PROP_FPS: %d, frame.type(): %d\n",
          shared->frame_buf[CurrNr].cols
         ,shared->frame_buf[CurrNr].rows
-        ,cap_prop_fps);
+        ,cap_prop_fps
+        ,shared->frame_buf[CurrNr].type());
 
     shared->frame_buf_slot.store(CurrNr);
     

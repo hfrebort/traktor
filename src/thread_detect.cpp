@@ -238,26 +238,16 @@ bool find_point_on_nearest_refline(
     return false;
 }
 
-void draw_status_bar(const bool is_detecting, const bool harrow_lifted, const bool within_threshold, const float avg_threshold, const int x_half,  cv::Mat& frame) 
+void draw_status_bar(const cv::String& text, cv::Mat* bar) 
 {
-    static cv::Mat offset_bar = cv::Mat::zeros(20, frame.cols, frame.type() );
-    offset_bar.setTo( cv::Scalar(0,0,0) );
-    
-    if ( harrow_lifted )
-    {
-        cv::putText(offset_bar, "LIFTED", cv::Point(frame.cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);
-    }
-    else if ( is_detecting )
-    {
-        const cv::Scalar& color_overall_delta = within_threshold ? GREEN : RED;
-        const int delta_status_px = (float)avg_threshold * (float)x_half;
-        cv::rectangle(offset_bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,offset_bar.rows), color_overall_delta, cv::FILLED);
-    }
-    else
-    {
-        cv::putText(offset_bar, "DETECTION OFF", cv::Point(frame.cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);    
-    }
-    frame.push_back(offset_bar);
+    cv::putText(*bar, text, cv::Point(bar->cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);
+}
+
+void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
+{
+    const cv::Scalar& color_overall_delta = within_threshold ? GREEN : RED;
+    const int delta_status_px = (float)avg_threshold * (float)x_half;
+    cv::rectangle(*bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,bar->rows), color_overall_delta, cv::FILLED);
 }
 
 bool is_within_threshold(const float avg_threshold, const int rowSpacingPx, const int rowThresholdPx)
@@ -332,6 +322,8 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
     const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
     const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
     
+    std::unique_ptr<cv::Mat> status_bar = nullptr;
+
     for (;;)
     {
         //
@@ -347,40 +339,63 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         cv::Mat& cameraFrame = shared->frame_buf[frameReadyIdx];
         cv::Mat& outFrame    = shared->analyzed_frame_buf[idx_doubleBuffer];
         //
+        // status_bar
+        //
+        if ( status_bar == nullptr )
+        {
+            status_bar = std::make_unique<cv::Mat>( cv::Mat::zeros(20, cameraFrame.cols, cameraFrame.type() ) );
+        }
+        //
         // lock an output buffer
         //
-        bool is_in_threshold;
-        HARROW_DIRECTION direction;
+        HARROW_DIRECTION direction = HARROW_DIRECTION::STOP;;
         const bool detecting = detectSettings.detecting.load();
         const bool harrow_lifted = shared->harrowLifted.load();
         {
             std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
             auto overallstart = std::chrono::high_resolution_clock::now();
 
-            find_contours(
-                  cameraFrame               
-                , imageSettings   
-                , outFrame                  
-                , &structures
-                , stats
-                , showDebugWindows );                                                           
+            status_bar->setTo( cv::Scalar(0,0,0) );
 
-            auto start = std::chrono::high_resolution_clock::now();
-            calc_centers(&structures, imageSettings.minimalContourArea);
-
-            cameraFrame.copyTo(outFrame);
-
-            const float avg_threshold = calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame);
-            is_in_threshold           = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
-            direction                 = get_harrow_direction(is_in_threshold, avg_threshold);
-
-            draw_status_bar(detecting, harrow_lifted, is_in_threshold, avg_threshold, reflineSettings.x_half, outFrame);
-            if ( detecting && !harrow_lifted )
+            if ( harrow_lifted )
             {
-                drawRowLines(outFrame, imageSettings, reflineSettings );
+                draw_status_bar("LIFTED", status_bar.get() );
             }
+            else
+            {
+                find_contours(
+                    cameraFrame               
+                    , imageSettings   
+                    , outFrame                  
+                    , &structures
+                    , stats
+                    , showDebugWindows );                                                           
 
-            stats->calc_draw_ns      += trk::getDuration_ns(&start);
+                auto start = std::chrono::high_resolution_clock::now();
+                cameraFrame.copyTo(outFrame);
+
+                calc_centers(&structures, imageSettings.minimalContourArea);
+
+                if ( structures.centers.size() == 0 )
+                {
+                    draw_status_bar("NO PLANTS", status_bar.get());
+                }
+                else if ( !detecting )
+                {
+                    draw_status_bar("DETECTION OFF", status_bar.get());
+                }
+                else
+                {
+                    const float avg_threshold  = calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame);
+                    const bool is_in_threshold = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
+                    direction = get_harrow_direction(is_in_threshold, avg_threshold);
+                    draw_threshold_bar(is_in_threshold, avg_threshold, reflineSettings.x_half, status_bar.get());
+                    drawRowLines(outFrame, imageSettings, reflineSettings);
+                }
+                stats->calc_draw_ns += trk::getDuration_ns(&start);
+            }
+            
+            outFrame.push_back(*status_bar);
             stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
         }
         if (showDebugWindows)
