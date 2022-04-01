@@ -84,23 +84,35 @@ int thread_webserver(int port, Shared* shared)
     */
     svr.Post("/applyChanges", [&](const Request &req, Response &res)
     {
-        nlohmann::json data = nlohmann::json::parse(req.body);
-        //printf("applyChanges data: %s\n", data.dump(2).c_str() );
-        
-        DetectSettings& settings = shared->detectSettings;
-        
-        settings.set_colorFrom( data["colorFrom"] );
-        settings.set_colorTo  ( data["colorTo"]   );
-
-        settings.set_rowSpacingPx    ( data["rowSpacingPx"]    .get<int>() );
-        settings.set_rowPerspectivePx( data["rowPerspectivePx"].get<int>() );
-        settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );
-
-        bool detectNewValue = data["detecting"].get<bool>();
-        if ( detectNewValue != settings.detecting.load() )
+        try
         {
-            settings.detecting.store ( detectNewValue );
-            printf("I: detecting is now: %s\n", detectNewValue ? "ON" : "OFF");
+            nlohmann::json data = nlohmann::json::parse(req.body);
+            //printf("applyChanges data: %s\n", data.dump(2).c_str() );
+            
+            DetectSettings& settings = shared->detectSettings;
+            
+            settings.set_colorFrom( data["colorFrom"] );
+            settings.set_colorTo  ( data["colorTo"]   );
+
+            settings.set_rowSpacingPx    ( data["rowSpacingPx"]    .get<int>() );
+            settings.set_rowPerspectivePx( data["rowPerspectivePx"].get<int>() );
+            settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );
+
+            std::string detecting = data["detecting"];
+            if ( detecting.compare("start") == 0) 
+            {
+                settings.detecting.store ( true );
+                printf("I: detecting is now: ON\n");
+            }
+            else if ( detecting.compare("stop") == 0) 
+            {
+                settings.detecting.store ( false );
+                printf("I: detecting is now: OFF\n");
+            }
+        }
+        catch(const std::exception& e)
+        {
+            fprintf(stderr, "/applyChanges: %s\n", e.what());
         }
     });
 

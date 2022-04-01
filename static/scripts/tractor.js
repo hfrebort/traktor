@@ -8,14 +8,14 @@ angular.module('tractor', ['rzSlider'])
 
     var vm = this;
 
-    $scope.hueSlider        = { minValue: 36, maxValue:  80, options: { floor: 0, ceil: 180, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
-    $scope.saturationSlider = { minValue: 80, maxValue: 255, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.hueSlider        = { minValue: 36, maxValue:  80, options: { floor: 0, ceil: 180, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.saturationSlider = { minValue: 80, maxValue: 255, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     
     $scope.maxMarkerSlider      = { value: 10, options: { floor: 1, ceil:  50 } };
 
-    $scope.rowThresholdPxSlider = { value:   5, options: { floor: 1, ceil: 320,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
-    $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000,             onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
-    $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(true); } } };
+    $scope.rowThresholdPxSlider = { value:   5, options: { floor: 1, ceil: 320,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000,             onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
 
     $scope.data = {
         duration: 1.0,
@@ -24,7 +24,7 @@ angular.module('tractor', ['rzSlider'])
         direction: 'center',
         url: 'http://10.3.141.165:8888/video',
         colorFilter: true,
-        detecting: false,
+        //detecting: false,
         colorFrom: '36,80,25',
         colorTo: '20,255,255',
         erode: 10,
@@ -79,8 +79,19 @@ angular.module('tractor', ['rzSlider'])
         $http.post('/perform', $scope.data).then(handleResponse);
     };
     this.applyChanges = function (detecting) {
-        $scope.data.detecting = detecting;
+
+        if (detecting === true) {
+            $scope.data.detecting = "start";
+        }
+        else if (detecting === false){
+            $scope.data.detecting = "stop";
+        }
+        else {
+            $scope.data.detecting = "";
+        }
+
         applySliderValues();
+
         $http.post('/applyChanges', $scope.data).then(handleResponse);
     };
 
