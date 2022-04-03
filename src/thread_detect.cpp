@@ -242,7 +242,7 @@ bool find_point_on_nearest_refline(
 
 void draw_status_bar(const cv::String& text, cv::Mat* bar) 
 {
-    cv::putText(*bar, text, cv::Point(bar->cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 0.8, RED, 2);
+    cv::putText(*bar, text, cv::Point(10, 19), cv::FONT_HERSHEY_SIMPLEX, 0.8, RED, 2);
 }
 
 void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
@@ -277,7 +277,7 @@ HARROW_DIRECTION get_harrow_direction(const bool is_within_threshold, const floa
     return direction;
 }
 
-float calc_overall_threshold_draw_plants(Structures* structures, DetectSettings& settings, cv::Mat& frame)
+bool calc_overall_threshold_draw_plants(Structures* structures, DetectSettings& settings, cv::Mat& frame, float* avg_threshold)
 {
     const ReflinesSettings& refSettings = settings.getReflineSettings();
     const ImageSettings&    imgSettings = settings.getImageSettings();
@@ -287,6 +287,7 @@ float calc_overall_threshold_draw_plants(Structures* structures, DetectSettings&
     float   sum_threshold = 0;
     cv::Point plant_coord;
 
+    uint structures_processed = 0;
     for ( int i=0; i < structures->centers.size(); ++i )
     {
         const cv::Point& plant = structures->centers[i];
@@ -306,11 +307,14 @@ float calc_overall_threshold_draw_plants(Structures* structures, DetectSettings&
             const cv::Scalar& plant_color = std::abs(threshold) < threshold_percent ? BLUE : RED;
             cv::drawMarker  ( frame, plant , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
             cv::drawContours( frame, structures->all_contours, structures->centers_contours_idx[i], plant_color, 1 );
+            structures_processed += 1;
         }
     }
-    const float avg_threshold = sum_threshold / (float)structures->centers.size();
+    if ( structures_processed > 0 ) {
+        *avg_threshold = sum_threshold / (float)structures_processed;
+    }
 
-    return avg_threshold;
+    return structures_processed > 0;
 }
 
 void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugWindows)
@@ -378,17 +382,21 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
 
                 calc_centers(&structures, imageSettings.minimalContourArea);
 
+                float avg_threshold;
                 if ( structures.centers.size() == 0 )
                 {
-                    draw_status_bar("NO PLANTS", status_bar.get());
+                    draw_status_bar("NOTHING FOUND", status_bar.get());
                 }
                 else if ( !detecting )
                 {
                     draw_status_bar("DETECTION OFF", status_bar.get());
                 }
+                else if ( ! calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame, &avg_threshold) )
+                {
+                    draw_status_bar("NO PLANTS WITHIN LINES", status_bar.get());
+                }
                 else
                 {
-                    const float avg_threshold  = calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame);
                     const bool is_in_threshold = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
                     direction = get_harrow_direction(is_in_threshold, avg_threshold);
                     draw_threshold_bar(is_in_threshold, avg_threshold, reflineSettings.x_half, status_bar.get());
