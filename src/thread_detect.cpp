@@ -240,7 +240,7 @@ bool find_point_on_nearest_refline(
 
 void draw_status_bar(const cv::String& text, cv::Mat* bar) 
 {
-    cv::putText(*bar, text, cv::Point(bar->cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 1, RED, 2);
+    cv::putText(*bar, text, cv::Point(bar->cols/2, 19), cv::FONT_HERSHEY_SIMPLEX, 0.8, RED, 2);
 }
 
 void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
@@ -390,8 +390,8 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
                     const bool is_in_threshold = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
                     direction = get_harrow_direction(is_in_threshold, avg_threshold);
                     draw_threshold_bar(is_in_threshold, avg_threshold, reflineSettings.x_half, status_bar.get());
-                    drawRowLines(outFrame, imageSettings, reflineSettings);
                 }
+                drawRowLines(outFrame, imageSettings, reflineSettings);
                 stats->calc_draw_ns += trk::getDuration_ns(&start);
             }
             
