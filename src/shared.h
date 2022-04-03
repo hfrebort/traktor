@@ -56,20 +56,34 @@ struct ImageSettings {
 };
 
 struct ReflinesSettings {
+
     public:
-        int         rowCount;
+        //int         rowCount;
+        int         rowMax;
+        int         half_row_count_auto;
+        
         int         rowSpacingPx;
         int         rowPerspectivePx;
         int         rowThresholdPx;
         
         int         x_half;
         int         y_fluchtpunkt;
-        int         half_row_count;
+        
+
+        int get_half_row_count() const {
+            if ( rowMax == 0) {
+                return half_row_count_auto;
+            }
+            else {
+                return rowMax;
+            }
+        }
 
     ReflinesSettings()
     {
-        rowCount           = 3;
-        half_row_count     = 1;
+        //rowCount           = 3;
+        half_row_count_auto     = 1;
+        rowMax             = 0;
         rowSpacingPx       = 160;
         rowPerspectivePx   = 0;
         rowThresholdPx     = 1;
@@ -85,14 +99,8 @@ struct DetectSettings {
 
         void recalculate_rowCount()
         {
-            //const int x_half        = set.frame_cols / 2;
-            //const int fluchtpunkt_y = set.frame_rows + set.rowPerspectivePx;
             const int x_max_outer_row = ( imageSettings.frame_rows / reflineSettings.x_half ) * reflineSettings.y_fluchtpunkt;
-
-            const int rows_calculated_on_one_side = x_max_outer_row / reflineSettings.rowSpacingPx;
-            reflineSettings.rowCount = rows_calculated_on_one_side * 2 + 1;
-
-            reflineSettings.half_row_count  = (reflineSettings.rowCount-1) / 2;
+            reflineSettings.half_row_count_auto = x_max_outer_row / reflineSettings.rowSpacingPx;
         }
 
     public:
@@ -142,6 +150,10 @@ struct DetectSettings {
 
         void set_rowThresholdPx(const int newRowThresholdPx) {
             reflineSettings.rowThresholdPx = newRowThresholdPx;
+        }
+
+        void set_maxRows(int newMaxRows) {
+            reflineSettings.rowMax = newMaxRows;
         }
 
 };

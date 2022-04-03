@@ -105,26 +105,28 @@ void drawRowLines(cv::InputOutputArray frame, const ImageSettings &imgSettings, 
     const int       deltapx = refSettings.rowThresholdPx;
     const cv::Point Fluchtpunkt(x_half, -refSettings.rowPerspectivePx);
     
-    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 3 );
+    cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 2 );
 
-    cv::line(frame, cv::Point(x_half-deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
-    cv::line(frame, cv::Point(x_half+deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+    cv::line(frame, cv::Point(x_half-deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+    cv::line(frame, cv::Point(x_half+deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
 
     //
     // Reihen rechts und links der Mittellinie zeichnen
     //
-    if ( refSettings.rowCount > 1 )
+    if ( refSettings.get_half_row_count() > 0 )
     {
-        for ( int r=refSettings.rowCount-1, x_spacing = refSettings.rowSpacingPx; r > 0; r-=2, x_spacing += refSettings.rowSpacingPx )
+        for ( int r=refSettings.get_half_row_count(), x_spacing = refSettings.rowSpacingPx; 
+              r > 0; 
+              r-=1, x_spacing += refSettings.rowSpacingPx )
         {
             // rows
-            cv::line(frame, cv::Point(x_half - x_spacing,y_max),            Fluchtpunkt, rowLineColor, 3 );
-            cv::line(frame, cv::Point(x_half + x_spacing,y_max),            Fluchtpunkt, rowLineColor, 3 );
+            cv::line(frame, cv::Point(x_half - x_spacing,y_max),            Fluchtpunkt, rowLineColor, 2 );
+            cv::line(frame, cv::Point(x_half + x_spacing,y_max),            Fluchtpunkt, rowLineColor, 2 );
             // row tolerance
-            cv::line(frame, cv::Point(x_half - x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
-            cv::line(frame, cv::Point(x_half - x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
-            cv::line(frame, cv::Point(x_half + x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
-            cv::line(frame, cv::Point(x_half + x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 2 );
+            cv::line(frame, cv::Point(x_half - x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half - x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half + x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half + x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
         }
     }
 }
@@ -191,7 +193,7 @@ bool find_point_on_nearest_refline(
     float x_ref2;
 
     int refline_x = settings.rowSpacingPx;
-    for ( int r=0; r < settings.half_row_count; ++r, refline_x += settings.rowSpacingPx)
+    for ( int r=0; r < settings.get_half_row_count(); ++r, refline_x += settings.rowSpacingPx)
     {
         const float refline_steigung = settings.y_fluchtpunkt / (float)refline_x;
         x_ref2 = -plant.y / refline_steigung ;
