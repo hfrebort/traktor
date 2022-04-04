@@ -91,8 +91,15 @@ int thread_webserver(int port, Shared* shared)
             
             DetectSettings& settings = shared->detectSettings;
             
-            settings.set_colorFrom( data["colorFrom"] );
-            settings.set_colorTo  ( data["colorTo"]   );
+            //settings.set_colorFrom( data["colorFrom"] );
+            //settings.set_colorTo  ( data["colorTo"]   );
+            settings.set_color_from( data["colorFrom"][0].get<int>(),
+                                     data["colorFrom"][1].get<int>(), 
+                                     data["colorFrom"][2].get<int>() );
+
+            settings.set_color_to(   data["colorTo"][0].get<int>(),
+                                     data["colorTo"][1].get<int>(), 
+                                     data["colorTo"][2].get<int>() );
 
             settings.set_erode_dilate( data["erode"].get<int>(), data["dilate"].get<int>() );
 

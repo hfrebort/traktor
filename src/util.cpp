@@ -29,4 +29,11 @@ bool setColorFromCSV(const std::string& csv, cv::Scalar& color)
     return successfull_items_scaned == 3;
 }
 
+void set_color_from_values(int h, int s, int v, cv::Scalar& color)
+{
+    color[0] = h;
+    color[1] = s;
+    color[2] = v;
+}
+
 } // namespace

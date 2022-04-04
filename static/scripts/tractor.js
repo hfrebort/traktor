@@ -42,8 +42,10 @@ angular.module('tractor', ['rzSlider'])
         $scope.response = angular.toJson(response, true);
     };
     const applySliderValues = function () {
-        $scope.data.colorFrom          = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
-        $scope.data.colorTo            = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
+        //$scope.data.colorFrom          = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
+        //$scope.data.colorTo            = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
+        $scope.data.colorFrom          = [ $scope.hueSlider.minValue, $scope.saturationSlider.minValue ,  25 ];
+        $scope.data.colorTo            = [ $scope.hueSlider.maxValue, $scope.saturationSlider.maxValue , 255 ];
 
         $scope.data.erode              = $scope.erodeSlider.value;
         $scope.data.dilate             = $scope.dilateSlider.value;

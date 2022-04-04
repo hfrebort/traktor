@@ -137,6 +137,13 @@ struct DetectSettings {
             trk::setColorFromCSV( csvValues, imageSettings.colorTo);
         }
 
+        void set_color_from(int h, int s, int v) {
+            trk::set_color_from_values(h,s,v, imageSettings.colorFrom);
+        }
+        void set_color_to(int h, int s, int v) {
+            trk::set_color_from_values(h,s,v, imageSettings.colorTo);
+        }
+
         void set_erode_dilate(int erode_iterations, int dilate_iterations)
         {
             this->imageSettings.erode_iterations = erode_iterations;
