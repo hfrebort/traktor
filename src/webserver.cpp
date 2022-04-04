@@ -96,10 +96,11 @@ int thread_webserver(int port, Shared* shared)
 
             settings.set_erode_dilate( data["erode"].get<int>(), data["dilate"].get<int>() );
 
-            settings.set_maxRows         ( data["maxRows"]         .get<int>() );
-            settings.set_rowSpacingPx    ( data["rowSpacingPx"]    .get<int>() );
-            settings.set_rowPerspectivePx( data["rowPerspectivePx"].get<int>() );
-            settings.set_rowThresholdPx  ( data["rowThresholdPx"]  .get<int>() );
+            settings.set_maxRows           ( data["maxRows"]            .get<int>() );
+            settings.set_rowSpacingPx      ( data["rowSpacingPx"]       .get<int>() );
+            settings.set_rowPerspectivePx  ( data["rowPerspectivePx"]   .get<int>() );
+            settings.set_rowThresholdPx    ( data["rowThresholdPx"]     .get<int>() );
+            settings.set_minimalContourArea( data["minimalContourArea"] .get<int>() );
 
             std::string detecting = data["detecting"];
             if ( detecting.compare("start") == 0) 
@@ -113,6 +114,8 @@ int thread_webserver(int port, Shared* shared)
                 printf("I: detecting is now: OFF\n");
             }
             printf("I: half_row_count: %d\n", settings.getReflineSettings().get_half_row_count() );
+
+            
         }
         catch(const std::exception& e)
         {

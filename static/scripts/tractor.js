@@ -11,11 +11,11 @@ angular.module('tractor', ['rzSlider'])
     $scope.hueSlider        = { minValue: 36, maxValue:  80, options: { floor: 0, ceil: 180, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.saturationSlider = { minValue: 80, maxValue: 255, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
 
-    $scope.erodeSlider  = { value:   3, options: { floor: 0, ceil: 10,              onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
-    $scope.dilateSlider      = { value: 3, options: { floor: 0, ceil: 10,           onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.erodeSlider              = { value:   3, options: { floor: 0, ceil:   10,  onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.dilateSlider             = { value:   3, options: { floor: 0, ceil:   10,  onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.minimalContourAreaSlider = { value: 130, options: { floor: 0, ceil: 1000,  onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     
     $scope.maxRowSlider      = { value: 0, options: { floor: 0, ceil:  10,          onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
-
     $scope.rowThresholdPxSlider = { value:   5, options: { floor: 1, ceil: 320,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000,   onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
@@ -42,16 +42,17 @@ angular.module('tractor', ['rzSlider'])
         $scope.response = angular.toJson(response, true);
     };
     const applySliderValues = function () {
-        $scope.data.colorFrom        = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
-        $scope.data.colorTo          = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
+        $scope.data.colorFrom          = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
+        $scope.data.colorTo            = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
 
-        $scope.data.erode            = $scope.erodeSlider.value;
-        $scope.data.dilate           = $scope.dilateSlider.value;
+        $scope.data.erode              = $scope.erodeSlider.value;
+        $scope.data.dilate             = $scope.dilateSlider.value;
+        $scope.data.minimalContourArea = $scope.minimalContourAreaSlider.value;
 
-        $scope.data.maxRows          = $scope.maxRowSlider.value;
-        $scope.data.rowThresholdPx   = $scope.rowThresholdPxSlider.value;
-        $scope.data.rowSpacingPx     = $scope.rowSpacingPxSlider.value;
-        $scope.data.rowPerspectivePx = $scope.rowPerspectiveSlider.value;
+        $scope.data.maxRows            = $scope.maxRowSlider.value;
+        $scope.data.rowThresholdPx     = $scope.rowThresholdPxSlider.value;
+        $scope.data.rowSpacingPx       = $scope.rowSpacingPxSlider.value;
+        $scope.data.rowPerspectivePx   = $scope.rowPerspectiveSlider.value;
 
     };
     this.getData = function() {

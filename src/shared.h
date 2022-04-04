@@ -156,6 +156,10 @@ struct DetectSettings {
             reflineSettings.rowMax = newMaxRows;
         }
 
+        void set_minimalContourArea(int value) {
+            imageSettings.minimalContourArea = value;
+        }
+
 };
 
 struct Shared {
