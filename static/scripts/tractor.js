@@ -97,6 +97,11 @@ angular.module('tractor', ['rzSlider'])
             $scope.data.detecting = "";
         }
 
+        //
+        // row threshold maximum can only be the half of the row distance
+        //
+        $scope.rowThresholdPxSlider.options.ceil = Math.floor($scope.rowSpacingPxSlider.value / 2);
+
         applySliderValues();
 
         $http.post('/applyChanges', $scope.data).then(handleResponse);
