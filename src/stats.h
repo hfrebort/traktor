@@ -11,6 +11,9 @@ struct Stats
         std::atomic<uint64_t>   camera_read_ns;
         std::atomic<uint64_t>   jpeg_sent;
         std::atomic<uint64_t>   jpeg_bytes_sent;
+        std::atomic<uint64_t>   copyTo_ns{0};
+        std::atomic<uint64_t>   copyTo_bytes{0};
+
 
         std::atomic<uint64_t>   detect_overall_ns;
         std::atomic<uint64_t>   prepare_ns;

@@ -379,6 +379,9 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
 
                 auto start = std::chrono::high_resolution_clock::now();
                 cameraFrame.copyTo(outFrame);
+                stats->copyTo_ns    += trk::getDuration_ns(&start);
+                stats->copyTo_bytes += mat_byte_size(cameraFrame);
+                printf("cameraFrame size: %lu\n", mat_byte_size(cameraFrame));
 
                 calc_centers(&structures, imageSettings.minimalContourArea);
 
