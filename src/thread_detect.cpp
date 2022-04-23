@@ -354,7 +354,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
         //
         // lock an output buffer
         //
-        HARROW_DIRECTION direction = HARROW_DIRECTION::STOP;;
+        HARROW_DIRECTION direction = HARROW_DIRECTION::STOP;
         const bool detecting = detectSettings.detecting.load();
         const bool harrow_lifted = shared->harrowLifted.load();
         {
@@ -381,7 +381,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
                 cameraFrame.copyTo(outFrame);
                 stats->copyTo_ns    += trk::getDuration_ns(&start);
                 stats->copyTo_bytes += mat_byte_size(cameraFrame);
-                printf("cameraFrame size: %lu\n", mat_byte_size(cameraFrame));
+                //printf("cameraFrame size: %lu\n", mat_byte_size(cameraFrame));
 
                 calc_centers(&structures, imageSettings.minimalContourArea);
 
@@ -444,7 +444,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
                 && harrow_lifted  == false 
                 && detecting      == true)
         {
-                harrow->move(direction, "detect");
+            harrow->move(direction, "detect");
         }
         
         idx_doubleBuffer = 1 - idx_doubleBuffer;
