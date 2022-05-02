@@ -1,0 +1,1 @@
+lsusb -s 001:007 -v | egrep "Width|Height"
