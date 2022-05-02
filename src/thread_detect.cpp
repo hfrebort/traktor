@@ -366,6 +366,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
             if ( harrow_lifted )
             {
                 draw_status_bar("LIFTED", status_bar.get() );
+                cameraFrame.copyTo(outFrame);
             }
             else
             {
