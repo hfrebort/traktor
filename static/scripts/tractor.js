@@ -8,8 +8,9 @@ angular.module('tractor', ['rzSlider'])
 
     var vm = this;
 
-    $scope.hueSlider        = { minValue: 36, maxValue:  80, options: { floor: 0, ceil: 180, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
-    $scope.saturationSlider = { minValue: 80, maxValue: 255, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.hueSlider        = { minValue: 36, maxValue:  80, options: { floor: 0, ceil: 179, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.saturationSlider = { minValue:  0, maxValue: 180, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
+    $scope.valueSlider      = { minValue:  0, maxValue: 180, options: { floor: 0, ceil: 255, onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
 
     $scope.erodeSlider              = { value:   3, options: { floor: 0, ceil:   10,  onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.dilateSlider             = { value:   3, options: { floor: 0, ceil:   10,  onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
@@ -20,16 +21,17 @@ angular.module('tractor', ['rzSlider'])
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000,   onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
 
+    
     $scope.data = {
         duration: 1.0,
-        left: 12,
-        right: 13,
+        //left: 12,
+        //right: 13,
         direction: 'center',
-        url: 'http://10.3.141.165:8888/video',
+        //url: 'http://10.3.141.165:8888/video',
         colorFilter: true,
         //detecting: false,
-        colorFrom: '36,80,25',
-        colorTo: '20,255,255',
+        colorFrom: [36,80,25],
+        colorTo: [20,255,255],
         erode: 10,
         dilate: 10,
         contourMode: 'POLY',
@@ -37,6 +39,7 @@ angular.module('tractor', ['rzSlider'])
         maximumMarkers: 10
     };
     $scope.videoUrl = '/video?t=' + new Date().getTime();
+    
 
     const handleResponse = function (response) {
         $scope.response = angular.toJson(response, true);
@@ -44,8 +47,8 @@ angular.module('tractor', ['rzSlider'])
     const applySliderValues = function () {
         //$scope.data.colorFrom          = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
         //$scope.data.colorTo            = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
-        $scope.data.colorFrom          = [ $scope.hueSlider.minValue, $scope.saturationSlider.minValue ,  25 ];
-        $scope.data.colorTo            = [ $scope.hueSlider.maxValue, $scope.saturationSlider.maxValue , 255 ];
+        $scope.data.colorFrom          = [ $scope.hueSlider.minValue, $scope.saturationSlider.minValue ,  $scope.valueSlider.minValue ];
+        $scope.data.colorTo            = [ $scope.hueSlider.maxValue, $scope.saturationSlider.maxValue ,  $scope.valueSlider.maxValue ];
 
         $scope.data.erode              = $scope.erodeSlider.value;
         $scope.data.dilate             = $scope.dilateSlider.value;

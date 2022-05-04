@@ -47,7 +47,7 @@ struct ImageSettings {
     ImageSettings()
     {
         colorFrom          = cv::Scalar(36,  25,  25);
-        colorTo            = cv::Scalar(86, 255, 255);
+        colorTo            = cv::Scalar(86, 180, 180);
         erode_iterations   = 3;
         dilate_iterations  = 3;
         maxPlats           = 10;
