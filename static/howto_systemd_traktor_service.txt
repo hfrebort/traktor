@@ -1,0 +1,5 @@
+cp traktor.service /etc/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl start  traktor.service
+sudo systemctl status traktor.service
+sudo systemctl enable traktor.service
