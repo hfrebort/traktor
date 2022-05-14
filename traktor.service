@@ -1,0 +1,15 @@
+[Unit]
+Description=The Duenger server
+After=multi-user.target
+
+[Service]
+User=pi
+Group=pi
+Type=idle
+WorkingDirectory=/home/pi/traktor/build
+ExecStart=/home/pi/traktor/build/traktor --width=960 --height=720
+#StandardOutput=journal
+#StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
