@@ -107,6 +107,22 @@ int parser_commandline(int argc, char* argv[], Options* options)
     return 0;
 }
 
+void ensure_directories(void)
+{
+    DIR* dir = opendir("./detect");
+    if (dir) {
+        /* Directory exists. */
+        puts("I: directory ./detect exists");
+        closedir(dir);
+    } else if (ENOENT == errno) {
+        /* Directory does not exist. */
+        mkdir("./detect", 0775);
+        puts("I: directory ./detect created");
+    } else {
+        fprintf(stderr, "E: could not create dir ./detect\n");
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int rc =0;
@@ -116,6 +132,8 @@ int main(int argc, char* argv[])
     {
         return rc;
     }
+
+    ensure_directories();
 
     printf("I: opencv version: %s\n", cv::getVersionString().c_str());
 

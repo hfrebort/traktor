@@ -129,6 +129,46 @@ int thread_webserver(int port, Shared* shared)
             fprintf(stderr, "/applyChanges: %s\n", e.what());
         }
     });
+    svr.Post("/detect/list",      [&](const Request &req, Response &res) {
+    });
+    svr.Post("/detect/load/(.+)", [&](const Request &req, Response &res) {
+    });
+    svr.Post("/detect/save/(.+)", [&](const Request &req, Response &res) {
+        try
+        {
+            std::string filename_to_save("./detect/");
+            filename_to_save.append(req.matches[1].str());
+
+            std::string msg("n/a");
+            std::ofstream fp(filename_to_save, std::ios::out);
+            if (!fp.is_open())
+            {
+                msg = "unable to open file";
+                res.status = 400;
+            }
+            else {
+                fp << req.body;
+                if ( fp.fail() ) {
+                    msg = "error writing to file";
+                    res.status = 400;
+                }
+                else {
+                    msg = "ok";
+                    res.status = 200;
+                }
+            }
+            
+            if ( res.status == 200 ) { std::cout << "I: save. file " << filename_to_save << std::endl;
+            } else                   { std::cerr << "E: save. file " << filename_to_save << std::endl;
+            }
+
+            res.set_content(msg, "text/plain");
+        }
+        catch(const std::exception& e)
+        {
+            fprintf(stderr, "/save: %s\n", e.what());
+        }
+    });
 
     const char* host = "0.0.0.0";
     printf("I: webserver start listening on %s:%d\n", host, port);

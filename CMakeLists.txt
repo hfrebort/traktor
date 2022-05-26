@@ -31,6 +31,9 @@ target_precompile_headers(${EXECUTABLE} PRIVATE
   <signal.h>
   <sys/stat.h>
   <stdio.h>
+  <dirent.h>
+  <iostream>
+  <fstream>
   <functional>
   <memory>
   <condition_variable>
