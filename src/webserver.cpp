@@ -129,44 +129,68 @@ int thread_webserver(int port, Shared* shared)
             fprintf(stderr, "/applyChanges: %s\n", e.what());
         }
     });
-    svr.Post("/detect/list",      [&](const Request &req, Response &res) {
+    svr.Get("/detect/list",       [&](const Request &req, Response &res) {
+        errno = 0;
+        DIR* dp = opendir("./detect");
+        if (dp != NULL) {
+            auto arr = nlohmann::json::array();
+            
+            dirent* dir;
+            while((dir = readdir(dp)) != NULL)  
+            {
+                if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) {
+                    continue;
+                }
+                arr.push_back(dir->d_name);
+            }
+            closedir(dp);
+
+            nlohmann::json list;
+            list["entries"] = arr;
+            res.set_content(list.dump(), "application/json");
+            res.status = 200;
+        }
+
+        if ( errno != 0 ) {
+            res.status = 400;
+            res.set_content(strerror(errno), "text/plain");
+        }
+
     });
-    svr.Post("/detect/load/(.+)", [&](const Request &req, Response &res) {
+    svr.Get("/detect/load/(.+)",  [&](const Request &req, Response &res) {
+        std::string filename_to_load("./detect/");
+        filename_to_load.append(req.matches[1].str());
+        std::ifstream fp(filename_to_load, std::ios::in);
+
+        if ( fp.is_open() ) {
+            std::stringstream buffer;
+            buffer << fp.rdbuf();
+            if ( !fp.fail() ) {
+                res.status = 200;
+                res.set_content(buffer.str(), "application/json");
+            }
+        }
+        if ( !fp.is_open() || fp.fail() ) {
+            res.status = 400;
+            res.set_content(strerror(errno), "text/plain");
+        }
     });
     svr.Post("/detect/save/(.+)", [&](const Request &req, Response &res) {
-        try
+        std::string filename_to_save("./detect/");
+        filename_to_save.append(req.matches[1].str());
+
+        std::ofstream fp(filename_to_save, std::ios::out);
+        if (fp.is_open())
         {
-            std::string filename_to_save("./detect/");
-            filename_to_save.append(req.matches[1].str());
-
-            std::string msg("n/a");
-            std::ofstream fp(filename_to_save, std::ios::out);
-            if (!fp.is_open())
-            {
-                msg = "unable to open file";
-                res.status = 400;
+            fp << req.body;
+            if ( !fp.fail() ) {
+                res.status = 200;
             }
-            else {
-                fp << req.body;
-                if ( fp.fail() ) {
-                    msg = "error writing to file";
-                    res.status = 400;
-                }
-                else {
-                    msg = "ok";
-                    res.status = 200;
-                }
-            }
-            
-            if ( res.status == 200 ) { std::cout << "I: save. file " << filename_to_save << std::endl;
-            } else                   { std::cerr << "E: save. file " << filename_to_save << std::endl;
-            }
-
-            res.set_content(msg, "text/plain");
         }
-        catch(const std::exception& e)
-        {
-            fprintf(stderr, "/save: %s\n", e.what());
+        
+        if ( !fp.is_open() || fp.fail() ) {
+            res.status = 400;
+            res.set_content(strerror(errno), "text/plain");
         }
     });
 
