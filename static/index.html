@@ -55,11 +55,23 @@
 <body data-ng-controller="TractorController as ctrl">
   <div class="container-fluid">
     <div class="row">
-      <div class="col-sm-7">
+      <div data-ng-class="{'col-sm-7': showMenu, 'col-sm-12': !showMenu}">
         <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>
       </div>
-      <div class="col-sm-5">
+      <div data-ng-show="!showMenu">
+        <button name="showMenuButton" data-ng-click="ctrl.displayMenu()" class="btn btn-block btn-sm">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+      </div>
+      <div class="col-sm-5" data-ng-show="showMenu">
         <form name="tractorForm" method="post">
+          <div class="row">
+            <div>
+              <button name="hideMenuButton" data-ng-click="ctrl.displayMenu()" class="btn btn-block btn-sm">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+              </button>
+            </div>    
+          </div>
           <div class="row">
             <fieldset>
               <legend>start/stop detection</legend>

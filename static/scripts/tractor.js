@@ -20,7 +20,7 @@ angular.module('tractor', ['rzSlider'])
     $scope.rowThresholdPxSlider = { value:   5, options: { floor: 1, ceil: 320,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000,   onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
-
+    $scope.showMenu = true;
     
     $scope.data = {
         duration: 1.0,
@@ -79,7 +79,7 @@ angular.module('tractor', ['rzSlider'])
           $scope.maxMarkerSlider.value = data.maximumMarkers;
           $scope.data.detecting = data.detecting;
       });
-    }
+    };
     this.stop = function () {
         this.applyChanges(false);
     };
@@ -110,8 +110,16 @@ angular.module('tractor', ['rzSlider'])
         applySliderValues();
 
         $http.post('/applyChanges', $scope.data).then(handleResponse);
+        $http.post('/detect/save/lastSettings', $scope.data).then(handleResponse);
+    };
+    this.displayMenu = function() {
+        $scope.showMenu = !$scope.showMenu;
+    };
+    this.loadData = function() {
+        $http.get('/detect/load/lastSettings').then(handleResponse);
     };
 
+    this.loadData();
     this.getData();
     console.log("initialize controller");
 });
