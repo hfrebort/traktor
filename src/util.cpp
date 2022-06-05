@@ -52,4 +52,22 @@ bool write_to_file(const std::string& filename, const std::string& content)
     return rc;
 }
 
+bool load_file_to_string(const std::string& filename, std::string* content)
+{
+    bool rc = false;
+
+    std::ifstream fp(filename, std::ios::in);
+
+    if ( fp.is_open() ) {
+        std::stringstream buffer;
+        buffer << fp.rdbuf();
+        if ( !fp.fail() ) {
+            rc = true;
+            content->assign(buffer.str());
+        }
+    }
+
+    return rc;
+}
+
 } // namespace

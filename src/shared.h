@@ -166,6 +166,7 @@ struct DetectSettings {
         void set_minimalContourArea(int value) {
             imageSettings.minimalContourArea = value;
         }
+        void set_fromJson(const std::string& json);
 
 };
 

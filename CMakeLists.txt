@@ -15,6 +15,7 @@ set(SOURCES
     src/stats.h
     src/thread_detect.cpp
     src/shared.h
+    src/detect_settings.cpp
     src/thread_camera.cpp
     src/thread_stats
     src/util.h

@@ -86,28 +86,11 @@ int thread_webserver(int port, Shared* shared)
     {
         try
         {
-            nlohmann::json data = nlohmann::json::parse(req.body);
-            //printf("applyChanges data: %s\n", data.dump(2).c_str() );
-            
             DetectSettings& settings = shared->detectSettings;
+            settings.set_fromJson(req.body);
+
+            nlohmann::json data = nlohmann::json::parse(req.body);
             
-            settings.set_color_from(        data["colorFrom"][0].get<int>(),
-                                            data["colorFrom"][1].get<int>(), 
-                                            data["colorFrom"][2].get<int>() );
-
-            settings.set_color_to(          data["colorTo"][0].get<int>(),
-                                            data["colorTo"][1].get<int>(), 
-                                            data["colorTo"][2].get<int>() );
-
-            settings.set_erode_dilate(      data["erode"].get<int>(),
-                                            data["dilate"].get<int>() );
-
-            settings.set_maxRows           ( data["maxRows"]            .get<int>() );
-            settings.set_rowSpacingPx      ( data["rowSpacingPx"]       .get<int>() );
-            settings.set_rowPerspectivePx  ( data["rowPerspectivePx"]   .get<int>() );
-            settings.set_rowThresholdPx    ( data["rowThresholdPx"]     .get<int>() );
-            settings.set_minimalContourArea( data["minimalContourArea"] .get<int>() );
-
             std::string detecting = data["detecting"];
             if ( detecting.compare("start") == 0) 
             {
@@ -206,19 +189,15 @@ int thread_webserver(int port, Shared* shared)
     svr.Get("/load/(.+)",  [&](const Request &req, Response &res) {
         std::string filename_to_load("./detect/");
         filename_to_load.append(req.matches[1].str());
-        std::ifstream fp(filename_to_load, std::ios::in);
 
-        if ( fp.is_open() ) {
-            std::stringstream buffer;
-            buffer << fp.rdbuf();
-            if ( !fp.fail() ) {
-                res.status = 200;
-                res.set_content(buffer.str(), "application/json");
-            }
-        }
-        if ( !fp.is_open() || fp.fail() ) {
+        std::string content;
+        if ( !trk::load_file_to_string(filename_to_load, &content) ) {
             res.status = 400;
             res.set_content(strerror(errno), "text/plain");
+        }
+        else {
+            res.status = 200;
+            res.set_content(content, "application/json");
         }
     });
     //

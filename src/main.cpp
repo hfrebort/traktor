@@ -123,6 +123,19 @@ void ensure_directories(void)
     }
 }
 
+void load_lastSettings(DetectSettings& detectSettings)
+{
+    std::string lastSettings;
+    if ( !trk::load_file_to_string("./detect/lastSettings.json", &lastSettings) ) {
+        fprintf(stderr, "E: could not load lastSettings: %s\n", strerror(errno));
+    }
+    else {
+        detectSettings.set_fromJson(lastSettings);
+        puts("I: ./detect/lastSettings.json loaded");
+        puts(lastSettings.c_str());
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int rc =0;
@@ -157,6 +170,7 @@ int main(int argc, char* argv[])
     }
 
     Shared shared;
+    load_lastSettings(shared.detectSettings);
 
     std::thread camera(thread_camera, options, &shared);
     std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
