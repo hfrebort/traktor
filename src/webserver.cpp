@@ -91,17 +91,16 @@ int thread_webserver(int port, Shared* shared)
             
             DetectSettings& settings = shared->detectSettings;
             
-            //settings.set_colorFrom( data["colorFrom"] );
-            //settings.set_colorTo  ( data["colorTo"]   );
-            settings.set_color_from( data["colorFrom"][0].get<int>(),
-                                     data["colorFrom"][1].get<int>(), 
-                                     data["colorFrom"][2].get<int>() );
+            settings.set_color_from(        data["colorFrom"][0].get<int>(),
+                                            data["colorFrom"][1].get<int>(), 
+                                            data["colorFrom"][2].get<int>() );
 
-            settings.set_color_to(   data["colorTo"][0].get<int>(),
-                                     data["colorTo"][1].get<int>(), 
-                                     data["colorTo"][2].get<int>() );
+            settings.set_color_to(          data["colorTo"][0].get<int>(),
+                                            data["colorTo"][1].get<int>(), 
+                                            data["colorTo"][2].get<int>() );
 
-            settings.set_erode_dilate( data["erode"].get<int>(), data["dilate"].get<int>() );
+            settings.set_erode_dilate(      data["erode"].get<int>(),
+                                            data["dilate"].get<int>() );
 
             settings.set_maxRows           ( data["maxRows"]            .get<int>() );
             settings.set_rowSpacingPx      ( data["rowSpacingPx"]       .get<int>() );
@@ -120,16 +119,59 @@ int thread_webserver(int port, Shared* shared)
                 settings.detecting.store ( false );
                 printf("I: detecting is now: OFF\n");
             }
-            printf("I: half_row_count: %d\n", settings.getReflineSettings().get_half_row_count() );
-
             
+            data.erase("detecting");
+            
+
         }
         catch(const std::exception& e)
         {
             fprintf(stderr, "/applyChanges: %s\n", e.what());
         }
     });
-    svr.Get("/detect/list",       [&](const Request &req, Response &res) {
+    //
+    // ------------------------------------------------------------------------
+    //
+    /*
+    {
+        "colorFrom": [ 36,  15,  33 ],
+        "colorTo":   [ 80, 201, 180 ],
+        "dilate": 0,
+        "erode": 0,
+        "maxRows": 0,
+        "minimalContourArea": 130,
+        "rowPerspectivePx": 300,
+        "rowSpacingPx": 160,
+        "rowThresholdPx": 5
+    }
+    */
+    svr.Get("/current", [&](const Request &req, Response &res) {
+
+        DetectSettings& settings = shared->detectSettings;
+
+        nlohmann::json data;
+        {
+            const auto from = settings.getImageSettings().colorFrom;
+            const auto to   = settings.getImageSettings().colorTo;
+            data["colorFrom"] = { (int)from[0], (int)from[1], (int)from[2] };
+            data["colorTo"]   = { (int)to  [0], (int)to  [1], (int)to  [2] };
+        }
+        data["erode"]               = settings.getImageSettings().erode_iterations;
+        data["dilate"]              = settings.getImageSettings().dilate_iterations;
+        data["minimalContourArea"]  = settings.getImageSettings().minimalContourArea;
+
+        data["maxRows"]             = settings.getReflineSettings().rowMax;
+        data["rowThresholdPx"]      = settings.getReflineSettings().rowThresholdPx;
+        data["rowSpacingPx"]        = settings.getReflineSettings().rowSpacingPx;
+        data["rowPerspectivePx"]    = settings.getReflineSettings().rowPerspectivePx;
+        
+        res.set_content(data.dump(), "application/json");
+        res.status = 200;
+    });
+    //
+    // ------------------------------------------------------------------------
+    //
+    svr.Get("/list",       [&](const Request &req, Response &res) {
         errno = 0;
         DIR* dp = opendir("./detect");
         if (dp != NULL) {
@@ -157,7 +199,10 @@ int thread_webserver(int port, Shared* shared)
         }
 
     });
-    svr.Get("/detect/load/(.+)",  [&](const Request &req, Response &res) {
+    //
+    // ------------------------------------------------------------------------
+    //
+    svr.Get("/load/(.+)",  [&](const Request &req, Response &res) {
         std::string filename_to_load("./detect/");
         filename_to_load.append(req.matches[1].str());
         std::ifstream fp(filename_to_load, std::ios::in);
@@ -175,7 +220,10 @@ int thread_webserver(int port, Shared* shared)
             res.set_content(strerror(errno), "text/plain");
         }
     });
-    svr.Post("/detect/save/(.+)", [&](const Request &req, Response &res) {
+    //
+    // ------------------------------------------------------------------------
+    //
+    svr.Post("/save/(.+)", [&](const Request &req, Response &res) {
         std::string filename_to_save("./detect/");
         filename_to_save.append(req.matches[1].str());
 
@@ -202,55 +250,3 @@ int thread_webserver(int port, Shared* shared)
     return 0;
 }
 
-/*
-
-void TraktorHandler::onRequest(const Pistache::Http::Request& req, Pistache::Http::ResponseWriter response)
-{
-    if ( req.resource() == "/video" ) {
-        response
-            .headers()
-            .add<Pistache::Http::Header::Server>("pistache/0.1")
-            .add<Pistache::Http::Header::ContentType>("multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM");
-
-        static const std::string boundary("--Ba4oTvQMY8ew04N8dcnM\r\nContent-Type: image/jpeg\r\n\r\n");
-        static const std::string CRLF("\r\n");
-
-        Pistache::Http::ResponseStream stream = response.stream(Pistache::Http::Code::Ok);
-
-        thread_send_jpeg(
-                this->_shared,
-                [&stream](std::vector<unsigned char>& jpegBytes) {
-                // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
-                stream.write( boundary.data(), boundary.length() );
-                jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
-                stream.write( (char*)jpegBytes.data(), jpegBytes.size() );
-                stream.flush();
-        });
-    }
-    else if ( req.resource() == "/data" ) {
-    }
-    else if ( req.resource() == "/applyChanges" ) {
-        response.send(Pistache::Http::Code::Ok);
-    }
-    else {
-        if (req.method() == Pistache::Http::Method::Get) {
-            std::string toServe("static");
-
-            if ( req.resource() == "/" ) {
-                toServe.append("/index.html");
-            }
-            else {
-                toServe.append(req.resource());
-            }
-
-            struct stat buffer;
-            if ( stat(toServe.c_str(), &buffer) == 0) {
-                Pistache::Http::serveFile(response, toServe);
-                printf("I: static-web: [%s]\n", toServe.c_str());
-            }
-            else {
-                response.send(Pistache::Http::Code::Not_Found);
-            }
-        }
-    }
-}*/
