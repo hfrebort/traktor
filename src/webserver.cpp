@@ -121,7 +121,8 @@ int thread_webserver(int port, Shared* shared)
             }
             
             data.erase("detecting");
-            
+
+            trk::write_to_file("./detect/lastSettings.json", data.dump());
 
         }
         catch(const std::exception& e)
@@ -227,18 +228,12 @@ int thread_webserver(int port, Shared* shared)
         std::string filename_to_save("./detect/");
         filename_to_save.append(req.matches[1].str());
 
-        std::ofstream fp(filename_to_save, std::ios::out);
-        if (fp.is_open())
-        {
-            fp << req.body;
-            if ( !fp.fail() ) {
-                res.status = 200;
-            }
-        }
-        
-        if ( !fp.is_open() || fp.fail() ) {
+        if ( ! trk::write_to_file(filename_to_save, req.body) ) {
             res.status = 400;
             res.set_content(strerror(errno), "text/plain");
+        }
+        else {
+            res.status = 200;
         }
     });
 

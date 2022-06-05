@@ -36,4 +36,20 @@ void set_color_from_values(int h, int s, int v, cv::Scalar& color)
     color[2] = v;
 }
 
+bool write_to_file(const std::string& filename, const std::string& content)
+{
+    bool rc = false;
+
+    std::ofstream fp(filename, std::ios::out);
+    if (fp.is_open())
+    {
+        fp << content;
+        if ( !fp.fail() ) {
+            rc = true;
+        }
+    }
+
+    return rc;
+}
+
 } // namespace

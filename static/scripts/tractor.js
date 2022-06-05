@@ -110,7 +110,11 @@ angular.module('tractor', ['rzSlider'])
         applySliderValues();
 
         $http.post('/applyChanges', $scope.data).then(handleResponse);
-        $http.post('/detect/save/lastSettings', $scope.data).then(handleResponse);
+        //
+        // 2022-06-05 22:07 Spindler
+        //  backend saves the values posted to /applyChanges to file ./detect/lastSettings.json 
+        //  no need for an extra save POST
+        //$http.post('/detect/save/lastSettings', $scope.data).then(handleResponse);
     };
     this.displayMenu = function() {
         $scope.showMenu = !$scope.showMenu;
