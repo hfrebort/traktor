@@ -22,6 +22,7 @@ angular.module('tractor', ['rzSlider'])
     $scope.rowPerspectiveSlider = { value: 300, options: { floor: 0, ceil: 750,     onChange: function(sliderId, modelValue, highValue, pointerType) { vm.applyChanges(null); } } };
     $scope.showMenu = true;
     
+    /*
     $scope.data = {
         duration: 1.0,
         //left: 12,
@@ -38,15 +39,17 @@ angular.module('tractor', ['rzSlider'])
         threshold: 5,
         maximumMarkers: 10
     };
-    $scope.videoUrl = '/video?t=' + new Date().getTime();
+    */
+    //$scope.videoUrl = '/video?t=' + new Date().getTime();
+    $scope.data = {}
+    $scope.videoUrl = '/video';
     
-
+    /*
     const handleResponse = function (response) {
         $scope.response = angular.toJson(response, true);
     };
+    */
     const applySliderValues = function () {
-        //$scope.data.colorFrom          = $scope.hueSlider.minValue + ',' + $scope.saturationSlider.minValue + ',25';
-        //$scope.data.colorTo            = $scope.hueSlider.maxValue + ',' + $scope.saturationSlider.maxValue + ',255';
         $scope.data.colorFrom          = [ $scope.hueSlider.minValue, $scope.saturationSlider.minValue ,  $scope.valueSlider.minValue ];
         $scope.data.colorTo            = [ $scope.hueSlider.maxValue, $scope.saturationSlider.maxValue ,  $scope.valueSlider.maxValue ];
 
@@ -58,8 +61,8 @@ angular.module('tractor', ['rzSlider'])
         $scope.data.rowThresholdPx     = $scope.rowThresholdPxSlider.value;
         $scope.data.rowSpacingPx       = $scope.rowSpacingPxSlider.value;
         $scope.data.rowPerspectivePx   = $scope.rowPerspectiveSlider.value;
-
     };
+    /*
     this.getData = function() {
       $http.get('/data').then(function (response) {
           console.log(response.data);
@@ -80,16 +83,19 @@ angular.module('tractor', ['rzSlider'])
           $scope.data.detecting = data.detecting;
       });
     };
+    */
     this.stop = function () {
         this.applyChanges(false);
     };
     this.start = function () {
         this.applyChanges(true);
     };
+    /*
     this.perform = function (direction) {
         $scope.data.direction = direction;
         $http.post('/perform', $scope.data).then(handleResponse);
     };
+    */
     this.applyChanges = function (detecting) {
 
         if (detecting === true) {
@@ -119,11 +125,39 @@ angular.module('tractor', ['rzSlider'])
     this.displayMenu = function() {
         $scope.showMenu = !$scope.showMenu;
     };
+    /*
     this.loadData = function() {
-        $http.get('/detect/load/lastSettings').then(handleResponse);
+        $http.get('/current').then(handleResponse);
+    };
+    */
+
+    this.loadSettingsFromBackend = function() {
+        $http.get('/current')
+             .then( function(response) {
+            console.log('current settings from backend:');
+            let data = response.data;
+            console.log(data);
+
+            $scope.hueSlider.minValue              = data.colorFrom[0];
+            $scope.hueSlider.maxValue              = data.colorTo[0];
+            $scope.saturationSlider.minValue       = data.colorFrom[1];
+            $scope.saturationSlider.maxValue       = data.colorTo[1];
+            $scope.valueSlider.minValue            = data.colorFrom[2];
+            $scope.valueSlider.maxValue            = data.colorTo[2];
+                  
+            $scope.erodeSlider.value               = data.erode;
+            $scope.dilateSlider.value              = data.dilate;
+            $scope.minimalContourAreaSlider.value  = data.minimalContourArea;
+
+            $scope.maxRowSlider.value              = data.maxRows;
+            $scope.rowSpacingPxSlider.value        = data.rowSpacingPx;
+            $scope.rowPerspectiveSlider.value      = data.rowPerspectivePx;
+            $scope.rowThresholdPxSlider.value      = data.rowThresholdPx;
+        });
     };
 
-    this.loadData();
-    this.getData();
-    console.log("initialize controller");
+    //this.loadData();
+    //this.getData();
+    this.loadSettingsFromBackend();
+    console.log("controller initialized");
 });
