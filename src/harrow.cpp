@@ -93,13 +93,13 @@ void Harrow::move(HARROW_DIRECTION direction, const char* source)
     }
     else if (direction == HARROW_DIRECTION::LEFT)
     {
-        printf("hydraulic left  - %s\n", source);
+        //printf("hydraulic left  - %s\n", source);
         line_set_value(_lineHydraulicRight,  0, "HydraulicRight");
         line_set_value(_lineHydraulicLeft,   1, "HydraulicLeft");
     }
     else if (direction == HARROW_DIRECTION::RIGHT)
     {
-        printf("hydraulic right - %s\n", source);
+        //printf("hydraulic right - %s\n", source);
         line_set_value(_lineHydraulicLeft,   0, "HydraulicLeft");
         line_set_value(_lineHydraulicRight,  1, "HydraulicRight");
     }
