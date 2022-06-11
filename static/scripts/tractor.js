@@ -1,4 +1,4 @@
-angular.module('tractor', ['rzSlider'])
+angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
 .controller('TractorController', function ($scope, $http) {
     // initialize the content type of post request with text/plaien
     // TO AVOID triggering the pre-flight OPTIONS request
@@ -17,6 +17,7 @@ angular.module('tractor', ['rzSlider'])
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000, onChange: function(s, m, h, p) { applyChanges(); } } };
     $scope.rowPerspectiveSlider = { value: 200, options: { floor:  0, ceil:  300, onChange: function(s, m, h, p) { applyChanges(); } } };
     $scope.showMenu = true;
+    $scope.settings = [];
 
     $scope.data = {
         detecting: "start"
@@ -47,32 +48,53 @@ angular.module('tractor', ['rzSlider'])
 
         $http.post('/applyChanges', $scope.data).then(handleResponse);
     };
-    const loadSettingsFromBackend = function() {
-        $http.get('/current').then(function(response) {
+    const applySettingsFromBackend = function(data) {
+        console.log('current settings from backend:', data);
+
+        $scope.hueSlider.minValue              = data.colorFrom[0];
+        $scope.hueSlider.maxValue              = data.colorTo[0];
+        $scope.saturationSlider.minValue       = data.colorFrom[1];
+        $scope.saturationSlider.maxValue       = data.colorTo[1];
+        $scope.valueSlider.minValue            = data.colorFrom[2];
+        $scope.valueSlider.maxValue            = data.colorTo[2];
+              
+        $scope.erodeSlider.value               = data.erode;
+        $scope.dilateSlider.value              = data.dilate;
+        $scope.minimalContourAreaSlider.value  = data.minimalContourArea;
+
+        $scope.maxRowSlider.value              = data.maxRows;
+        $scope.rowSpacingPxSlider.value        = data.rowSpacingPx;
+        $scope.rowPerspectiveSlider.value      = data.rowPerspectivePx;
+        $scope.rowThresholdPxSlider.value      = data.rowThresholdPx;
+    }
+    const loadSettingsFromBackend = function(path) {
+        return $http.get('/' + path).then(function(response) {
             let data = response.data;
-            console.log('current settings from backend:', data);
-
-            $scope.hueSlider.minValue              = data.colorFrom[0];
-            $scope.hueSlider.maxValue              = data.colorTo[0];
-            $scope.saturationSlider.minValue       = data.colorFrom[1];
-            $scope.saturationSlider.maxValue       = data.colorTo[1];
-            $scope.valueSlider.minValue            = data.colorFrom[2];
-            $scope.valueSlider.maxValue            = data.colorTo[2];
-                  
-            $scope.erodeSlider.value               = data.erode;
-            $scope.dilateSlider.value              = data.dilate;
-            $scope.minimalContourAreaSlider.value  = data.minimalContourArea;
-
-            $scope.maxRowSlider.value              = data.maxRows;
-            $scope.rowSpacingPxSlider.value        = data.rowSpacingPx;
-            $scope.rowPerspectiveSlider.value      = data.rowPerspectivePx;
-            $scope.rowThresholdPxSlider.value      = data.rowThresholdPx;
+            applySettingsFromBackend(data);
+        });
+    };
+    const list = function() {
+        $http.get('/list').then(function(response) {
+            $scope.settings = response.data.entries;
+            var index = $scope.settings.indexOf('lastSettings.json');
+            $scope.settings.splice(index, 1);
         });
     };
     this.displayMenu = function() {
         $scope.showMenu = !$scope.showMenu;
     };
+    this.save = function() {
+        console.log('save settings:', $scope.settingsName, $scope.data);
+        applySliderValues();
+        $http.post('/save/' + $scope.settingsName, $scope.data).then(handleResponse);
+        $scope.settingsName = '';
+        list();
+    };
+    this.load = function(path) {
+        loadSettingsFromBackend('load/' + path).then(applyChanges);
+    };
 
-    loadSettingsFromBackend();
+    loadSettingsFromBackend('current');
+    list();
     console.log("controller initialized");
 });

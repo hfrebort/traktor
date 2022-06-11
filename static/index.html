@@ -48,6 +48,7 @@
   </style>
   <script src="scripts/angular.min.js"></script>
   <script src="scripts/rzslider.min.js"></script>
+  <script src="scripts/ui-bootstrap-tpls-1.0.3.min.js"></script>
   <script src="scripts/tractor.js"></script>
   <title>Traktor</title>
 </head>
@@ -66,9 +67,25 @@
       <div class="col-sm-5" data-ng-show="showMenu">
         <form name="tractorForm" method="post">
           <div class="row">
-            <button name="hideMenuButton" data-ng-click="ctrl.displayMenu()" class="btn btn-block btn-sm">
-              <span class="glyphicon glyphicon-chevron-right"></span>
-            </button>
+            <div class="col-sm-12">
+              <button name="hideMenuButton" data-ng-click="ctrl.displayMenu()" class="btn btn-block btn-sm">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="input-group">
+                <input type="text" data-ng-model="settingsName" uib-typeahead="s for s in settings | filter:$viewValue" placeholder="Name" class="form-control" />
+                <div class="input-group-btn" data-uib-dropdown>
+                  <button type="button" class="btn btn-default" data-ng-click="ctrl.save()" data-ng-disabled="settingsName === '' || settingsName === undefined">Save</button>
+                  <button type="button" class="btn btn-default" data-uib-dropdown-toggle>Load <span class="caret"></span></button>
+                  <ul data-uib-dropdown-menu role="menu">
+                    <li role="menuitem" data-ng-click="ctrl.load(setting)" data-ng-repeat="setting in settings"><a href="#">{{setting}}</a></li>
+                  </ul>                  
+                </div>
+              </div>
+            </div>
           </div>
           <div class="row">
             <fieldset>
@@ -157,7 +174,7 @@
     <div class="row">
       <div class="col-sm-12">&nbsp;</div>
     </div>
-    <div class="row">
+    <div class="row" data-ng-show="showMenu">
       <div class="col-sm-12">
         <pre>{{response}}</pre>
       </div>
