@@ -60,28 +60,6 @@ int thread_webserver(int port, Shared* shared)
             [](bool success) {}
         );
     });
-    /*
-        /applyChanges
-    {
-     "duration":1
-    ,"left":12
-    ,"right":13
-    ,"direction":"center"
-    ,"url":"http://10.3.141.165:8888/video"
-    ,"colorFilter":true
-    ,"detecting":true
-    ,"colorFrom":"36,80,25"
-    ,"colorTo":"80,255,255"
-    ,"erode":10
-    ,"dilate":10
-    ,"contourMode":"POLY"
-    ,"threshold":5
-    ,"maximumMarkers":10
-    ,"rowCount": 1
-    ,"rowSpacePx": 160
-    ,"rowPerspectivePx": 0
-    }
-    */
     svr.Post("/applyChanges", [&](const Request &req, Response &res)
     {
         try
@@ -107,8 +85,10 @@ int thread_webserver(int port, Shared* shared)
             data.erase("detecting");
             */
 
-            trk::write_to_file("./detect/lastSettings.json", data.dump());
+            const std::string jsonData = data.dump();
+            trk::write_to_file("./detect/lastSettings.json", jsonData);
             res.status = 200;
+            printf("I: applyChanges: %s\n", jsonData.c_str());
         }
         catch(const std::exception& e)
         {
@@ -120,19 +100,6 @@ int thread_webserver(int port, Shared* shared)
     //
     // ------------------------------------------------------------------------
     //
-    /*
-    {
-        "colorFrom": [ 36,  15,  33 ],
-        "colorTo":   [ 80, 201, 180 ],
-        "dilate": 0,
-        "erode": 0,
-        "maxRows": 0,
-        "minimalContourArea": 130,
-        "rowPerspectivePx": 300,
-        "rowSpacingPx": 160,
-        "rowThresholdPx": 5
-    }
-    */
     svr.Get("/current", [&](const Request &req, Response &res) {
 
         DetectSettings& settings = shared->detectSettings;
@@ -185,7 +152,6 @@ int thread_webserver(int port, Shared* shared)
             res.status = 400;
             res.set_content(strerror(errno), "text/plain");
         }
-
     });
     //
     // ------------------------------------------------------------------------

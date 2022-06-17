@@ -9,7 +9,8 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 {
     const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 65};
 
-    printf("I: thread send_jpeg running\n");
+    shared->stats.jpeg_threads_running.fetch_add(1);
+    printf("I: thread send_jpeg started. threadcount: %d\n", shared->stats.jpeg_threads_running.load());
 
     short idx = -1;
 
@@ -51,7 +52,7 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
         {
             if ( !sendJPEGbytes(shared->analyzed_frame_jpegImage) )
             {
-                printf("I: send of JPG failed. connection closed. quitting sending thread.\n");
+                puts("I: send of JPG failed. connection closed. quitting sending thread.");
                 break;
             }
             shared->stats.jpeg_sent++;
@@ -59,8 +60,9 @@ void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> s
 
         if ( shared->shutdown_requested.load() )
         {
-            puts("I: thread ended: send_jpeg\n");
             break;
         }
     }
+    shared->stats.jpeg_threads_running.fetch_add(-1);
+    printf("I: A send_jpeg thread (webserver) ended. threadcount: %d\n", shared->stats.jpeg_threads_running.load());
 }
