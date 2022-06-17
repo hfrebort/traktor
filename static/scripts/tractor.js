@@ -19,9 +19,14 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
     $scope.showMenu = true;
     $scope.settings = [];
 
+    //
+    // 2022-06-17 06:06 Uhr - Spindler (Haris Geburtstag)
+    //  removed "detecting" as the buttons for on/off are no longer needed/available
+    
     $scope.data = {
-        detecting: "start"
+        /*detecting: "start"*/
     }
+    
     $scope.videoUrl = '/video';
 
     const handleResponse = function (response) {

@@ -90,7 +90,8 @@ int thread_webserver(int port, Shared* shared)
             settings.set_fromJson(req.body);
 
             nlohmann::json data = nlohmann::json::parse(req.body);
-            
+
+            /*            
             std::string detecting = data["detecting"];
             if ( detecting.compare("start") == 0) 
             {
@@ -104,13 +105,16 @@ int thread_webserver(int port, Shared* shared)
             }
             
             data.erase("detecting");
+            */
 
             trk::write_to_file("./detect/lastSettings.json", data.dump());
-
+            res.status = 200;
         }
         catch(const std::exception& e)
         {
             fprintf(stderr, "/applyChanges: %s\n", e.what());
+            res.status = 500;
+            res.set_content(e.what(), "text/plain");
         }
     });
     //

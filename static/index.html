@@ -62,7 +62,15 @@
             <span class="glyphicon glyphicon-chevron-left"></span>
           </button>
         </div>
-        <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>
+        <!-- 2022-06-17 Spindler
+              there is ONE error shown (F12-Browser) saying that:
+                >>>>>>>http://localhost:9080/{{videoUrl}}<<<<<<<<< could not be found.
+              Maybe this causes some problems?
+              Seems the variable "videoUrl" is not populated early enough.
+              I'm hardcoding the URL to "/video"
+        -->
+        <!--  <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>-->
+        <div class="traktor-container"><img class="traktor-image" src="/video"></div>
       </div>
       <div class="col-sm-5" data-ng-show="showMenu">
         <form name="tractorForm" method="post">
