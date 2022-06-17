@@ -319,140 +319,151 @@ bool calc_overall_threshold_draw_plants(Structures* structures, DetectSettings& 
 
 void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugWindows)
 {
-    printf("I: thread detect running\n");
-
-    Structures structures;
-    int idx_doubleBuffer = 0;
-
-    const DetectSettings   &detectSettings  = shared->detectSettings;
-    const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
-    const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
-    
-    std::unique_ptr<cv::Mat> status_bar = nullptr;
-
-    for (;;)
+    try
     {
-        //
-        // get new frame from camera buffer
-        //
-        int frameReadyIdx;
-        while ( (frameReadyIdx=std::atomic_exchange( &(shared->frame_buf_slot), -1)) == -1 )
-        {
-            // wait for a frame ready in the frameBuffer
-            std::unique_lock<std::mutex> lk(shared->camera_frame_ready_mutex);
-            shared->camera_frame_ready.wait(lk, [&shared]() { return shared->frame_buf_slot.load() != -1; });
-        }
-        cv::Mat& cameraFrame = shared->frame_buf[frameReadyIdx];
-        cv::Mat& outFrame    = shared->analyzed_frame_buf[idx_doubleBuffer];
-        //
-        // status_bar
-        //
-        if ( status_bar == nullptr )
-        {
-            status_bar = std::make_unique<cv::Mat>( cv::Mat::zeros(20, cameraFrame.cols, cameraFrame.type() ) );
-        }
-        //
-        // lock an output buffer
-        //
-        HARROW_DIRECTION direction = HARROW_DIRECTION::STOP;
-        const bool detecting = detectSettings.detecting.load();
-        const bool harrow_lifted = shared->harrowLifted.load();
-        {
-            std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
-            auto overallstart = std::chrono::high_resolution_clock::now();
+        printf("I: thread detect running\n");
 
-            status_bar->setTo( cv::Scalar(0,0,0) );
+        Structures structures;
+        int idx_doubleBuffer = 0;
 
-            if ( harrow_lifted )
+        const DetectSettings   &detectSettings  = shared->detectSettings;
+        const ImageSettings    &imageSettings   = shared->detectSettings.getImageSettings();
+        const ReflinesSettings &reflineSettings = shared->detectSettings.getReflineSettings();
+        
+        std::unique_ptr<cv::Mat> status_bar = nullptr;
+
+        for (;;)
+        {
+            //
+            // get new frame from camera buffer
+            //
+            int frameReadyIdx;
+            while ( (frameReadyIdx=std::atomic_exchange( &(shared->frame_buf_slot), -1)) == -1 )
             {
-                draw_status_bar("LIFTED", status_bar.get() );
-                cameraFrame.copyTo(outFrame);
+                // wait for a frame ready in the frameBuffer
+                std::unique_lock<std::mutex> lk(shared->camera_frame_ready_mutex);
+                shared->camera_frame_ready.wait(lk, [&shared]() { return shared->frame_buf_slot.load() != -1; });
             }
-            else
+            cv::Mat& cameraFrame = shared->frame_buf[frameReadyIdx];
+            cv::Mat& outFrame    = shared->analyzed_frame_buf[idx_doubleBuffer];
+            //
+            // status_bar
+            //
+            if ( status_bar == nullptr )
             {
-                find_contours(
-                    cameraFrame               
-                    , imageSettings   
-                    , outFrame                  
-                    , &structures
-                    , stats
-                    , showDebugWindows );                                                           
+                status_bar = std::make_unique<cv::Mat>( cv::Mat::zeros(20, cameraFrame.cols, cameraFrame.type() ) );
+            }
+            else if ( status_bar->cols != cameraFrame.cols ) {
+                status_bar.reset();
+                status_bar = std::make_unique<cv::Mat>( cv::Mat::zeros(20, cameraFrame.cols, cameraFrame.type() ) );
+            }
+            //
+            // lock an output buffer
+            //
+            HARROW_DIRECTION direction = HARROW_DIRECTION::STOP;
+            const bool detecting = detectSettings.detecting.load();
+            const bool harrow_lifted = shared->harrowLifted.load();
+            {
+                std::lock_guard<std::mutex> lk(shared->analyzed_frame_buf_mutex[idx_doubleBuffer]);
+                auto overallstart = std::chrono::high_resolution_clock::now();
 
-                auto start = std::chrono::high_resolution_clock::now();
-                cameraFrame.copyTo(outFrame);
-                stats->copyTo_ns    += trk::getDuration_ns(&start);
-                stats->copyTo_bytes += mat_byte_size(cameraFrame);
-                //printf("cameraFrame size: %lu\n", mat_byte_size(cameraFrame));
+                status_bar->setTo( cv::Scalar(0,0,0) );
 
-                calc_centers(&structures, imageSettings.minimalContourArea);
-
-                float avg_threshold;
-                if ( structures.centers.size() == 0 )
+                if ( harrow_lifted )
                 {
-                    draw_status_bar("NOTHING FOUND", status_bar.get());
-                }
-                else if ( !detecting )
-                {
-                    draw_status_bar("DETECTION OFF", status_bar.get());
-                }
-                else if ( ! calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame, &avg_threshold) )
-                {
-                    draw_status_bar("NO PLANTS WITHIN LINES", status_bar.get());
+                    draw_status_bar("LIFTED", status_bar.get() );
+                    cameraFrame.copyTo(outFrame);
                 }
                 else
                 {
-                    const bool is_in_threshold = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
-                    direction = get_harrow_direction(is_in_threshold, avg_threshold);
-                    draw_threshold_bar(is_in_threshold, avg_threshold, reflineSettings.x_half, status_bar.get());
+                    find_contours(
+                        cameraFrame               
+                        , imageSettings   
+                        , outFrame                  
+                        , &structures
+                        , stats
+                        , showDebugWindows );                                                           
+
+                    auto start = std::chrono::high_resolution_clock::now();
+                    cameraFrame.copyTo(outFrame);
+                    stats->copyTo_ns    += trk::getDuration_ns(&start);
+                    stats->copyTo_bytes += mat_byte_size(cameraFrame);
+                    //printf("cameraFrame size: %lu\n", mat_byte_size(cameraFrame));
+
+                    calc_centers(&structures, imageSettings.minimalContourArea);
+
+                    float avg_threshold;
+                    if ( !detecting )
+                    {
+                        draw_status_bar("DETECTION OFF", status_bar.get());
+                    }
+                    else if ( structures.centers.size() == 0 )
+                    {
+                        draw_status_bar("NOTHING FOUND", status_bar.get());
+                    }
+                    else if ( ! calc_overall_threshold_draw_plants(&structures, shared->detectSettings, outFrame, &avg_threshold) )
+                    {
+                        draw_status_bar("NO PLANTS WITHIN LINES", status_bar.get());
+                    }
+                    else
+                    {
+                        const bool is_in_threshold = is_within_threshold(avg_threshold, reflineSettings.rowSpacingPx, reflineSettings.rowThresholdPx);
+                        direction = get_harrow_direction(is_in_threshold, avg_threshold);
+                        draw_threshold_bar(is_in_threshold, avg_threshold, reflineSettings.x_half, status_bar.get());
+                    }
+                    drawRowLines(outFrame, imageSettings, reflineSettings);
+                    stats->calc_draw_ns += trk::getDuration_ns(&start);
                 }
-                drawRowLines(outFrame, imageSettings, reflineSettings);
-                stats->calc_draw_ns += trk::getDuration_ns(&start);
+                outFrame.push_back(*status_bar);
+                stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
+            }
+            if (showDebugWindows)
+            {
+                cv::imshow("inRange",       img_inRange );
+                cv::imshow("GaussianBlur",  img_GaussianBlur );
+                cv::imshow("eroded_dilated",img_eroded_dilated );
+                cv::imshow("drawContours",  shared->analyzed_frame_buf[idx_doubleBuffer] );
+                cv::waitKey(1);
+            }
+            stats->fps++;
+            //
+            // set index for other thread
+            //
+            shared->analyzed_frame_ready_idx.store(idx_doubleBuffer);
+            //
+            // notify other thread(s) about ready buffer
+            // 2021-08-08 Spindler (Moz'ens Geburtstag)
+            //   Still don't know if a lock is required to do .notify_xxx()
+            // 2022-03-31 Spindler (Sternzeit: -300754.4210426179)
+            //  hob jetzt no amoi nochgschaut: https://en.cppreference.com/w/cpp/thread/condition_variable
+            //  "3. execute notify_one or notify_all on the std::condition_variable (the lock does not need to be held for notification)"
+            //
+            {
+                std::unique_lock<std::mutex> ul(shared->analyzed_frame_ready_mutex);
+                shared->analyzed_frame_encoded_to_JPEG.store(false);
+                shared->analyzed_frame_ready.notify_all();
+            }
+            //
+            // kontroll se Hacke
+            //
+            if (       harrow         != nullptr 
+                    && harrow_lifted  == false 
+                    && detecting      == true)
+            {
+                harrow->move(direction, "detect");
             }
             
-            outFrame.push_back(*status_bar);
-            stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
-        }
-        if (showDebugWindows)
-        {
-            cv::imshow("inRange",       img_inRange );
-            cv::imshow("GaussianBlur",  img_GaussianBlur );
-            cv::imshow("eroded_dilated",img_eroded_dilated );
-            cv::imshow("drawContours",  shared->analyzed_frame_buf[idx_doubleBuffer] );
-            cv::waitKey(1);
-        }
-        stats->fps++;
-        //
-        // set index for other thread
-        //
-        shared->analyzed_frame_ready_idx.store(idx_doubleBuffer);
-        //
-        // notify other thread(s) about ready buffer
-        // 2021-08-08 Spindler (Moz'ens Geburtstag)
-        //   Still don't know if a lock is required to do .notify_xxx()
-        // 2022-03-31 Spindler (Sternzeit: -300754.4210426179)
-        //  hob jetzt no amoi nochgschaut: https://en.cppreference.com/w/cpp/thread/condition_variable
-        //  "3. execute notify_one or notify_all on the std::condition_variable (the lock does not need to be held for notification)"
-        //
-        {
-            std::unique_lock<std::mutex> ul(shared->analyzed_frame_ready_mutex);
-            shared->analyzed_frame_encoded_to_JPEG.store(false);
-            shared->analyzed_frame_ready.notify_all();
-        }
-        //
-        // kontroll se Hacke
-        //
-        if (       harrow         != nullptr 
-                && harrow_lifted  == false 
-                && detecting      == true)
-        {
-            harrow->move(direction, "detect");
-        }
-        
-        idx_doubleBuffer = 1 - idx_doubleBuffer;
+            idx_doubleBuffer = 1 - idx_doubleBuffer;
 
-        if (shared->shutdown_requested.load())
-        {
-            break;
+            if (shared->shutdown_requested.load())
+            {
+                break;
+            }
         }
+    }
+    catch(const std::exception& e)
+    {
+        fprintf(stderr,"X: detect - %s\n", e.what());
+        shared->shutdown_requested.store(true);
     }
 }
