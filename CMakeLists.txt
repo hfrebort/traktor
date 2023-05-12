@@ -17,7 +17,7 @@ set(SOURCES
     src/shared.h
     src/detect_settings.cpp
     src/thread_camera.cpp
-    src/thread_stats
+    src/thread_stats.cpp
     src/util.h
     src/util.cpp
     src/harrow.h
