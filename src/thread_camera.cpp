@@ -41,6 +41,32 @@ bool try_open_capture(cv::VideoCapture* capture, const Options* options)
     return capture->isOpened();
 }
 
+bool ensure_camera_open( Workitem* work, CameraContext* ctx )
+{
+    if ( ! ctx->capture.isOpened() ) 
+    {
+        if ( ctx->errorCount > 0 ) {
+            std::this_thread::sleep_for( std::chrono::seconds(1) );
+        }
+
+        if ( ! try_open_capture(&(ctx->capture), ctx->options) ) {
+            fprintf(stderr,"E: cannot open capture device. retry...\n");
+            copy_status_frame_to(work->frame, "could not open camera", RED, ctx->errorCount);
+            ctx->errorCount += 1;
+            return false;
+        }
+        else
+        {
+            printf("I: capture device opened successfully\n");
+            return true;
+        }
+    }
+    else
+    {
+        return true;
+    }
+}
+
 void thread_camera(Workitem* work, CameraContext* ctx)
 {
     cv::VideoCapture& capture = ctx->capture;
@@ -51,32 +77,12 @@ void thread_camera(Workitem* work, CameraContext* ctx)
         std::this_thread::sleep_for( std::chrono::milliseconds(ctx->delay_for_realtime_video_millis) );
     }
 
-    if ( ! capture.isOpened() ) 
-    {
-        if ( ctx->errorCount > 0 ) {
-            std::this_thread::sleep_for( std::chrono::seconds(1) );
-        }
-
-        if ( ! try_open_capture(&capture, options) ) {
-            fprintf(stderr,"E: cannot open capture device. retry...\n");
-            copy_status_frame_to(work->frame, "could not open camera", RED, ctx->errorCount);
-            ctx->errorCount += 1;
-            work->isValidForAnalyse = false;
-        }
-        else
-        {
-            printf("I: capture device opened successfully\n");
-        }
-    }
-
-    if ( capture.isOpened() ) {
+    if ( ensure_camera_open(work,ctx) ) {
         if ( ! capture.read( work->frame ) )
         {
-            ctx->errorCount += 1;
-            work->isValidForAnalyse = false;
-            
-            fprintf(stderr, "E: capture.read()\n");
             capture.release();
+            ctx->errorCount += 1;
+            fprintf(stderr, "E: capture.read()\n");
             copy_status_frame_to(work->frame, "could not read from camera", RED, ctx->errorCount);
         }
         else 
@@ -84,7 +90,6 @@ void thread_camera(Workitem* work, CameraContext* ctx)
             if ( ctx->errorCount > 0 ) 
             {
                 ctx->errorCount = 0;
-
                 ctx->delay_for_realtime_video_millis = options->filename.empty() 
                                                                 ? 0 
                                                                 : 1000 / ((int)capture.get(cv::CAP_PROP_FPS)) * options->video_playback_slowdown_factor;
@@ -95,12 +100,9 @@ void thread_camera(Workitem* work, CameraContext* ctx)
                      ctx->shared->detectSettings.getImageSettings().frame_cols
                     ,ctx->shared->detectSettings.getImageSettings().frame_rows);
             }
-            //
-            // we got a frame from the camera, so it's valid for analysis
-            //
-            work->isValidForAnalyse = true;
         }
     }
+    work->isValidForAnalyse = ( ctx->errorCount == 0 );
 }
 /*
 void thread_camera(const Options& options, Shared* shared)
