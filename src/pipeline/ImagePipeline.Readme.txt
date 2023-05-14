@@ -1,0 +1,39 @@
+3 threads
+---------
+1. Frame is read by a camera
+2. Frame is analysed  (detecting plants)
+3. Frame is used to paint analysed data. encoded to JPEG.
+
+Flow of the Framebuffer:
+
+    Camera --> Detect --> Draw/Encode
+
+Idea:
+
+    The same buffer can be used/passed through the threads and does not have to be copied.
+
+Constraint:
+
+    + We want to make sure that the producers are not being blocked 
+      when they pass a "finished" framed down to their consumer.
+    + in case of a "fast producer", frame/work get's overwritten.
+      That's ok.
+
+Scenario #1:
+
+    When a camera is reading frames faster that they can by analysed: frames got skipped. Were not analysed.
+    We can nothing do about it. (buy a faster CPU for the Detect-Thread. Maybe code better.)
+    But the camera should no be blocked and reading new frames as we analysing an old one.
+
+Scenario #2:
+
+    When it happens that the thread of drawing/encoding is a slow one, 
+    the producing Detect thread should not be blocked when finished a frame
+    and passing it to Encode.
+    Encode is just for visualization to the user. 
+    It should not effect the steering of se Hacke.
+
+Long story short:
+
+    A workitem produced and not being able to handled by the consumer, 
+    should just be overwritten with a new one.

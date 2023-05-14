@@ -3,6 +3,8 @@
 
 #include "shared.h"
 #include "stats.h"
+#include "CameraContext.h"
+#include "Workitem.h"
 
 const cv::Scalar RED   = cv::Scalar(0,0,255);
 const cv::Scalar BLUE  = cv::Scalar(255,0,0);
@@ -21,24 +23,86 @@ void copy_status_frame_to(cv::OutputArray dest, const char* text, const cv::Scal
     status.copyTo(dest);
 }
 
-bool try_open_capture(cv::VideoCapture* capture, const Options& options, Shared* shared)
+bool try_open_capture(cv::VideoCapture* capture, const Options* options)
 {
-    if ( options.filename.empty() ) {
-        printf("I: opening camera #%d...\n", options.cameraIndex);
-        if ( capture->open(options.cameraIndex) ) {
-            capture->set(cv::CAP_PROP_FRAME_WIDTH,  (double)options.camera_width);
-            capture->set(cv::CAP_PROP_FRAME_HEIGHT, (double)options.camera_height);
-            printf("I: set CAP_PROP_FRAME_WIDTH x CAP_PROP_FRAME_HEIGHT = %dx%d\n", options.camera_width, options.camera_height);
+    if ( options->filename.empty() ) {
+        printf("I: opening camera #%d...\n", options->cameraIndex);
+        if ( capture->open(options->cameraIndex) ) {
+            capture->set(cv::CAP_PROP_FRAME_WIDTH,  (double)options->camera_width);
+            capture->set(cv::CAP_PROP_FRAME_HEIGHT, (double)options->camera_height);
+            printf("I: set CAP_PROP_FRAME_WIDTH x CAP_PROP_FRAME_HEIGHT = %dx%d\n", options->camera_width, options->camera_height);
         }
     }
     else {
         printf("I: opening file...\n");
-        capture->open(options.filename);
+        capture->open(options->filename);
     }
 
     return capture->isOpened();
 }
 
+void thread_camera(Workitem* work, CameraContext* ctx)
+{
+    cv::VideoCapture& capture = ctx->capture;
+    const Options* options = ctx->options;
+
+    if ( ctx->delay_for_realtime_video_millis != 0)
+    {
+        std::this_thread::sleep_for( std::chrono::milliseconds(ctx->delay_for_realtime_video_millis) );
+    }
+
+    if ( ! capture.isOpened() ) 
+    {
+        if ( ctx->errorCount > 0 ) {
+            std::this_thread::sleep_for( std::chrono::seconds(1) );
+        }
+
+        if ( ! try_open_capture(&capture, options) ) {
+            fprintf(stderr,"E: cannot open capture device. retry...\n");
+            copy_status_frame_to(work->frame, "could not open camera", RED, ctx->errorCount);
+            ctx->errorCount += 1;
+            work->isValidForAnalyse = false;
+        }
+        else
+        {
+            printf("I: capture device opened successfully\n");
+        }
+    }
+
+    if ( capture.isOpened() ) {
+        if ( ! capture.read( work->frame ) )
+        {
+            ctx->errorCount += 1;
+            work->isValidForAnalyse = false;
+            
+            fprintf(stderr, "E: capture.read()\n");
+            capture.release();
+            copy_status_frame_to(work->frame, "could not read from camera", RED, ctx->errorCount);
+        }
+        else 
+        {   
+            if ( ctx->errorCount > 0 ) 
+            {
+                ctx->errorCount = 0;
+
+                ctx->delay_for_realtime_video_millis = options->filename.empty() 
+                                                                ? 0 
+                                                                : 1000 / ((int)capture.get(cv::CAP_PROP_FPS)) * options->video_playback_slowdown_factor;
+                ctx->shared->detectSettings.set_frame( work->frame.cols
+                                                    , work->frame.rows );
+                
+                printf("I: COLS and ROWS were set to: %dx%d\n", 
+                     ctx->shared->detectSettings.getImageSettings().frame_cols
+                    ,ctx->shared->detectSettings.getImageSettings().frame_rows);
+            }
+            //
+            // we got a frame from the camera, so it's valid for analysis
+            //
+            work->isValidForAnalyse = true;
+        }
+    }
+}
+/*
 void thread_camera(const Options& options, Shared* shared)
 {
     cv::VideoCapture capture;
@@ -116,3 +180,4 @@ void thread_camera(const Options& options, Shared* shared)
         }
     }
 }
+*/

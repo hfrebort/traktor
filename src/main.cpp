@@ -7,6 +7,7 @@
 
 #include "shared.h"
 #include "harrow.h"
+#include "pipeline/ImagePipeline.hpp"
 
 int wait_for_signal(void)
 {
@@ -169,6 +170,7 @@ int main(int argc, char* argv[])
         fprintf(stderr, "E: Hack Steuerung sagt: %s\n", ex.what());
     }
 
+    Stats  stats;
     Shared shared;
     load_lastSettings(shared.detectSettings);
 

@@ -107,10 +107,9 @@ struct DetectSettings {
 
         const ImageSettings&    getImageSettings()   { return imageSettings;   }
         const ReflinesSettings& getReflineSettings() { return reflineSettings; }
-        std::atomic<bool>   detecting;
+        
 
         DetectSettings() {
-            detecting.store(true);
         }
 
         void set_frame(const int newCols, const int newRows) {  
@@ -173,43 +172,44 @@ struct DetectSettings {
 struct Shared {
     public:
 
-        Stats                   stats;
         httplib::Server         *webSvr;
 
-        std::atomic<bool>       shutdown_requested;
-        //
-        // sync between camera an detection thread
-        //
-        cv::Mat                 frame_buf[3];
-        std::atomic<int>        frame_buf_slot;
-        std::condition_variable camera_frame_ready;
-        std::mutex              camera_frame_ready_mutex;
-        //
-        // sync between detection and sending thread
-        //
-        cv::Mat                 analyzed_frame_buf[2];
-        std::mutex              analyzed_frame_buf_mutex[2];
-        std::condition_variable analyzed_frame_ready;
-        std::mutex              analyzed_frame_ready_mutex;
-        std::atomic<int>        analyzed_frame_ready_idx;
-        std::atomic<bool>       analyzed_frame_encoded_to_JPEG;
-        std::vector<uchar>      analyzed_frame_jpegImage;
-        //
-        //
-        //
-        DetectSettings          detectSettings;
-        //
-        //
-        //
+        std::atomic<bool>       shutdown_requested{false};
         std::atomic<bool>       harrowLifted;
+        //std::atomic<bool>       detecting{false};
+
+        DetectSettings          detectSettings;
 
     Shared()
     {
         shutdown_requested.store(false);
         webSvr = nullptr;
+        /*
         frame_buf_slot.store(-1);
         analyzed_frame_ready_idx.store(-1);
         analyzed_frame_encoded_to_JPEG.store(false);
+        */
         harrowLifted = false;
     }
 };
+
+        /*
+            should all be handled by the ImagePipeline
+            //
+            // sync between camera an detection thread
+            //
+            cv::Mat                 frame_buf[3];
+            std::atomic<int>        frame_buf_slot;
+            std::condition_variable camera_frame_ready;
+            std::mutex              camera_frame_ready_mutex;
+            //
+            // sync between detection and sending thread
+            //
+            cv::Mat                 analyzed_frame_buf[2];
+            std::mutex              analyzed_frame_buf_mutex[2];
+            std::condition_variable analyzed_frame_ready;
+            std::mutex              analyzed_frame_ready_mutex;
+            std::atomic<int>        analyzed_frame_ready_idx;
+            std::atomic<bool>       analyzed_frame_encoded_to_JPEG;
+            std::vector<uchar>      analyzed_frame_jpegImage;
+        */

@@ -23,6 +23,14 @@ set(SOURCES
     src/harrow.h
     src/harrow.cpp
     src/thread_center_harrow.cpp
+    src/CameraContext.h
+    src/pipeline/auto_reset_event.cpp
+    src/pipeline/auto_reset_event.hpp
+    src/pipeline/Postbox.cpp
+    src/pipeline/Postbox.hpp
+    src/pipeline/ImagePipeline.cpp
+    src/pipeline/ImagePipeline.hpp
+    src/Workitem.h
 )
 
 add_executable(${EXECUTABLE} ${SOURCES})
