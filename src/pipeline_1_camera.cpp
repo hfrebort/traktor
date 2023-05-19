@@ -58,7 +58,7 @@ bool ensure_camera_open( Workitem* work, CameraContext* ctx )
         }
         else
         {
-            printf("I: capture device opened successfully\n");
+            puts("I: capture device opened successfully");
             return true;
         }
     }

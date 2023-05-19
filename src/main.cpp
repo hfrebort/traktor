@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
     CameraContext camera_context(&stats, &options, &shared);
     DetectContext detect_context(&stats, &shared, harrow.get() );
     pipeline.start_camera_1( camera_main, &camera_context );
-    pipeline.start_detect_2( detect_main, &detect_context );
+    //pipeline.start_detect_2( detect_main, &detect_context );
 
     //std::thread camera(thread_camera, options, &shared);
     //std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);

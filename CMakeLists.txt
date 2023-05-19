@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0.0)
 set(EXECUTABLE traktor)
 #set(CMAKE_CXX_FLAGS "-march=native")
 
-project(${EXECUTABLE} VERSION 0.1.0)
+project(${EXECUTABLE} VERSION 1.2.0)
 
 include(CTest)
 enable_testing()
@@ -92,7 +92,7 @@ find_package(OpenCV REQUIRED)
 #message(STATUS "    libraries: ${OpenCV_LIBS}")
 #message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
-message(STATUS "OPENCV target_link_libraries: ${OpenCV_LIBS}")
+#message(STATUS "OPENCV target_link_libraries: ${OpenCV_LIBS}")
 
 # Link your application with OpenCV libraries
 target_link_libraries     (${EXECUTABLE} PRIVATE ${OpenCV_LIBS})

@@ -2,8 +2,10 @@
 
 #include "shared.h"
 
-struct CameraContext
+class CameraContext
 {
+    public:
+    
     Stats*              stats;
     const Options*      options;
     Shared*             shared;
