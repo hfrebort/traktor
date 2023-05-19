@@ -8,6 +8,8 @@
 #include "shared.h"
 #include "harrow.h"
 #include "pipeline/ImagePipeline.hpp"
+#include "camera.h"
+#include "detect.h"
 
 int wait_for_signal(void)
 {
@@ -46,7 +48,7 @@ void join_thread(std::thread* t, const char* name)
     }
 }
 
-void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stats, std::thread* web, std::thread* detect, std::thread* center)
+void shutdown_all_threads(Shared& shared, ImagePipeline* pipeline,std::thread* stats, std::thread* web, std::thread* center)
 {
     shared.shutdown_requested.store(true);
 
@@ -55,18 +57,22 @@ void shutdown_all_threads(Shared& shared, std::thread* camera, std::thread* stat
         shared.webSvr->stop();
     }
 
+    pipeline->shutdown();
+
     join_thread(center, "center_harrow");
     join_thread(web,    "webserver");
-    join_thread(camera, "camera");
-    join_thread(detect, "detect");
+    //join_thread(camera, "camera");
+    //join_thread(detect, "detect");
     join_thread(stats,  "stats");
 }
 
-int  thread_webserver(int port, Shared* shared);
-void thread_camera(const Options& options, Shared* shared);
+int  thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* stats);
+//void thread_camera(const Options& options, Shared* shared);
 void thread_stats(Shared* ,Stats*);
-void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
+//void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
 void thread_center_harrow(Harrow* harrow, std::atomic<bool>* harrowLifted, const std::atomic<bool>* shutdown_requested);
+void camera_main(Workitem* work, CameraContext* ctx);
+void detect_main(Workitem* work, DetectContext* ctx);
 
 int parser_commandline(int argc, char* argv[], Options* options)
 {
@@ -174,14 +180,22 @@ int main(int argc, char* argv[])
     Shared shared;
     load_lastSettings(shared.detectSettings);
 
-    std::thread camera(thread_camera, options, &shared);
-    std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
+    ImagePipeline pipeline;
+    
+    CameraContext camera_context(&stats, &options, &shared);
+    DetectContext detect_context(&stats, &shared, harrow.get() );
+    pipeline.start_camera_1( camera_main, &camera_context );
+    pipeline.start_detect_2( detect_main, &detect_context );
+
+    //std::thread camera(thread_camera, options, &shared);
+    //std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
     //std::thread stats (thread_stats, &shared, &shared.stats);
-    std::thread web   (thread_webserver, options.httpPort, &shared);
+    std::thread web   (thread_webserver, options.httpPort, &shared, &pipeline, &stats);
     std::thread center(thread_center_harrow, harrow.get(), &(shared.harrowLifted), &(shared.shutdown_requested));
 
     rc = wait_for_signal();
-    shutdown_all_threads(shared, &camera, /*&stats*/ nullptr, &web, &detect, &center);
+    //shutdown_all_threads(shared, &camera, /*&stats*/ nullptr, &web, &detect, &center);
+    shutdown_all_threads(shared, &pipeline, /*stats*/ nullptr, &web, &center);
 
     return rc;
 }

@@ -1,7 +1,7 @@
 #include "ImagePipeline.hpp"
 
 //-----------------------------------------------------------------------------
-void ImagePipeline::camera_1(std::function<void(Workitem&,CameraContext*)> process, CameraContext* context) {
+void ImagePipeline::camera_1(std::function<void(Workitem*,CameraContext*)> process, CameraContext* context) {
 //-----------------------------------------------------------------------------
 
     for ( ;; ) {
@@ -15,8 +15,7 @@ void ImagePipeline::camera_1(std::function<void(Workitem&,CameraContext*)> proce
         }
 
         // --- process ---
-        
-        process( _workitems[idx_cam_process] , context );
+        process( &(_workitems[idx_cam_process]) , context );
         
         // --- write ---
 
@@ -30,7 +29,7 @@ void ImagePipeline::camera_1(std::function<void(Workitem&,CameraContext*)> proce
 }
 
 //-----------------------------------------------------------------------------
-void ImagePipeline::detect_2(std::function<void(Workitem&,void*)> process, void* context) {
+void ImagePipeline::detect_2(std::function<void(Workitem*,DetectContext*)> process, DetectContext* context) {
 //-----------------------------------------------------------------------------
     
     for (;;) {
@@ -42,7 +41,7 @@ void ImagePipeline::detect_2(std::function<void(Workitem&,void*)> process, void*
         }
         else
         {
-            process( _workitems[idx] , context );
+            process( &(_workitems[idx]) , context );
             if ( !write(_DetectToEncode, idx) )
             {
                 break;
@@ -52,7 +51,7 @@ void ImagePipeline::detect_2(std::function<void(Workitem&,void*)> process, void*
 }
 
 //-----------------------------------------------------------------------------
-void ImagePipeline::encode_3(std::function<bool(Workitem&,void*)> process, void* context) {
+void ImagePipeline::encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context) {
 //-----------------------------------------------------------------------------
 
     for (;;)
@@ -64,10 +63,10 @@ void ImagePipeline::encode_3(std::function<bool(Workitem&,void*)> process, void*
         }
         else
         {
-            bool likeToExit = process( _workitems[idx] , context );
+            const WORKER_RC rc = process( &(_workitems[idx]) , context );
             set_free(idx);
 
-            if ( likeToExit )
+            if ( rc == WORKER_RC::LIKE_TO_EXIT )
             {
                 break;
             }
@@ -210,7 +209,7 @@ ImagePipeline::ImagePipeline()
     set_all_free();
 }
 //-----------------------------------------------------------------------------
-void join_thread(std::thread* t, const char* name)
+static void join_thread(std::thread* t, const char* name)
 //-----------------------------------------------------------------------------
 {
     if ( t != nullptr && t->joinable() )

@@ -33,7 +33,7 @@ cv::Mat img_GaussianBlur;
 cv::Mat img_threshold;
 cv::Mat img_eroded_dilated;
 
-struct Structures
+struct Contoures
 {
     std::vector< std::vector<cv::Point> >   all_contours;
     std::vector<cv::Point2i>                centers;
@@ -68,14 +68,14 @@ size_t mat_byte_size(const cv::Mat& mat)
     return mat.total() * mat.elemSize();
 }
 
-void calc_center2(const std::vector<cv::Point2i>& points, cv::Point* center)
+void calc_center_of_contour(const std::vector<cv::Point2i>& points, cv::Point* center)
 {
     cv::Moments M = cv::moments(points);
     center->x = int(M.m10 / M.m00);
 	center->y = int(M.m01 / M.m00);
 }
 
-void drawContoursAndCenters(cv::InputOutputArray frame, const DetectSettings &settings, const Structures &found)
+void drawContoursAndCenters(cv::InputOutputArray frame, const DetectSettings &settings, const Contoures &found)
 {
     for ( auto const& c : found.centers )
     {
@@ -132,7 +132,7 @@ void drawRowLines(cv::InputOutputArray frame, const ImageSettings &imgSettings, 
 }
 
 //cv::threshold   (*in, *out, 0, 255, cv::THRESH_BINARY );                                 std::swap(in,out); if (showWindows) { in->copyTo(img_threshold);}        stats->frame_bytes_processed += mat_byte_size(*in);
-void find_contours(cv::Mat& cameraFrame, const ImageSettings& settings, cv::Mat& outputFrame, Structures* structures, Stats* stats, const bool showWindows)
+void find_contours(cv::Mat& cameraFrame, const ImageSettings& settings, cv::Mat& outputFrame, Contoures* structures, Stats* stats, const bool showWindows)
 {
     cv::Mat* in  = &tmp;
     cv::Mat* out = &outputFrame;
@@ -151,7 +151,7 @@ void find_contours(cv::Mat& cameraFrame, const ImageSettings& settings, cv::Mat&
     cv::findContours(*out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);       stats->findContours_ns  += trk::getDuration_ns(&start);         stats->frame_bytes_processed += mat_byte_size(*out);
 }
 
-void calc_centers(Structures* found, const int minimalContourArea)
+void calc_centers_of_contours(Contoures* found, const int minimalContourArea)
 {
     found->clearCenters();
 
@@ -165,7 +165,7 @@ void calc_centers(Structures* found, const int minimalContourArea)
             //
             // calc center and add it to centers
             //
-            calc_center2(contour, &centerPoint);
+            calc_center_of_contour(contour, &centerPoint);
             found->centers.emplace_back( centerPoint.x, centerPoint.y );
             //
             // remeber index of found center to access the corresponding contour afterwards
@@ -277,7 +277,7 @@ HARROW_DIRECTION get_harrow_direction(const bool is_within_threshold, const floa
     return direction;
 }
 
-bool calc_overall_threshold_draw_plants(Structures* structures, DetectSettings& settings, cv::Mat& frame, float* avg_threshold)
+bool calc_overall_threshold_draw_plants(Contoures* structures, DetectSettings& settings, cv::Mat& frame, float* avg_threshold)
 {
     const ReflinesSettings& refSettings = settings.getReflineSettings();
     const ImageSettings&    imgSettings = settings.getImageSettings();
@@ -317,13 +317,15 @@ bool calc_overall_threshold_draw_plants(Structures* structures, DetectSettings& 
     return structures_processed > 0;
 }
 
+
+
 void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugWindows)
 {
     try
     {
         printf("I: thread detect running\n");
 
-        Structures structures;
+        Contoures structures;
         int idx_doubleBuffer = 0;
 
         const DetectSettings   &detectSettings  = shared->detectSettings;
@@ -390,7 +392,7 @@ void thread_detect(Shared* shared, Stats* stats, Harrow* harrow, bool showDebugW
                     stats->copyTo_bytes += mat_byte_size(cameraFrame);
                     //printf("cameraFrame size: %lu\n", mat_byte_size(cameraFrame));
 
-                    calc_centers(&structures, imageSettings.minimalContourArea);
+                    calc_centers_of_contours(&structures, imageSettings.minimalContourArea);
 
                     float avg_threshold;
                     if ( !detecting )

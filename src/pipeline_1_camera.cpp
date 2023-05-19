@@ -3,8 +3,9 @@
 
 #include "shared.h"
 #include "stats.h"
-#include "CameraContext.h"
-#include "Workitem.h"
+#include "camera.h"
+
+#include "pipeline/ImagePipeline.hpp"
 
 const cv::Scalar RED   = cv::Scalar(0,0,255);
 const cv::Scalar BLUE  = cv::Scalar(255,0,0);
@@ -67,7 +68,7 @@ bool ensure_camera_open( Workitem* work, CameraContext* ctx )
     }
 }
 
-void thread_camera(Workitem* work, CameraContext* ctx)
+void camera_main(Workitem* work, CameraContext* ctx)
 {
     cv::VideoCapture& capture = ctx->capture;
     const Options* options = ctx->options;

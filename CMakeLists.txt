@@ -10,27 +10,29 @@ enable_testing()
 
 set(SOURCES 
     src/main.cpp
-    src/thread_send_jpeg.cpp
     src/webserver.cpp
     src/stats.h
-    src/thread_detect.cpp
+    #src/thread_detect.cpp
     src/shared.h
     src/detect_settings.cpp
-    src/thread_camera.cpp
+    src/camera.h
+    src/detect.h
+    src/encode.h
+    src/pipeline_1_camera.cpp
+    src/pipeline_2_detect.cpp
+    src/pipeline_3_encode_send.cpp
     src/thread_stats.cpp
     src/util.h
     src/util.cpp
     src/harrow.h
     src/harrow.cpp
     src/thread_center_harrow.cpp
-    src/CameraContext.h
     src/pipeline/auto_reset_event.cpp
     src/pipeline/auto_reset_event.hpp
     src/pipeline/Postbox.cpp
     src/pipeline/Postbox.hpp
     src/pipeline/ImagePipeline.cpp
     src/pipeline/ImagePipeline.hpp
-    src/Workitem.h
 )
 
 add_executable(${EXECUTABLE} ${SOURCES})

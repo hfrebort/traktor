@@ -6,8 +6,22 @@
 
 #include "auto_reset_event.hpp"
 #include "Postbox.hpp"
-#include "../thread_contexts.h"
-#include "../Workitem.h"
+
+#include "../camera.h"
+#include "../detect.h"
+#include "../encode.h"
+
+enum WORKER_RC
+{
+    OK,
+    LIKE_TO_EXIT
+};
+
+struct Workitem {
+    cv::Mat frame;
+    std::atomic<bool>   isValidForAnalyse;
+    DetectResult        detect_result;
+};
 
 class ImagePipeline
 {
@@ -15,17 +29,23 @@ public:
 
     ImagePipeline();
 
-    void start_camera_1(std::function<void(Workitem&,CameraContext*)> process, void* context)
+    void start_camera_1(std::function<void(Workitem*,CameraContext*)> process, CameraContext* context)
     {
         _threads[0] = std::thread( [&] { camera_1(process,context); } );
     }
-    void start_detect_2(std::function<void(Workitem&,void*)> process, void* context)
+    void start_detect_2(std::function<void(Workitem*,DetectContext*)> process, DetectContext* context)
     {
         _threads[1] = std::thread( [&] { detect_2(process,context); } );
     }
-    void start_encode_3(std::function<bool(Workitem&,void*)> process, void* context)
+    /*
+    void start_encode_3(std::function<bool(Workitem*,void*)> process, void* context)
     {
         _threads[2] = std::thread( [&] { encode_3(process,context); } );
+    }
+    */
+    void run_encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context)
+    {
+        encode_3(process,context);
     }
     
     void shutdown();
@@ -58,8 +78,8 @@ private:
     void   set_all_free();
     void   set_all_full();
 
-    void camera_1(std::function<void(Workitem&,CameraContext*)> process, CameraContext* context);
-    void detect_2(std::function<void(Workitem&,void*)> process, void* context);
-    void encode_3(std::function<bool(Workitem&,void*)> process, void* context);
+    void camera_1(std::function<void     (Workitem*,CameraContext*)> process, CameraContext* context);
+    void detect_2(std::function<void     (Workitem*,DetectContext*)> process, DetectContext* context);
+    void encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context);
 
 };

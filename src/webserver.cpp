@@ -6,10 +6,14 @@
 
 #include "shared.h"
 #include "util.h"
+#include "pipeline/ImagePipeline.hpp"
+#include "encode.h"
 
 void thread_send_jpeg(Shared* shared, std::function<bool(std::vector<uchar>&)> sendJPEGbytes);
 
-int thread_webserver(int port, Shared* shared)
+WORKER_RC encode_main(Workitem* work, EncodeContext* ctx);
+
+int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* stats)
 {
     using namespace httplib;
     Server svr;
@@ -28,14 +32,33 @@ int thread_webserver(int port, Shared* shared)
         static const std::string boundary("--Ba4oTvQMY8ew04N8dcnM\r\nContent-Type: image/jpeg\r\n\r\n");
         static const std::string CRLF("\r\n");
 
-        Stats &stats = shared->stats;
-
         res.set_content_provider(
             "multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM", // Content type
             [&](size_t offset, DataSink &sink) {
                 //
                 // begin of JPEG streaming
                 //
+                EncodeContext ctx(stats, shared,
+                    [&sink,&stats](std::vector<unsigned char>& jpegBytes) {
+                        // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+                        jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
+                        if ( !sink.write( boundary.data(), boundary.length() ) )
+                        {
+                            return false;
+                        }
+                        else if ( !sink.write( (char*)jpegBytes.data(), jpegBytes.size() ) )
+                        {
+                            return false;
+                        }
+
+                        stats->jpeg_bytes_sent += boundary.length() + jpegBytes.size();
+
+                        return true;
+                    });
+
+                pipeline->run_encode_3( encode_main, &ctx);
+
+                /*
                 thread_send_jpeg(
                     shared,
                     [&sink,&stats](std::vector<unsigned char>& jpegBytes) {
@@ -50,11 +73,11 @@ int thread_webserver(int port, Shared* shared)
                             return false;
                         }
 
-                        stats.jpeg_bytes_sent += boundary.length() + jpegBytes.size();
+                        stats->jpeg_bytes_sent += boundary.length() + jpegBytes.size();
 
                         return true;
                     });
-
+                */
                 return true; // return 'false' if you want to cancel the process.
             },
             [](bool success) {}
@@ -68,22 +91,6 @@ int thread_webserver(int port, Shared* shared)
             settings.set_fromJson(req.body);
 
             nlohmann::json data = nlohmann::json::parse(req.body);
-
-            /*            
-            std::string detecting = data["detecting"];
-            if ( detecting.compare("start") == 0) 
-            {
-                settings.detecting.store ( true );
-                printf("I: detecting is now: ON\n");
-            }
-            else if ( detecting.compare("stop") == 0) 
-            {
-                settings.detecting.store ( false );
-                printf("I: detecting is now: OFF\n");
-            }
-            
-            data.erase("detecting");
-            */
 
             const std::string jsonData = data.dump();
             trk::write_to_file("./detect/lastSettings.json", jsonData);
