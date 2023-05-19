@@ -4,6 +4,8 @@
 void ImagePipeline::camera_1(std::function<void(Workitem*,CameraContext*)> process, CameraContext* context) {
 //-----------------------------------------------------------------------------
 
+    puts("starting camera loop");
+
     for ( ;; ) {
 
         // --- read ---
@@ -32,6 +34,8 @@ void ImagePipeline::camera_1(std::function<void(Workitem*,CameraContext*)> proce
 void ImagePipeline::detect_2(std::function<void(Workitem*,DetectContext*)> process, DetectContext* context) {
 //-----------------------------------------------------------------------------
     
+    puts("starting detect loop");
+
     for (;;) {
 
         int32_t idx;
@@ -53,6 +57,8 @@ void ImagePipeline::detect_2(std::function<void(Workitem*,DetectContext*)> proce
 //-----------------------------------------------------------------------------
 void ImagePipeline::encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context) {
 //-----------------------------------------------------------------------------
+
+    puts("starting encode loop");
 
     for (;;)
     {
@@ -180,7 +186,7 @@ int8_t ImagePipeline::get_free() {
 void ImagePipeline::set_free(int8_t idx) {
 //-----------------------------------------------------------------------------
 
-    printf("free: %d\n", idx);
+    //printf("free: %d\n", idx);
     _Free[ idx ].store(true, std::memory_order_release);
 
 }
@@ -233,4 +239,22 @@ void ImagePipeline::shutdown()
     write(_DetectToEncode, ACTION_EXIT);
     join_thread(&_threads[2], "encode");
 
+}
+void ImagePipeline::start_camera_1(std::function<void(Workitem*,CameraContext*)> process, CameraContext* context)
+{
+    _threads[0] = std::thread( [=] { camera_1(process,context); } );
+}
+void ImagePipeline::start_detect_2(std::function<void(Workitem*,DetectContext*)> process, DetectContext* context)
+{
+    _threads[1] = std::thread( [=] { detect_2(process,context); } );
+}
+/*
+void start_encode_3(std::function<bool(Workitem*,void*)> process, void* context)
+{
+    _threads[2] = std::thread( [&] { encode_3(process,context); } );
+}
+*/
+void ImagePipeline::run_encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context)
+{
+    encode_3(process,context);
 }

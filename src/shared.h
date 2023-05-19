@@ -175,7 +175,7 @@ struct Shared {
         httplib::Server         *webSvr;
 
         std::atomic<bool>       shutdown_requested{false};
-        std::atomic<bool>       harrowLifted;
+        std::atomic<bool>       harrowLifted{false};
         //std::atomic<bool>       detecting{false};
 
         DetectSettings          detectSettings;

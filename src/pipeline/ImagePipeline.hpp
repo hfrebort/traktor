@@ -29,25 +29,9 @@ public:
 
     ImagePipeline();
 
-    void start_camera_1(std::function<void(Workitem*,CameraContext*)> process, CameraContext* context)
-    {
-        _threads[0] = std::thread( [&] { camera_1(process,context); } );
-    }
-    void start_detect_2(std::function<void(Workitem*,DetectContext*)> process, DetectContext* context)
-    {
-        _threads[1] = std::thread( [&] { detect_2(process,context); } );
-    }
-    /*
-    void start_encode_3(std::function<bool(Workitem*,void*)> process, void* context)
-    {
-        _threads[2] = std::thread( [&] { encode_3(process,context); } );
-    }
-    */
-    void run_encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context)
-    {
-        encode_3(process,context);
-    }
-    
+    void start_camera_1(std::function<void(Workitem*,CameraContext*)> process, CameraContext* context);
+    void start_detect_2(std::function<void(Workitem*,DetectContext*)> process, DetectContext* context);
+    void run_encode_3(std::function<WORKER_RC(Workitem*,EncodeContext*)> process, EncodeContext* context);
     void shutdown();
 
 private:

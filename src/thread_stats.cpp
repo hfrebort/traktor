@@ -16,6 +16,8 @@ void thread_stats(Shared* shared, Stats* stats)
 {
     const int secondsToPause = 2;
 
+    printf("camera frames: %d\n",stats->camera_frames.load());
+
     for (;;)
     {
         int fps = stats->fps.exchange(0);

@@ -35,7 +35,7 @@ bool try_open_capture(cv::VideoCapture* capture, const Options* options)
         }
     }
     else {
-        printf("I: opening file...\n");
+        printf("I: opening file %s\n", options->filename.c_str());
         capture->open(options->filename);
     }
 
@@ -44,13 +44,15 @@ bool try_open_capture(cv::VideoCapture* capture, const Options* options)
 
 bool ensure_camera_open( Workitem* work, CameraContext* ctx )
 {
-    if ( ! ctx->capture.isOpened() ) 
+    if ( ! ctx->capture->isOpened() ) 
     {
+        puts("going to open capture...");
+
         if ( ctx->errorCount > 0 ) {
             std::this_thread::sleep_for( std::chrono::seconds(1) );
         }
 
-        if ( ! try_open_capture(&(ctx->capture), ctx->options) ) {
+        if ( ! try_open_capture(ctx->capture.get(), ctx->options) ) {
             fprintf(stderr,"E: cannot open capture device. retry...\n");
             copy_status_frame_to(work->frame, "could not open camera", RED, ctx->errorCount);
             ctx->errorCount += 1;
@@ -70,30 +72,44 @@ bool ensure_camera_open( Workitem* work, CameraContext* ctx )
 
 void camera_main(Workitem* work, CameraContext* ctx)
 {
-    cv::VideoCapture& capture = ctx->capture;
+    if ( ctx == nullptr)
+    {
+        puts("camera ctx null");
+    }
+
+    if ( ctx->capture == nullptr )
+    {
+        // call the constructor here in the camera thread
+        puts("VideoCapure ctor...");
+        ctx->capture = std::make_unique<cv::VideoCapture>();
+        puts("VideoCapure ctor...done");
+    }
+    //cv::VideoCapture& capture = ctx->capture.get();
     const Options* options = ctx->options;
 
+    /*
     if ( ctx->delay_for_realtime_video_millis != 0)
     {
         std::this_thread::sleep_for( std::chrono::milliseconds(ctx->delay_for_realtime_video_millis) );
-    }
+    }*/
 
     if ( ensure_camera_open(work,ctx) ) {
-        if ( ! capture.read( work->frame ) )
+        if ( ! ctx->capture->read( work->frame ) )
         {
-            capture.release();
+            ctx->capture->release();
             ctx->errorCount += 1;
             fprintf(stderr, "E: capture.read()\n");
             copy_status_frame_to(work->frame, "could not read from camera", RED, ctx->errorCount);
         }
         else 
         {   
+            ctx->stats->camera_frames++;
             if ( ctx->errorCount > 0 ) 
             {
                 ctx->errorCount = 0;
                 ctx->delay_for_realtime_video_millis = options->filename.empty() 
                                                                 ? 0 
-                                                                : 1000 / ((int)capture.get(cv::CAP_PROP_FPS)) * options->video_playback_slowdown_factor;
+                                                                : 1000 / ((int)ctx->capture->get(cv::CAP_PROP_FPS)) * options->video_playback_slowdown_factor;
                 ctx->shared->detectSettings.set_frame( work->frame.cols
                                                     , work->frame.rows );
                 
