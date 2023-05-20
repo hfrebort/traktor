@@ -69,13 +69,6 @@ static void draw_contoures_centers(cv::InputOutputArray frame, const DetectResul
     }
 }
 
-static void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
-{
-    const cv::Scalar& color_overall_delta = within_threshold ? GREEN : RED;
-    const int delta_status_px = (float)avg_threshold * (float)x_half;
-    cv::rectangle(*bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,bar->rows), color_overall_delta, cv::FILLED);
-}
-
 static void init_status_bar(const cv::Mat& frame, std::unique_ptr<cv::Mat>& status_bar)
 {
     if ( status_bar == nullptr )
@@ -94,16 +87,14 @@ static void write_text_to_status_bar(const cv::String& text, cv::Mat* bar)
     cv::putText(*bar, text, cv::Point(10, 19), cv::FONT_HERSHEY_SIMPLEX, 0.8, RED, 2);
 }
 
-static void draw_threshold_bar(const bool within_threshold, const float avg_threshold, cv::Mat* bar)
+static void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
 {
-    const int x_half = bar->cols;
-
     const cv::Scalar& color_overall_delta = within_threshold ? GREEN : RED;
     const int delta_status_px = (float)avg_threshold * (float)x_half;
     cv::rectangle(*bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,bar->rows), color_overall_delta, cv::FILLED);
 }
 
-static void draw_status_bar(cv::Mat& frame, const DetectResult& detect_result, std::unique_ptr<cv::Mat>& status_bar)
+static void draw_status_bar(cv::Mat& frame, const DetectResult& detect_result, const int x_half, std::unique_ptr<cv::Mat>& status_bar)
 {
     init_status_bar(frame, status_bar);
 
@@ -125,7 +116,7 @@ static void draw_status_bar(cv::Mat& frame, const DetectResult& detect_result, s
     }
     else if ( detect_result.state == DETECT_STATE::SUCCESS )
     {
-        draw_threshold_bar(detect_result.is_in_threshold, detect_result.avg_threshold, status_bar.get());
+        draw_threshold_bar(detect_result.is_in_threshold, detect_result.avg_threshold, x_half, status_bar.get());
     }
 
     frame.push_back(*status_bar);
@@ -137,7 +128,7 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
     {
         draw_row_lines        (work->frame, ctx->shared->detectSettings.getReflineSettings());
         draw_contoures_centers(work->frame, work->detect_result);
-        draw_status_bar       (work->frame, work->detect_result, ctx->status_bar);
+        draw_status_bar       (work->frame, work->detect_result, ctx->shared->detectSettings.getReflineSettings().x_half, ctx->status_bar);
     }
     
     static const cv::String JPG(".jpg");
