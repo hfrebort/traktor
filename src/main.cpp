@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
     
     //std::thread camera(thread_camera, options, &shared);
     //std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
-    std::thread t_stats (thread_stats, &shared, &stats);
+    //std::thread t_stats (thread_stats, &shared, &stats);
     std::thread web     (thread_webserver, options.httpPort, &shared, &pipeline, &stats);
     std::thread center  (thread_center_harrow, harrow.get(), &(shared.harrowLifted), &(shared.shutdown_requested));
 
@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
 
     rc = wait_for_signal();
     //shutdown_all_threads(shared, &camera, /*&stats*/ nullptr, &web, &detect, &center);
-    shutdown_all_threads(shared, &pipeline, /*stats*/ &t_stats, &web, &center);
+    shutdown_all_threads(shared, &pipeline, /*stats*/ nullptr, &web, &center);
 
     return rc;
 }

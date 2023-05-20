@@ -10,9 +10,10 @@
 
 static const std::vector<int> JPEGparams = {cv::IMWRITE_JPEG_QUALITY, 65};
 
-const cv::Scalar RED   = cv::Scalar(0,0,255);
-const cv::Scalar BLUE  = cv::Scalar(255,0,0);
-const cv::Scalar GREEN = cv::Scalar(0,255,0);
+const cv::Scalar RED   = cv::Scalar(  0,  0,255);
+const cv::Scalar BLUE  = cv::Scalar(255,  0,  0);
+const cv::Scalar GREEN = cv::Scalar(  0,255,  0);
+const cv::Scalar BLACK = cv::Scalar(  0,  0,  0);
 
 /***
  * 2021-08-30 Spindler
@@ -20,13 +21,14 @@ const cv::Scalar GREEN = cv::Scalar(0,255,0);
  *      start point: botton of the frame. +/- x_spacing
  *      end   point: Fluchtpunkt(!) des Bildes. X ist mittig. Y ist ein Wert "oberhalb" des Bildes. Minus Y!
  ***/
-static void draw_row_lines(cv::InputOutputArray frame, const ImageSettings &imgSettings, const ReflinesSettings& refSettings)
+static void draw_row_lines(cv::InputOutputArray frame, const ReflinesSettings& refSettings)
 {
-    const cv::Scalar rowLineColor         (150,255,255);
-    const cv::Scalar rowToleranceLineColor( 60,255,128);
+    static const cv::Scalar rowLineColor         (150,255,255);
+    static const cv::Scalar rowToleranceLineColor( 60,255,128);
 
     const int x_half = refSettings.x_half;
-    const int y_max  = imgSettings.frame_rows;
+    //const int y_max  = imgSettings.frame_rows;
+    const int y_max  = frame.rows();
 
     const int       deltapx = refSettings.rowThresholdPx;
     const cv::Point Fluchtpunkt(x_half, -refSettings.rowPerspectivePx);
@@ -57,7 +59,7 @@ static void draw_row_lines(cv::InputOutputArray frame, const ImageSettings &imgS
     }
 }
 
-void draw_contoures_centers(cv::InputOutputArray frame, const DetectResult& detect_result)
+static void draw_contoures_centers(cv::InputOutputArray frame, const DetectResult& detect_result)
 {
     for ( Center plant : detect_result.contoures.centers )
     {
@@ -67,14 +69,14 @@ void draw_contoures_centers(cv::InputOutputArray frame, const DetectResult& dete
     }
 }
 
-void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
+static void draw_threshold_bar(const bool within_threshold, const float avg_threshold, const int x_half, cv::Mat* bar)
 {
     const cv::Scalar& color_overall_delta = within_threshold ? GREEN : RED;
     const int delta_status_px = (float)avg_threshold * (float)x_half;
     cv::rectangle(*bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,bar->rows), color_overall_delta, cv::FILLED);
 }
 
-void init_status_bar(const cv::Mat& frame, std::unique_ptr<cv::Mat>& status_bar)
+static void init_status_bar(const cv::Mat& frame, std::unique_ptr<cv::Mat>& status_bar)
 {
     if ( status_bar == nullptr )
     {
@@ -84,15 +86,15 @@ void init_status_bar(const cv::Mat& frame, std::unique_ptr<cv::Mat>& status_bar)
         status_bar.reset();
         status_bar = std::make_unique<cv::Mat>( cv::Mat::zeros(20, frame.cols, frame.type() ) );
     }
-    status_bar->setTo( cv::Scalar(0,0,0) );
+    status_bar->setTo( BLACK );
 }
 
-void write_text_to_status_bar(const cv::String& text, cv::Mat* bar) 
+static void write_text_to_status_bar(const cv::String& text, cv::Mat* bar) 
 {
     cv::putText(*bar, text, cv::Point(10, 19), cv::FONT_HERSHEY_SIMPLEX, 0.8, RED, 2);
 }
 
-void draw_threshold_bar(const bool within_threshold, const float avg_threshold, cv::Mat* bar)
+static void draw_threshold_bar(const bool within_threshold, const float avg_threshold, cv::Mat* bar)
 {
     const int x_half = bar->cols;
 
@@ -101,7 +103,7 @@ void draw_threshold_bar(const bool within_threshold, const float avg_threshold, 
     cv::rectangle(*bar, cv::Point(x_half,0), cv::Point(x_half + delta_status_px,bar->rows), color_overall_delta, cv::FILLED);
 }
 
-void draw_status_bar(cv::Mat& frame, const DetectResult& detect_result, std::unique_ptr<cv::Mat>& status_bar)
+static void draw_status_bar(cv::Mat& frame, const DetectResult& detect_result, std::unique_ptr<cv::Mat>& status_bar)
 {
     init_status_bar(frame, status_bar);
 
@@ -133,7 +135,7 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
 {
     if ( work->isValidForAnalyse )
     {
-        draw_row_lines        (work->frame, ctx->shared->detectSettings.getImageSettings(), ctx->shared->detectSettings.getReflineSettings());
+        draw_row_lines        (work->frame, ctx->shared->detectSettings.getReflineSettings());
         draw_contoures_centers(work->frame, work->detect_result);
         draw_status_bar       (work->frame, work->detect_result, ctx->status_bar);
     }

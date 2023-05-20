@@ -72,13 +72,10 @@ bool ensure_camera_open( Workitem* work, CameraContext* ctx )
 
 void camera_main(Workitem* work, CameraContext* ctx)
 {
-    if ( ctx == nullptr)
-    {
-        puts("camera ctx null");
-    }
-
     if ( ctx->capture == nullptr )
     {
+        ctx->errorCount = 1;    // hacky. set error here to get set_frame() called. Do it better. TODO
+
         // call the constructor here in the camera thread
         puts("VideoCapure ctor...");
         ctx->capture = std::make_unique<cv::VideoCapture>();
@@ -104,6 +101,7 @@ void camera_main(Workitem* work, CameraContext* ctx)
         else 
         {   
             ctx->stats->camera_frames++;
+
             if ( ctx->errorCount > 0 ) 
             {
                 ctx->errorCount = 0;
@@ -112,10 +110,11 @@ void camera_main(Workitem* work, CameraContext* ctx)
                                                                 : 1000 / ((int)ctx->capture->get(cv::CAP_PROP_FPS)) * options->video_playback_slowdown_factor;
                 ctx->shared->detectSettings.set_frame( work->frame.cols
                                                     , work->frame.rows );
-                
+                /*
                 printf("I: COLS and ROWS were set to: %dx%d\n", 
                      ctx->shared->detectSettings.getImageSettings().frame_cols
                     ,ctx->shared->detectSettings.getImageSettings().frame_rows);
+                */
             }
         }
     }

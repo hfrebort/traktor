@@ -112,7 +112,8 @@ struct DetectSettings {
         DetectSettings() {
         }
 
-        void set_frame(const int newCols, const int newRows) {  
+        void set_frame(const int newCols, const int newRows) {
+            
             imageSettings.frame_cols = newCols;
             imageSettings.frame_rows = newRows;
 
@@ -120,6 +121,7 @@ struct DetectSettings {
             reflineSettings.y_fluchtpunkt = reflineSettings.rowPerspectivePx + imageSettings.frame_rows;
 
             recalculate_rowCount();
+            printf("I: DetectSettings.set_frame: cols: %d, rows: %d\n", imageSettings.frame_cols, imageSettings.frame_rows);  
         }
 
         void set_rowPerspectivePx(const int perspectivePx) {  
