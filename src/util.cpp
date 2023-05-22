@@ -14,6 +14,16 @@ int64_t getDuration_ns(std::chrono::_V2::system_clock::time_point *start)
     return duration;
 }
 
+std::chrono::nanoseconds get_duration(std::chrono::_V2::system_clock::time_point *start)
+{
+    const auto finish = std::chrono::high_resolution_clock::now();
+
+    const auto duration = finish - *start;
+    *start = finish;
+
+    return duration;
+}
+
 /*
 data: {
   "colorFilter": true,
