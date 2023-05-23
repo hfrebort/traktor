@@ -22,7 +22,9 @@ void Stats::diff(const Stats& incremented, const Stats& last, Stats* diff)
 
     diff->encode.bytes_sent  = incremented.encode.bytes_sent  - last.encode.bytes_sent;
     diff->encode.images_sent = incremented.encode.images_sent - last.encode.images_sent;
-    diff->encode.draw        = incremented.encode.draw        - last.encode.draw;
-    diff->encode.overall     = incremented.encode.overall     - last.encode.overall;
-
+    if ( diff->encode.images_sent > 0 )
+    {
+        diff->encode.draw        = ( incremented.encode.draw        - last.encode.draw    ) / diff->encode.images_sent;
+        diff->encode.overall     = ( incremented.encode.overall     - last.encode.overall ) / diff->encode.images_sent;
+    }
 }
