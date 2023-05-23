@@ -57,12 +57,12 @@ struct DetectResult
 struct DetectContext
 {
     Shared* shared;
-    Stats* stats;
+    DetectCounter* stats;
     Harrow* harrow;
     bool showDebugWindows = false;
     std::unique_ptr<cv::Mat> status_bar = nullptr;
 
-    DetectContext(Stats* stats, Shared* shared, Harrow* harrow)
+    DetectContext(DetectCounter* stats, Shared* shared, Harrow* harrow)
     : stats(stats)
     , shared(shared)
     , harrow(harrow)

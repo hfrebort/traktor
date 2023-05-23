@@ -12,6 +12,7 @@ set(SOURCES
     src/main.cpp
     src/webserver.cpp
     src/stats.h
+    src/stats.cpp
     #src/thread_detect.cpp
     src/shared.h
     src/detect_settings.cpp

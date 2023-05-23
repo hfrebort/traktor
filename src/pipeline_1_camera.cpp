@@ -100,7 +100,7 @@ void camera_main(Workitem* work, CameraContext* ctx)
         }
         else 
         {   
-            ctx->stats->camera_frames++;
+            ctx->stats->frames++;
 
             if ( ctx->errorCount > 0 ) 
             {

@@ -6,7 +6,7 @@ class CameraContext
 {
     public:
     
-    Stats*              stats;
+    CameraCounter*      stats;
     const Options*      options;
     Shared*             shared;
     std::unique_ptr<cv::VideoCapture> capture;
@@ -14,7 +14,7 @@ class CameraContext
     int                 errorCount = 0;
     int delay_for_realtime_video_millis;
 
-    CameraContext(Stats* stats, const Options* options, Shared* shared)
+    CameraContext(CameraCounter* stats, const Options* options, Shared* shared)
     : stats(stats)
     , options(options)
     , shared(shared)
@@ -22,10 +22,5 @@ class CameraContext
     , errorCount(0)
     , capture(nullptr)
     {}
-
-    ~CameraContext()
-    {
-        puts("~CameraContext()");
-    }
 };
 

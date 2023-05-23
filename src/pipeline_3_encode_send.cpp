@@ -132,14 +132,20 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
     }
     
     static const cv::String JPG(".jpg");
+    uint64_t bytes_sent;
+
     if ( ! cv::imencode(JPG, work->frame, ctx->jpeg_buffer, JPEGparams) )
     {
         printf("E: error encoding frame to JPEG\n");
     }
-    else if ( ! (ctx->sendJPEGbytes)(ctx->jpeg_buffer) )
+    else if ( ! (ctx->sendJPEGbytes)(ctx->jpeg_buffer, &bytes_sent) )
     {
         puts("I: send of JPG failed. connection closed. quitting sending thread.");
         return WORKER_RC::LIKE_TO_EXIT;
+    }
+    else
+    {
+        ctx->stats->encode.bytes_sent += bytes_sent;
     }
     return WORKER_RC::OK;
 }

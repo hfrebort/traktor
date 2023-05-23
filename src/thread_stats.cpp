@@ -12,6 +12,26 @@ float ns_to_ms_per_fps(uint64 ns, int fps)
                 : -1;
 }
 
+void thread_stats(const std::atomic_bool& shutdown_requested, const Stats& stats, Stats* diff)
+{
+    Stats last;
+
+    for (;;)
+    {
+        std::this_thread::sleep_for( stats.pause );
+
+        Stats::diff(stats, last, diff);
+        last = stats;
+
+        if ( shutdown_requested.load() )
+        {
+            break;
+        }
+    }
+}
+
+
+/*
 void thread_stats(Shared* shared, Stats* stats)
 {
     const int secondsToPause = 2;
@@ -51,3 +71,4 @@ void thread_stats(Shared* shared, Stats* stats)
         }
     }
 }
+*/

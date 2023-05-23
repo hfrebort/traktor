@@ -36,7 +36,7 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, St
                 // begin of JPEG streaming
                 //
                 EncodeContext ctx(stats, shared,
-                    [&sink,&stats](std::vector<unsigned char>& jpegBytes) {
+                    [&sink](std::vector<unsigned char>& jpegBytes, uint64_t* bytes_sent) {
                         // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
                         jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
                         if ( !sink.write( boundary.data(), boundary.length() ) )
@@ -48,7 +48,7 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, St
                             return false;
                         }
 
-                        stats->jpeg_bytes_sent += boundary.length() + jpegBytes.size();
+                        *bytes_sent = boundary.length() + jpegBytes.size();
 
                         return true;
                     });
@@ -112,27 +112,32 @@ void URL_current(httplib::Server* svr, DetectSettings* settings)
     });
 }
 
-void URL_stats(httplib::Server* svr, Stats* stats)
+void URL_stats(httplib::Server* svr, const Stats* diff)
 {
     svr->Get("/stats", [=](const Request &req, Response &res) {
 
-        int fps = stats->fps.exchange(0);
+        using namespace std::chrono;
 
-        nlohmann::json data = 
-        {
-            { 
-                "camera" , 
-                {
-                    { "frames_read" , 10 }
-                }
+        nlohmann::json data = {
+        { 
+            "camera" , 
+            {
+                { "fps",             diff->camera.frames / Stats::pause.count() }
             }
-           ,{
-                "detect" ,
-                {
-                    { "overall_ns" , 117 }
-                }
+        },{
+            "detect" ,
+            {
+                { "0_overall" ,      duration_cast<milliseconds>(diff->detect.overall).count() }
+              , { "1_cvtColor" ,     duration_cast<milliseconds>(diff->detect.cvtColor).count() }
+              , { "2_GaussianBlur" , duration_cast<milliseconds>(diff->detect.GaussianBlur).count() }
+              , { "3_inRange" ,      duration_cast<milliseconds>(diff->detect.inRange).count() }
+              , { "4_erode" ,        duration_cast<milliseconds>(diff->detect.erode).count() }
+              , { "5_dilate" ,       duration_cast<milliseconds>(diff->detect.dilate).count() }
+              , { "6_findContours" , duration_cast<milliseconds>(diff->detect.findContours).count() }
+              , { "fps" ,            diff->detect.frames / Stats::pause.count() }
+              , { "MB/s" ,           diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count() }
             }
-        };
+        } };
         res.set_content(data.dump(), "application/json");
         res.status = 200;
     });

@@ -30,15 +30,12 @@ const cv::Scalar BLUE   = cv::Scalar(255,0,0);
 const cv::Scalar GREEN  = cv::Scalar(0,255,0);
 const cv::Point  POINT_MINUS1 = cv::Point(-1,-1);
 
-//cv::Mat tmp;
-
-
 size_t mat_byte_size(const cv::Mat& mat)
 {
     return mat.total() * mat.elemSize();
 }
 
-void find_contours(const ImageSettings& settings, Stats* stats, const cv::Mat& cameraFrame, Contoures* structures, const bool showWindows)
+void find_contours(const ImageSettings& settings, DetectCounter* stats, const cv::Mat& cameraFrame, Contoures* structures, const bool showWindows)
 {
     static cv::Mat img_inRange;
     static cv::Mat img_GaussianBlur;
@@ -49,23 +46,18 @@ void find_contours(const ImageSettings& settings, Stats* stats, const cv::Mat& c
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    auto prep_start = start;
-    cv::cvtColor    (cameraFrame, out, cv::COLOR_BGR2HSV );                            stats->prepare_cvtColor_ns     += trk::getDuration_ns(&prep_start);   std::swap(in,out);                                                        stats->frame_bytes_processed += mat_byte_size(cameraFrame);
-    cv::GaussianBlur(in, out, GaussKernel, 0);                                         stats->prepare_GaussianBlur_ns += trk::getDuration_ns(&prep_start);   std::swap(in,out); if (showWindows) { in.copyTo(img_GaussianBlur); }      stats->frame_bytes_processed += mat_byte_size(in);
-    cv::inRange     (in, settings.colorFrom, settings.colorTo, out );                  stats->prepare_inRange_ns      += trk::getDuration_ns(&prep_start);   std::swap(in,out); if (showWindows) { in.copyTo(img_inRange); }           stats->frame_bytes_processed += mat_byte_size(in);
-    cv::erode       (in, out, erodeKernel, POINT_MINUS1, settings.erode_iterations  ); stats->prepare_erode_ns        += trk::getDuration_ns(&prep_start);   std::swap(in,out);                                                        stats->frame_bytes_processed += mat_byte_size(in);
-    cv::dilate      (in, out, dilateKernel,POINT_MINUS1, settings.dilate_iterations ); stats->prepare_dilate_ns       += trk::getDuration_ns(&prep_start);                      if (showWindows) { out.copyTo(img_eroded_dilated); }   stats->frame_bytes_processed += mat_byte_size(in);
-
-    stats->prepare_ns += trk::getDuration_ns(&start);
-    
-    cv::findContours(out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);       stats->findContours_ns  += trk::getDuration_ns(&start);         stats->frame_bytes_processed += mat_byte_size(out);
+    cv::cvtColor    (cameraFrame, out, cv::COLOR_BGR2HSV );                                      stats->cvtColor     += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(cameraFrame);   std::swap(in,out);                                                      
+    cv::GaussianBlur(in, out, GaussKernel, 0);                                                   stats->GaussianBlur += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(in);            std::swap(in,out); if (showWindows) { in.copyTo(img_GaussianBlur); }    
+    cv::inRange     (in, settings.colorFrom, settings.colorTo, out );                            stats->inRange      += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(in);            std::swap(in,out); if (showWindows) { in.copyTo(img_inRange); }         
+    cv::erode       (in, out, erodeKernel, POINT_MINUS1, settings.erode_iterations  );           stats->erode        += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(in);            std::swap(in,out);                                                      
+    cv::dilate      (in, out, dilateKernel,POINT_MINUS1, settings.dilate_iterations );           stats->dilate       += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(in);                               if (showWindows) { out.copyTo(img_eroded_dilated); } 
+    cv::findContours(out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); stats->findContours += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(out);                                                                                    
 
     if (showWindows)
     {
         cv::imshow("inRange",       img_inRange );
         cv::imshow("GaussianBlur",  img_GaussianBlur );
         cv::imshow("eroded_dilated",img_eroded_dilated );
-        //cv::imshow("drawContours",  shared->analyzed_frame_buf[idx_doubleBuffer] );
         cv::waitKey(1);
     }
 }
@@ -230,7 +222,6 @@ HARROW_DIRECTION get_harrow_direction(const bool is_within_threshold, const floa
 
 void detect_main(Workitem* work, DetectContext* ctx)
 {
-    auto overallstart = std::chrono::high_resolution_clock::now();
     work->detect_result.reset();
 
     if ( ! work->isValidForAnalyse )
@@ -245,14 +236,14 @@ void detect_main(Workitem* work, DetectContext* ctx)
         return;
     }
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     find_contours(
             ctx->shared->detectSettings.getImageSettings()
         ,   ctx->stats
         ,  work->frame               
         ,&(work->detect_result.contoures)
         ,   ctx->showDebugWindows );                                                           
-
-    auto start = std::chrono::high_resolution_clock::now();
 
     auto refline_settings = ctx->shared->detectSettings.getReflineSettings();
 
@@ -282,10 +273,8 @@ void detect_main(Workitem* work, DetectContext* ctx)
             HARROW_DIRECTION direction = get_harrow_direction(work->detect_result.is_in_threshold, work->detect_result.avg_threshold);
             ctx->harrow->move(direction, "detect");
         }
-        //draw_threshold_bar(is_in_threshold, avg_threshold, reflineSettings.x_half, status_bar.get());
     }
-    //drawRowLines(outFrame, imageSettings, reflineSettings);
-    //ctx->stats->calc_draw_ns      += trk::getDuration_ns(&start);
-    ctx->stats->detect_overall_ns += trk::getDuration_ns(&overallstart);
-    ctx->stats->fps++;
+
+    ctx->stats->overall += trk::get_duration(&start);
+    ctx->stats->frames++;
 }

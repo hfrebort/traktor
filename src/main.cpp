@@ -68,7 +68,7 @@ void shutdown_all_threads(Shared& shared, ImagePipeline* pipeline,std::thread* s
 
 int  thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* stats);
 //void thread_camera(const Options& options, Shared* shared);
-void thread_stats(Shared* ,Stats*);
+void thread_stats(const std::atomic_bool& shutdown_requested, const Stats& stats, Stats* diff);
 //void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
 void thread_center_harrow(Harrow* harrow, std::atomic<bool>* harrowLifted, const std::atomic<bool>* shutdown_requested);
 void camera_main(Workitem* work, CameraContext* ctx);
@@ -177,26 +177,28 @@ int main(int argc, char* argv[])
     }
 
     Stats  stats;
+    Stats  stats_diff;
     Shared shared;
+
     load_lastSettings(shared.detectSettings);
 
     ImagePipeline pipeline;
     
     //std::thread camera(thread_camera, options, &shared);
     //std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
-    //std::thread t_stats (thread_stats, &shared, &stats);
-    std::thread web     (thread_webserver, options.httpPort, &shared, &pipeline, &stats);
+    std::thread t_stats = std::thread([&] { thread_stats(shared.shutdown_requested, stats, &stats_diff); });
+    std::thread web     (thread_webserver, options.httpPort, &shared, &pipeline, &stats_diff);
     std::thread center  (thread_center_harrow, harrow.get(), &(shared.harrowLifted), &(shared.shutdown_requested));
 
-    CameraContext camera_context(&stats, &options, &shared);
+    CameraContext camera_context(&stats.camera, &options, &shared);
     pipeline.start_camera_1( camera_main, &camera_context );
 
-    DetectContext detect_context(&stats, &shared, harrow.get() );
+    DetectContext detect_context(&stats.detect, &shared, harrow.get() );
     pipeline.start_detect_2( detect_main, &detect_context );
 
     rc = wait_for_signal();
     //shutdown_all_threads(shared, &camera, /*&stats*/ nullptr, &web, &detect, &center);
-    shutdown_all_threads(shared, &pipeline, /*stats*/ nullptr, &web, &center);
+    shutdown_all_threads(shared, &pipeline, &t_stats, &web, &center);
 
     return rc;
 }
