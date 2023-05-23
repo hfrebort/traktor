@@ -118,26 +118,55 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
 
         using namespace std::chrono;
 
+        nlohmann::json data;
+        data["camera"]["fps"] = diff->camera.frames / Stats::pause.count();
+
+        data["detect"]["time_milliseconds"]["0_overall"]      = duration_cast<milliseconds>(diff->detect.overall).count();
+        data["detect"]["time_milliseconds"]["1_cvtColor"]     = duration_cast<milliseconds>(diff->detect.cvtColor).count();
+        data["detect"]["time_milliseconds"]["2_GaussianBlur"] = duration_cast<milliseconds>(diff->detect.GaussianBlur).count();
+        data["detect"]["time_milliseconds"]["3_inRange"]      = duration_cast<milliseconds>(diff->detect.inRange).count();
+        data["detect"]["time_milliseconds"]["4_erode"]        = duration_cast<milliseconds>(diff->detect.erode).count();
+        data["detect"]["time_milliseconds"]["5_dilate"]       = duration_cast<milliseconds>(diff->detect.dilate).count();
+        data["detect"]["time_milliseconds"]["6_findContours"] = duration_cast<milliseconds>(diff->detect.findContours).count();
+
+        data["detect"]["amount"]["fps"]                          = diff->detect.frames / Stats::pause.count();
+        data["detect"]["amount"]["MB/s processed"]               = diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count();
+
+        data["encode"]["MB sent/s"] = diff->encode.bytes_sent  / 1024 / 1024 / Stats::pause.count();
+        data["encode"]["images/s"]  = diff->encode.images_sent / Stats::pause.count(); 
+
+        /*
         nlohmann::json data = {
         { 
             "camera" , 
             {
                 { "fps",             diff->camera.frames / Stats::pause.count() }
             }
-        },{
-            "detect" ,
-            {
-                { "0_overall" ,      duration_cast<milliseconds>(diff->detect.overall).count() }
-              , { "1_cvtColor" ,     duration_cast<milliseconds>(diff->detect.cvtColor).count() }
-              , { "2_GaussianBlur" , duration_cast<milliseconds>(diff->detect.GaussianBlur).count() }
-              , { "3_inRange" ,      duration_cast<milliseconds>(diff->detect.inRange).count() }
-              , { "4_erode" ,        duration_cast<milliseconds>(diff->detect.erode).count() }
-              , { "5_dilate" ,       duration_cast<milliseconds>(diff->detect.dilate).count() }
-              , { "6_findContours" , duration_cast<milliseconds>(diff->detect.findContours).count() }
-              , { "fps" ,            diff->detect.frames / Stats::pause.count() }
-              , { "MB/s" ,           diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count() }
-            }
-        } };
+        },
+        {
+            { "detect" , 
+                { 
+                    "timings_milliseconds" , 
+                    {
+                      { "0_overall" ,      duration_cast<milliseconds>(diff->detect.overall).count() }
+                    , { "1_cvtColor" ,     duration_cast<milliseconds>(diff->detect.cvtColor).count() }
+                    , { "2_GaussianBlur" , duration_cast<milliseconds>(diff->detect.GaussianBlur).count() }
+                    , { "3_inRange" ,      duration_cast<milliseconds>(diff->detect.inRange).count() }
+                    , { "4_erode" ,        duration_cast<milliseconds>(diff->detect.erode).count() }
+                    , { "5_dilate" ,       duration_cast<milliseconds>(diff->detect.dilate).count() }
+                    , { "6_findContours" , duration_cast<milliseconds>(diff->detect.findContours).count() }
+                    },
+                },
+                { 
+                    "amount" , 
+                    {
+                      { "fps" ,            diff->detect.frames / Stats::pause.count() }
+                    , { "MB/s" ,           diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count() }
+                    }
+                }
+            } 
+        }
+        };*/
         res.set_content(data.dump(), "application/json");
         res.status = 200;
     });
