@@ -54,6 +54,7 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, En
                     });
 
                 pipeline->run_encode_3( encode_main, &ctx );
+                puts("I: URL /video... leaving");
 
                 return true; // return 'false' if you want to cancel the process.
             },
