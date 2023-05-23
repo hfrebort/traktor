@@ -129,10 +129,10 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
         data["detect"]["time_milliseconds"]["5_dilate"]       = duration_cast<milliseconds>(diff->detect.dilate).count();
         data["detect"]["time_milliseconds"]["6_findContours"] = duration_cast<milliseconds>(diff->detect.findContours).count();
 
-        data["detect"]["amount"]["fps"]                          = diff->detect.frames / Stats::pause.count();
-        data["detect"]["amount"]["MB/s processed"]               = diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count();
+        data["detect"]["image"]["fps"]                        = diff->detect.frames / Stats::pause.count();
+        data["detect"]["image"]["MB/s"]                       = diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count();
 
-        data["encode"]["MB sent/s"] = diff->encode.bytes_sent  / 1024 / 1024 / Stats::pause.count();
+        data["encode"]["kB/s"]      = diff->encode.bytes_sent  / 1024 / Stats::pause.count();
         data["encode"]["images/s"]  = diff->encode.images_sent / Stats::pause.count(); 
         data["encode"]["draw"]      = duration_cast<milliseconds>( nanoseconds(diff->encode.draw) ).count();
         data["encode"]["overall"]   = duration_cast<milliseconds>( nanoseconds(diff->encode.overall) ).count();

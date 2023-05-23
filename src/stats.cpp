@@ -20,7 +20,7 @@ void Stats::diff(const Stats &incremented, const Stats &last, Stats *diff)
         diff->detect.overall = (incremented.detect.overall - last.detect.overall) / diff->detect.frames;
     }
 
-    diff->encode.bytes_sent = incremented.encode.bytes_sent - last.encode.bytes_sent;
+    diff->encode.bytes_sent  = incremented.encode.bytes_sent - last.encode.bytes_sent;
     diff->encode.images_sent = incremented.encode.images_sent - last.encode.images_sent;
     //printf("inc images_sent: %lu, last images_sent: %lu\n", incremented.encode.images_sent.load(), last.encode.images_sent.load());
 

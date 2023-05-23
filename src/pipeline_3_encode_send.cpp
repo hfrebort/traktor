@@ -150,7 +150,7 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
     else
     {
         ctx->stats->bytes_sent  += bytes_sent;
-        ctx->stats->images_sent += 1;
+        ctx->stats->images_sent++;
     }
 
     ctx->stats->overall.fetch_add( trk::get_duration(&overall_start).count() );
