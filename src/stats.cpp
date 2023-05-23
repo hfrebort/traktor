@@ -1,6 +1,6 @@
 #include "stats.h"
 
-const std::chrono::seconds Stats::pause = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::seconds(2));
+const std::chrono::seconds Stats::pause = std::chrono::seconds(2);
 
 void Stats::diff(const Stats& incremented, const Stats& last, Stats* diff)
 {
