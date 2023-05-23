@@ -22,7 +22,7 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx);
  *  Don't know right now why.
  */
 
-void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, Stats* stats)
+void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, EncodeCounter* encode_stats)
 {
     svr->Get("/video", [=](const Request &req, Response &res) {
 
@@ -35,7 +35,7 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, St
                 //
                 // begin of JPEG streaming
                 //
-                EncodeContext ctx(stats, shared,
+                EncodeContext ctx(encode_stats, shared,
                     [&sink](std::vector<unsigned char>& jpegBytes, uint64_t* bytes_sent) {
                         // yield(b'--Ba4oTvQMY8ew04N8dcnM\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
                         jpegBytes.insert(jpegBytes.end(), CRLF.begin(), CRLF.end());
@@ -134,6 +134,9 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
 
         data["encode"]["MB sent/s"] = diff->encode.bytes_sent  / 1024 / 1024 / Stats::pause.count();
         data["encode"]["images/s"]  = diff->encode.images_sent / Stats::pause.count(); 
+        data["encode"]["draw"]      = duration_cast<milliseconds>(diff->encode.draw).count();
+        data["encode"]["overall"]   = duration_cast<milliseconds>(diff->encode.overall).count();
+
 
         res.set_content(data.dump(), "application/json");
         res.status = 200;
@@ -153,7 +156,7 @@ int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* s
         return 1;
     }
 
-    URL_video(&svr, shared, pipeline, stats);
+    URL_video(&svr, shared, pipeline, &stats->encode);
     URL_applyChanges(&svr, &shared->detectSettings );
     URL_current(&svr, &shared->detectSettings);
     URL_stats(&svr, stats);

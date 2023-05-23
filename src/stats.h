@@ -22,6 +22,8 @@ struct EncodeCounter
 {
     uint64_t   images_sent{0};
     uint64_t   bytes_sent{0};
+    std::chrono::nanoseconds   draw{};
+    std::chrono::nanoseconds   overall{};
 };
 
 struct Stats

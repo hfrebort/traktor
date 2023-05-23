@@ -124,11 +124,15 @@ static void draw_status_bar(cv::Mat& frame, const DetectResult& detect_result, c
 
 WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
 {
+    auto overall_start = std::chrono::high_resolution_clock::now();
+
     if ( work->isValidForAnalyse )
     {
+        auto start = overall_start;
         draw_row_lines        (work->frame, ctx->shared->detectSettings.getReflineSettings());
         draw_contoures_centers(work->frame, work->detect_result);
         draw_status_bar       (work->frame, work->detect_result, ctx->shared->detectSettings.getReflineSettings().x_half, ctx->status_bar);
+        ctx->stats->draw += trk::get_duration(&start);
     }
     
     static const cv::String JPG(".jpg");
@@ -145,8 +149,12 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
     }
     else
     {
-        ctx->stats->encode.bytes_sent += bytes_sent;
+        ctx->stats->bytes_sent  += bytes_sent;
+        ctx->stats->images_sent += 1;
     }
+
+    ctx->stats->overall += trk::get_duration(&overall_start);
+
     return WORKER_RC::OK;
 }
 /*
