@@ -135,38 +135,6 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
         data["encode"]["MB sent/s"] = diff->encode.bytes_sent  / 1024 / 1024 / Stats::pause.count();
         data["encode"]["images/s"]  = diff->encode.images_sent / Stats::pause.count(); 
 
-        /*
-        nlohmann::json data = {
-        { 
-            "camera" , 
-            {
-                { "fps",             diff->camera.frames / Stats::pause.count() }
-            }
-        },
-        {
-            { "detect" , 
-                { 
-                    "timings_milliseconds" , 
-                    {
-                      { "0_overall" ,      duration_cast<milliseconds>(diff->detect.overall).count() }
-                    , { "1_cvtColor" ,     duration_cast<milliseconds>(diff->detect.cvtColor).count() }
-                    , { "2_GaussianBlur" , duration_cast<milliseconds>(diff->detect.GaussianBlur).count() }
-                    , { "3_inRange" ,      duration_cast<milliseconds>(diff->detect.inRange).count() }
-                    , { "4_erode" ,        duration_cast<milliseconds>(diff->detect.erode).count() }
-                    , { "5_dilate" ,       duration_cast<milliseconds>(diff->detect.dilate).count() }
-                    , { "6_findContours" , duration_cast<milliseconds>(diff->detect.findContours).count() }
-                    },
-                },
-                { 
-                    "amount" , 
-                    {
-                      { "fps" ,            diff->detect.frames / Stats::pause.count() }
-                    , { "MB/s" ,           diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count() }
-                    }
-                }
-            } 
-        }
-        };*/
         res.set_content(data.dump(), "application/json");
         res.status = 200;
     });
@@ -189,10 +157,6 @@ int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* s
     URL_applyChanges(&svr, &shared->detectSettings );
     URL_current(&svr, &shared->detectSettings);
     URL_stats(&svr, stats);
-    
-    //
-    // ------------------------------------------------------------------------
-    //
     
     //
     // ------------------------------------------------------------------------
