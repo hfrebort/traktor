@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 
 set(EXECUTABLE traktor)
 #set(CMAKE_CXX_FLAGS "-march=native")
+set(CMAKE_CXX_FLAGS "-gdwarf-4")
 
 project(${EXECUTABLE} VERSION 1.2.0)
 
