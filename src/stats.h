@@ -20,10 +20,10 @@ struct DetectCounter
 
 struct EncodeCounter
 {
-    uint64_t   images_sent{0};
-    uint64_t   bytes_sent{0};
-    std::chrono::nanoseconds   draw{};
-    std::chrono::nanoseconds   overall{};
+    std::atomic<uint64_t>   images_sent{0};
+    std::atomic<uint64_t>   bytes_sent{0};
+    std::atomic<uint64_t>   draw{0};
+    std::atomic<uint64_t>   overall{0};
 };
 
 struct Stats
@@ -36,4 +36,5 @@ struct Stats
 
     static void diff(const Stats& incremented, const Stats& last, Stats* current);
 
+    Stats& operator= (const Stats& rhs);
 };

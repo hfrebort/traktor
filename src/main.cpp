@@ -66,7 +66,7 @@ void shutdown_all_threads(Shared& shared, ImagePipeline* pipeline,std::thread* s
     join_thread(stats,  "stats");
 }
 
-int  thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* stats);
+int  thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, EncodeCounter* encoder_stats, Stats* stats_diff);
 //void thread_camera(const Options& options, Shared* shared);
 void thread_stats(const std::atomic_bool& shutdown_requested, const Stats& stats, Stats* diff);
 //void thread_detect(Shared*, Stats*, Harrow* harrow, bool showDebugWindows);
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
     //std::thread camera(thread_camera, options, &shared);
     //std::thread detect(thread_detect, &shared, &shared.stats, harrow.get(), options.showDebugWindows);
     std::thread t_stats = std::thread([&] { thread_stats(shared.shutdown_requested, stats, &stats_diff); });
-    std::thread web     (thread_webserver, options.httpPort, &shared, &pipeline, &stats_diff);
+    std::thread web     (thread_webserver, options.httpPort, &shared, &pipeline, &(stats.encode), &stats_diff);
     std::thread center  (thread_center_harrow, harrow.get(), &(shared.harrowLifted), &(shared.shutdown_requested));
 
     CameraContext camera_context(&stats.camera, &options, &shared);

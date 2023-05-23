@@ -134,17 +134,16 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
 
         data["encode"]["MB sent/s"] = diff->encode.bytes_sent  / 1024 / 1024 / Stats::pause.count();
         data["encode"]["images/s"]  = diff->encode.images_sent / Stats::pause.count(); 
-        data["encode"]["draw"]      = duration_cast<milliseconds>(diff->encode.draw).count();
-        data["encode"]["overall"]   = duration_cast<milliseconds>(diff->encode.overall).count();
+        data["encode"]["draw"]      = duration_cast<milliseconds>( nanoseconds(diff->encode.draw) ).count();
+        data["encode"]["overall"]   = duration_cast<milliseconds>( nanoseconds(diff->encode.overall) ).count();
 
 
         res.set_content(data.dump(), "application/json");
         res.status = 200;
     });
 }
-int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* stats)
+int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, EncodeCounter* encoder_stats, Stats* stats_diff)
 {
-    
     Server svr;
 
     shared->webSvr = &svr;
@@ -156,10 +155,10 @@ int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, Stats* s
         return 1;
     }
 
-    URL_video(&svr, shared, pipeline, &stats->encode);
+    URL_video(&svr, shared, pipeline, encoder_stats);
     URL_applyChanges(&svr, &shared->detectSettings );
     URL_current(&svr, &shared->detectSettings);
-    URL_stats(&svr, stats);
+    URL_stats(&svr, stats_diff);
     
     //
     // ------------------------------------------------------------------------

@@ -132,7 +132,7 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
         draw_row_lines        (work->frame, ctx->shared->detectSettings.getReflineSettings());
         draw_contoures_centers(work->frame, work->detect_result);
         draw_status_bar       (work->frame, work->detect_result, ctx->shared->detectSettings.getReflineSettings().x_half, ctx->status_bar);
-        ctx->stats->draw += trk::get_duration(&start);
+        ctx->stats->draw += trk::get_duration(&start).count();
     }
     
     static const cv::String JPG(".jpg");
@@ -153,7 +153,9 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
         ctx->stats->images_sent += 1;
     }
 
-    ctx->stats->overall += trk::get_duration(&overall_start);
+    ctx->stats->overall.fetch_add( trk::get_duration(&overall_start).count() );
+    //printf("encode: overall: %lu\n", ctx->stats->overall.load());
+    //printf("encode: bytes/images\t%lu/%lu\n", ctx->stats->bytes_sent.load(), ctx->stats->images_sent.load());
 
     return WORKER_RC::OK;
 }
