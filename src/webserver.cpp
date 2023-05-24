@@ -71,7 +71,7 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, En
                 thread_count_before_add = thread_count_video.fetch_add(-1);
                 printf("I: webserver: URL /video... leaving. thread_count was %d before decrementing by 1\n", thread_count_before_add);
 
-                return true; // return 'false' if you want to cancel the process.
+                return false; // return 'false' if you want to cancel the process.
             },
             [](bool success) {}
         );
