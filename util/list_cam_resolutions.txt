@@ -1,1 +1,17 @@
+05:33 $ lsusb
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 003: ID 0489:e0cd Foxconn / Hon Hai Wireless_Device
+Bus 001 Device 010: ID 06cb:00fd Synaptics, Inc. 
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 002 Device 017: ID 04d8:0b2a Microchip Technology, Inc. U2717D_0B2A_15091601
+Bus 002 Device 016: ID 413c:2003 Dell Computer Corp. Keyboard SK-8115
+Bus 002 Device 015: ID 0461:4e22 Primax Electronics, Ltd Dell Mouse, 2 Buttons, Modell: MS111-P
+Bus 002 Device 014: ID 0424:2137 Microchip Technology, Inc. (formerly SMSC) USB2137B
+Bus 002 Device 003: ID 13d3:56fb IMC Networks Integrated Camera
+Bus 002 Device 021: ID 32e4:9230 HD USB Camera HD USB Camera
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+"Bus" and "Device" from lsusb are the two parameter used with "-s".
+
 lsusb -s 001:007 -v | egrep "Width|Height"
