@@ -28,10 +28,24 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, En
 
         static const std::string boundary("--Ba4oTvQMY8ew04N8dcnM\r\nContent-Type: image/jpeg\r\n\r\n");
         static const std::string CRLF("\r\n");
+        static std::atomic<int32_t> thread_count_video{0};
 
         res.set_content_provider(
             "multipart/x-mixed-replace;boundary=Ba4oTvQMY8ew04N8dcnM", // Content type
             [&](size_t offset, DataSink &sink) {
+
+                int thread_count_before_add = thread_count_video.fetch_add(1);
+                if ( thread_count_before_add > 0)
+                {
+                    thread_count_video.fetch_add(-1);
+                    printf("W: webserver: there can be only ONE encoding/sending thread. exiting. count was: %d\n", thread_count_before_add);
+                    return false;
+                }
+                else
+                {
+                    printf("I: webserver: start encoding/sending thread. count was: %d\n", thread_count_before_add);
+                }
+
                 //
                 // begin of JPEG streaming
                 //
@@ -54,7 +68,8 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, En
                     });
 
                 pipeline->run_encode_3( encode_main, &ctx );
-                puts("I: URL /video... leaving");
+                thread_count_before_add = thread_count_video.fetch_add(-1);
+                printf("I: webserver: URL /video... leaving. thread_count was %d before decrementing by 1\n", thread_count_before_add);
 
                 return true; // return 'false' if you want to cancel the process.
             },
