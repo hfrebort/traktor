@@ -1,3 +1,8 @@
+#include <atomic>
+#include <chrono>
+#include <thread>
+#include <cstdio>
+
 #include "harrow.h"
 
 void move_harrow_towards_center(Harrow* harrow)

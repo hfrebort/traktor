@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 struct CameraCounter
 {
     uint32_t                   frames{0};

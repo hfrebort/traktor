@@ -1,5 +1,8 @@
+#include <stdexcept>
+#include <string>
+#include <mutex>
+
 #include <gpiod.h>
-#include <exception>
 
 #include "harrow.h"
 

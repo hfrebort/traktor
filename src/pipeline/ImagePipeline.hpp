@@ -1,8 +1,10 @@
 #pragma once
 
-//#include <atomic>
-//#include <functional>
-//#include <thread>
+#include <atomic>
+#include <functional>
+#include <thread>
+
+#include <opencv2/core.hpp>
 
 #include "auto_reset_event.hpp"
 #include "Postbox.hpp"

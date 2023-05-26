@@ -1,9 +1,12 @@
-//#include <signal.h>
-//#include <functional>
-//#include <memory>
-//#include <thread>
-//
-//#include "httplib.h"
+#include <signal.h>
+#include <functional>
+#include <memory>
+#include <thread>
+#include <cstdio>
+
+#include <dirent.h>
+
+#include "httplib.h"
 
 #include "shared.h"
 #include "harrow.h"

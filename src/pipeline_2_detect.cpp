@@ -1,3 +1,5 @@
+#include <opencv2/imgproc.hpp>
+
 #include "detect.h"
 #include "pipeline/ImagePipeline.hpp"
 
@@ -53,13 +55,14 @@ void find_contours(const ImageSettings& settings, DetectCounter* stats, const cv
     cv::dilate      (in, out, dilateKernel,POINT_MINUS1, settings.dilate_iterations );           stats->dilate       += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(in);                               if (showWindows) { out.copyTo(img_eroded_dilated); } 
     cv::findContours(out, structures->all_contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE); stats->findContours += trk::get_duration(&start);  stats->frame_bytes += mat_byte_size(out);                                                                                    
 
+    /* DEBUG purpose
     if (showWindows)
     {
         cv::imshow("inRange",       img_inRange );
         cv::imshow("GaussianBlur",  img_GaussianBlur );
         cv::imshow("eroded_dilated",img_eroded_dilated );
         cv::waitKey(1);
-    }
+    }*/
 }
 
 void calc_center_of_contour(const std::vector<cv::Point2i>& points, cv::Point* center)

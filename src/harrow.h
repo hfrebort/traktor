@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 enum HARROW_DIRECTION {
       STOP
     , RIGHT

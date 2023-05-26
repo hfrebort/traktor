@@ -1,5 +1,7 @@
 #include "shared.h"
 
+#include "json.hpp"
+
 void DetectSettings::set_fromJson(const std::string& jsonString)
 {
     nlohmann::json data = nlohmann::json::parse(jsonString);

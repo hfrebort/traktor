@@ -1,11 +1,9 @@
 #pragma once
 
-//#include <condition_variable>
-//#include <thread>
-//#include <atomic>
-//#include <opencv2/core.hpp>
-//
-//#include "httplib.h"
+#include <atomic>
+#include <opencv2/core.hpp>
+
+#include "httplib.h"
 
 #include "stats.h"
 #include "util.h"

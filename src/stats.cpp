@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "stats.h"
 
 const std::chrono::seconds Stats::pause = std::chrono::seconds(2);
