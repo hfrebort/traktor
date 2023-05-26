@@ -1,0 +1,47 @@
+bee@pi:~/smb/dev/traktor/build $ time make -j 4
+[  6%] Building CXX object CMakeFiles/traktor.dir/cmake_pch.hxx.gch
+[ 31%] Building CXX object CMakeFiles/traktor.dir/src/webserver.cpp.o
+[ 31%] Building CXX object CMakeFiles/traktor.dir/src/stats.cpp.o
+[ 31%] Building CXX object CMakeFiles/traktor.dir/src/detect_settings.cpp.o
+[ 31%] Building CXX object CMakeFiles/traktor.dir/src/main.cpp.o
+[ 37%] Building CXX object CMakeFiles/traktor.dir/src/pipeline_1_camera.cpp.o
+[ 43%] Building CXX object CMakeFiles/traktor.dir/src/pipeline_2_detect.cpp.o
+[ 50%] Building CXX object CMakeFiles/traktor.dir/src/pipeline_3_encode_send.cpp.o
+[ 56%] Building CXX object CMakeFiles/traktor.dir/src/thread_stats.cpp.o
+[ 62%] Building CXX object CMakeFiles/traktor.dir/src/util.cpp.o
+[ 68%] Building CXX object CMakeFiles/traktor.dir/src/harrow.cpp.o
+[ 75%] Building CXX object CMakeFiles/traktor.dir/src/thread_center_harrow.cpp.o
+[ 81%] Building CXX object CMakeFiles/traktor.dir/src/pipeline/auto_reset_event.cpp.o
+[ 87%] Building CXX object CMakeFiles/traktor.dir/src/pipeline/Postbox.cpp.o
+[ 93%] Building CXX object CMakeFiles/traktor.dir/src/pipeline/ImagePipeline.cpp.o
+[100%] Linking CXX executable traktor
+[100%] Built target traktor
+
+real    4m2.621s
+user    13m31.515s
+sys     0m38.158s
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+bee@pi:~/smb/dev/traktor/build $ time make -j 4
+Scanning dependencies of target traktor
+[ 20%] Building CXX object CMakeFiles/traktor.dir/src/stats.cpp.o
+[ 20%] Building CXX object CMakeFiles/traktor.dir/src/main.cpp.o
+[ 20%] Building CXX object CMakeFiles/traktor.dir/src/webserver.cpp.o
+[ 26%] Building CXX object CMakeFiles/traktor.dir/src/detect_settings.cpp.o
+[ 33%] Building CXX object CMakeFiles/traktor.dir/src/pipeline_1_camera.cpp.o
+[ 40%] Building CXX object CMakeFiles/traktor.dir/src/pipeline_2_detect.cpp.o
+[ 46%] Building CXX object CMakeFiles/traktor.dir/src/pipeline_3_encode_send.cpp.o
+[ 53%] Building CXX object CMakeFiles/traktor.dir/src/thread_stats.cpp.o
+[ 60%] Building CXX object CMakeFiles/traktor.dir/src/util.cpp.o
+[ 66%] Building CXX object CMakeFiles/traktor.dir/src/harrow.cpp.o
+[ 73%] Building CXX object CMakeFiles/traktor.dir/src/thread_center_harrow.cpp.o
+[ 80%] Building CXX object CMakeFiles/traktor.dir/src/pipeline/auto_reset_event.cpp.o
+[ 86%] Building CXX object CMakeFiles/traktor.dir/src/pipeline/Postbox.cpp.o
+[ 93%] Building CXX object CMakeFiles/traktor.dir/src/pipeline/ImagePipeline.cpp.o
+[100%] Linking CXX executable traktor
+[100%] Built target traktor
+
+real    2m44.566s
+user    8m56.992s
+sys     0m22.519s
