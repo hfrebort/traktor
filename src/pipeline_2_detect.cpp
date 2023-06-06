@@ -179,7 +179,8 @@ bool find_point_on_nearest_refline(
 
 bool calc_overall_threshold_draw_plants(const ReflinesSettings& refSettings, const int frame_rows, Contoures* contoures, float* avg_threshold)
 {
-    const float threshold_percent = (float)refSettings.rowThresholdPx / (float)refSettings.rowSpacingPx;
+    const float threshold_percent =   (float)refSettings.rowThresholdPx                                   / (float)refSettings.rowSpacingPx;
+    const float rowRange_percent  = ( (float)refSettings.rowThresholdPx + (float)refSettings.rowRangePx ) / (float)refSettings.rowSpacingPx;
 
     float   sum_threshold = 0;
     cv::Point plant_coord;
@@ -199,13 +200,29 @@ bool calc_overall_threshold_draw_plants(const ReflinesSettings& refSettings, con
         if ( find_point_on_nearest_refline(plant_coord, refSettings, &nearest_refLine_x, &deltaPx, &refLines_distance_px) )
         {
             const float threshold = deltaPx / refLines_distance_px;
-            sum_threshold += threshold;
-            
-            plant.within_threshold = std::abs(threshold) < threshold_percent;
-            //const cv::Scalar& plant_color = std::abs(threshold) < threshold_percent ? BLUE : RED;
-            //cv::drawMarker  ( frame, plant , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
-            //cv::drawContours( frame, structures->all_contours, structures->centers_contours_idx[i], plant_color, 1 );
-            centers_processed += 1;
+
+            if ( refSettings.rowRangePx == 0)
+            {
+                sum_threshold += threshold;
+                plant.within_threshold = std::abs(threshold) < threshold_percent;
+                plant.within_row_range = true;
+                centers_processed += 1;
+            }
+            else
+            {
+                plant.within_row_range = std::abs(threshold) < rowRange_percent;
+
+                if ( plant.within_row_range )
+                {
+                    sum_threshold += threshold;
+                    plant.within_threshold = std::abs(threshold) < threshold_percent;
+                    centers_processed += 1;
+                }
+                else
+                {
+                    plant.within_threshold = false;
+                }
+            }
         }
     }
     if ( centers_processed > 0 ) {

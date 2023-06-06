@@ -15,6 +15,7 @@ const cv::Scalar RED   = cv::Scalar(  0,  0,255);
 const cv::Scalar BLUE  = cv::Scalar(255,  0,  0);
 const cv::Scalar GREEN = cv::Scalar(  0,255,  0);
 const cv::Scalar BLACK = cv::Scalar(  0,  0,  0);
+const cv::Scalar WHITE = cv::Scalar(255,255,255);
 
 /***
  * 2021-08-30 Spindler
@@ -26,18 +27,25 @@ static void draw_row_lines(cv::InputOutputArray frame, const ReflinesSettings& r
 {
     static const cv::Scalar rowLineColor         (150,255,255);
     static const cv::Scalar rowToleranceLineColor( 60,255,128);
-
+    static const cv::Scalar rowSpaceLineColor    (  0,  0,255);
+ 
     const int x_half = refSettings.x_half;
     //const int y_max  = imgSettings.frame_rows;
     const int y_max  = frame.rows();
 
-    const int       deltapx = refSettings.rowThresholdPx;
+    const int thresholdPx = refSettings.rowThresholdPx;
+    const int spacePx     = refSettings.rowRangePx;
     const cv::Point Fluchtpunkt(x_half, -refSettings.rowPerspectivePx);
     
     cv::line(frame, cv::Point(x_half,0), cv::Point(x_half,y_max), rowLineColor, 2 );
 
-    cv::line(frame, cv::Point(x_half-deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
-    cv::line(frame, cv::Point(x_half+deltapx,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+    cv::line(frame, cv::Point(x_half-thresholdPx,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+    cv::line(frame, cv::Point(x_half+thresholdPx,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+    if ( spacePx > 0)
+    {
+        cv::line(frame, cv::Point((x_half - 0) - (thresholdPx + spacePx), y_max), Fluchtpunkt, rowSpaceLineColor, 1 );
+        cv::line(frame, cv::Point((x_half - 0) + (thresholdPx + spacePx), y_max), Fluchtpunkt, rowSpaceLineColor, 1 );
+    }
 
     //
     // Reihen rechts und links der Mittellinie zeichnen
@@ -52,10 +60,18 @@ static void draw_row_lines(cv::InputOutputArray frame, const ReflinesSettings& r
             cv::line(frame, cv::Point(x_half - x_spacing,y_max),            Fluchtpunkt, rowLineColor, 2 );
             cv::line(frame, cv::Point(x_half + x_spacing,y_max),            Fluchtpunkt, rowLineColor, 2 );
             // row tolerance
-            cv::line(frame, cv::Point(x_half - x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
-            cv::line(frame, cv::Point(x_half - x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
-            cv::line(frame, cv::Point(x_half + x_spacing - deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
-            cv::line(frame, cv::Point(x_half + x_spacing + deltapx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half - x_spacing - thresholdPx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half - x_spacing + thresholdPx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half + x_spacing - thresholdPx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            cv::line(frame, cv::Point(x_half + x_spacing + thresholdPx ,y_max), Fluchtpunkt, rowToleranceLineColor, 1 );
+            // row "outer" spaces
+            if ( spacePx > 0 )
+            {
+                cv::line(frame, cv::Point((x_half - x_spacing) - (thresholdPx + spacePx), y_max), Fluchtpunkt, rowSpaceLineColor, 1 );
+                cv::line(frame, cv::Point((x_half - x_spacing) + (thresholdPx + spacePx), y_max), Fluchtpunkt, rowSpaceLineColor, 1 );
+                cv::line(frame, cv::Point((x_half + x_spacing) - (thresholdPx + spacePx), y_max), Fluchtpunkt, rowSpaceLineColor, 1 );
+                cv::line(frame, cv::Point((x_half + x_spacing) + (thresholdPx + spacePx), y_max), Fluchtpunkt, rowSpaceLineColor, 1 );
+            }
         }
     }
 }
@@ -64,9 +80,21 @@ static void draw_contoures_centers(cv::InputOutputArray frame, const DetectResul
 {
     for ( Center plant : detect_result.contoures.centers )
     {
-        const cv::Scalar& plant_color = plant.within_threshold ? BLUE : RED;
-        cv::drawMarker  ( frame, plant.point , plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
-        cv::drawContours( frame, detect_result.contoures.all_contours, plant.contours_idx, plant_color, 1 );
+        const cv::Scalar* plant_color;
+        if ( ! plant.within_row_range )
+        {
+            plant_color = &WHITE;
+        }
+        else if ( plant.within_threshold )
+        {
+            plant_color = &BLUE;
+        }
+        else
+        {
+            plant_color = &RED;
+        }
+        cv::drawMarker  ( frame, plant.point , *plant_color, cv::MarkerTypes::MARKER_CROSS, 20, 2 );
+        cv::drawContours( frame, detect_result.contoures.all_contours, plant.contours_idx, *plant_color, 1 );
     }
 }
 
