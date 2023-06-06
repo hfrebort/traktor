@@ -113,7 +113,14 @@ bool find_point_on_nearest_refline(
     float x_ref2;
 
     int refline_x = settings.rowSpacingPx;
-    for ( int r=0; r < settings.get_half_row_count(); ++r, refline_x += settings.rowSpacingPx)
+
+    const int rows = 
+        settings.get_half_row_count() 
+        + 1;    // to check "outside" the last row
+
+    const int last_row_idx = rows - 1;
+
+    for ( int r=0; r < rows; ++r, refline_x += settings.rowSpacingPx)
     {
         const float refline_steigung = settings.y_fluchtpunkt / (float)refline_x;
         x_ref2 = -plant.y / refline_steigung ;
@@ -132,8 +139,18 @@ bool find_point_on_nearest_refline(
             }
             else
             {
-                *nearest_refLine_x = x_ref2;
-                *deltaPx = -delta_to_row2_px;       // row 2 is right from the plant. delta is negative.
+                if ( r == last_row_idx )
+                {
+                    // 2023-06-06 Spindler
+                    //  the plant is nearer to the "last outer row".
+                    //  skip it
+                    return false;
+                }
+                else
+                {
+                    *nearest_refLine_x = x_ref2;
+                    *deltaPx = -delta_to_row2_px;       // row 2 is right from the plant. delta is negative.
+                }
             }
 
             *refLines_distance_px = x_ref2 - x_ref1;
