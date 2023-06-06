@@ -119,7 +119,7 @@ bool find_point_on_nearest_refline(
         x_ref2 = -plant.y / refline_steigung ;
         x_ref2 +=  refline_x;
 
-        if ( x_ref1 < plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
+        if ( x_ref1 <= plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
         {
             // plant is between rows. which row is closer?
             const float delta_to_row1_px = plant_x_abs_offset_from_0 - x_ref1;
