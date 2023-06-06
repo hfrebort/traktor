@@ -127,7 +127,7 @@ WORKER_RC encode_main(Workitem* work, EncodeContext* ctx)
 {
     auto overall_start = std::chrono::high_resolution_clock::now();
 
-    if ( work->isValidForAnalyse )
+    if ( work->isPictureFromCamera )
     {
         auto start = overall_start;
         draw_row_lines        (work->frame, ctx->shared->detectSettings.getReflineSettings());

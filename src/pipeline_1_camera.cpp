@@ -78,9 +78,7 @@ void camera_main(Workitem* work, CameraContext* ctx)
         ctx->errorCount = 1;    // hacky. set error here to get set_frame() called. Do it better. TODO
 
         // call the constructor here in the camera thread
-        puts("VideoCapure ctor...");
         ctx->capture = std::make_unique<cv::VideoCapture>();
-        puts("VideoCapure ctor...done");
     }
     //cv::VideoCapture& capture = ctx->capture.get();
     const Options* options = ctx->options;
@@ -119,5 +117,5 @@ void camera_main(Workitem* work, CameraContext* ctx)
             }
         }
     }
-    work->isValidForAnalyse = ( ctx->errorCount == 0 );
+    work->isPictureFromCamera = ( ctx->errorCount == 0 );
 }

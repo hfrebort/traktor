@@ -21,7 +21,7 @@ enum WORKER_RC
 
 struct Workitem {
     cv::Mat frame;
-    std::atomic<bool>   isValidForAnalyse;
+    std::atomic<bool>   isPictureFromCamera;
     DetectResult        detect_result;
 };
 

@@ -227,7 +227,7 @@ void detect_main(Workitem* work, DetectContext* ctx)
 {
     work->detect_result.reset();
 
-    if ( ! work->isValidForAnalyse )
+    if ( ! work->isPictureFromCamera )
     {
         work->detect_result.state = DETECT_STATE::NO_VALID_FRAME;
         return;
