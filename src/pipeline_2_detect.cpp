@@ -233,11 +233,6 @@ void detect_main(Workitem* work, DetectContext* ctx)
         return;
     }
 
-    if ( ctx->shared->harrowLifted.load() )
-    {
-        work->detect_result.state = DETECT_STATE::HARROW_LIFTED;
-        return;
-    }
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -268,13 +263,20 @@ void detect_main(Workitem* work, DetectContext* ctx)
     }
     else
     {
-        work->detect_result.state           = DETECT_STATE::SUCCESS;
-        work->detect_result.is_in_threshold = is_within_threshold(work->detect_result.avg_threshold, refline_settings.rowSpacingPx, refline_settings.rowThresholdPx);
-        
-        if ( ctx->harrow != nullptr )
+        if ( ctx->shared->harrowLifted.load() )
         {
-            HARROW_DIRECTION direction = get_harrow_direction(work->detect_result.is_in_threshold, work->detect_result.avg_threshold);
-            ctx->harrow->move(direction, "detect");
+            work->detect_result.state = DETECT_STATE::HARROW_LIFTED;
+        }
+        else
+        {
+            work->detect_result.state           = DETECT_STATE::SUCCESS;
+            work->detect_result.is_in_threshold = is_within_threshold(work->detect_result.avg_threshold, refline_settings.rowSpacingPx, refline_settings.rowThresholdPx);
+            
+            if ( ctx->harrow != nullptr )
+            {
+                HARROW_DIRECTION direction = get_harrow_direction(work->detect_result.is_in_threshold, work->detect_result.avg_threshold);
+                ctx->harrow->move(direction, "detect");
+            }
         }
     }
 

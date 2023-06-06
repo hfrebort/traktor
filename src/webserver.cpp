@@ -240,7 +240,22 @@ int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, EncodeCo
             res.status = 200;
         }
     });
-
+    //
+    // ------------------------------------------------------------------------
+    //
+    svr.Get("/debug/lift",  [&](const Request &req, Response &res) {
+        shared->harrowLifted.store(true);
+        puts("/debug/lift - shared->harrowLifted.store(true)");
+        res.status = 200;
+    });
+    //
+    // ------------------------------------------------------------------------
+    //
+    svr.Get("/debug/unlift",  [&](const Request &req, Response &res) {
+        shared->harrowLifted.store(false);
+        puts("/debug/lift - shared->harrowLifted.store(false)");
+        res.status = 200;
+    });
     const char* host = "0.0.0.0";
     printf("I: webserver start listening on %s:%d\n", host, port);
     //svr.listen("0.0.0.0", port);
