@@ -82,7 +82,7 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
 
     }
     const loadSettingsFromBackend = function(path) {
-        return $http.get('/' + path).then(function(response) {
+        return $http.get('/load/' + path).then(function(response) {
             let data = response.data;
             applySettingsFromBackend(data);
         });
@@ -101,11 +101,11 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
         console.log('save settings:', $scope.settingsName, $scope.data);
         applySliderValues();
         $http.post('/save/' + $scope.settingsName, $scope.data).then(handleResponse);
-        $scope.settingsName = '';
         list();
     };
     this.load = function(path) {
-        loadSettingsFromBackend('load/' + path).then(applyChanges);
+        loadSettingsFromBackend(path).then(applyChanges);
+        $scope.settingsName = path;
     };
 
     loadSettingsFromBackend('current');
