@@ -141,7 +141,8 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
         nlohmann::json data;
         data["camera"]["fps"] = diff->camera.frames / Stats::pause.count();
 
-        data["detect"]["time_milliseconds"]["0_overall"]      = duration_cast<milliseconds>(diff->detect.overall).count();
+        const auto overall_ms = duration_cast<milliseconds>(diff->detect.overall).count();
+        data["detect"]["time_milliseconds"]["0_overall"]      = overall_ms;
         data["detect"]["time_milliseconds"]["1_cvtColor"]     = duration_cast<milliseconds>(diff->detect.cvtColor).count();
         data["detect"]["time_milliseconds"]["2_GaussianBlur"] = duration_cast<milliseconds>(diff->detect.GaussianBlur).count();
         data["detect"]["time_milliseconds"]["3_inRange"]      = duration_cast<milliseconds>(diff->detect.inRange).count();
@@ -149,8 +150,15 @@ void URL_stats(httplib::Server* svr, const Stats* diff)
         data["detect"]["time_milliseconds"]["5_dilate"]       = duration_cast<milliseconds>(diff->detect.dilate).count();
         data["detect"]["time_milliseconds"]["6_findContours"] = duration_cast<milliseconds>(diff->detect.findContours).count();
 
-        data["detect"]["image"]["fps"]                        = diff->detect.frames / Stats::pause.count();
+        const auto fps = diff->detect.frames / Stats::pause.count();
+        data["detect"]["image"]["fps"]                        = fps;
         data["detect"]["image"]["MB/s"]                       = diff->detect.frame_bytes / 1024 / 1024 / Stats::pause.count();
+        if ( fps != 0 )
+        {
+            const auto available_ms = 1000 / fps;
+            data["detect"]["image"]["available_ms_one_frame"]   = available_ms;
+            data["detect"]["image"]["time_used_%"]              = (int)( (float)overall_ms / (float)available_ms * 100.0 );
+        }
 
         data["encode"]["kB/s"]      = diff->encode.bytes_sent  / 1024 / Stats::pause.count();
         data["encode"]["images/s"]  = diff->encode.images_sent / Stats::pause.count(); 
