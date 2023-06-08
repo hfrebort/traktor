@@ -15,3 +15,7 @@ Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 "Bus" and "Device" from lsusb are the two parameter used with "-s".
 
 lsusb -s 001:007 -v | egrep "Width|Height"
+
+or
+
+v4l2-ctl -d /dev/video0 --list-formats-ext
