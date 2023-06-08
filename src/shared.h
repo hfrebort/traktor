@@ -63,6 +63,7 @@ struct ReflinesSettings {
         int         rowSpacingPx;
         int         rowPerspectivePx;
         int         rowThresholdPx;
+        int         rowRangePx;
         
         int         x_half;
         int         y_fluchtpunkt;
@@ -85,6 +86,7 @@ struct ReflinesSettings {
         rowSpacingPx       = 160;
         rowPerspectivePx   = 0;
         rowThresholdPx     = 1;
+        rowRangePx         = 0;
 
         y_fluchtpunkt      = 0;
     }
@@ -156,6 +158,9 @@ struct DetectSettings {
 
         void set_rowThresholdPx(const int newRowThresholdPx) {
             reflineSettings.rowThresholdPx = newRowThresholdPx;
+        }
+        void set_rowRangePx(const int newRowRangePx) {
+            reflineSettings.rowRangePx = newRowRangePx;
         }
 
         void set_maxRows(int newMaxRows) {

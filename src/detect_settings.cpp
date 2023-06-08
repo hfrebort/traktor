@@ -21,5 +21,6 @@ void DetectSettings::set_fromJson(const std::string& jsonString)
     this->set_rowSpacingPx      ( data["rowSpacingPx"]       .get<int>() );
     this->set_rowPerspectivePx  ( data["rowPerspectivePx"]   .get<int>() );
     this->set_rowThresholdPx    ( data["rowThresholdPx"]     .get<int>() );
+    this->set_rowRangePx        ( data["rowRangePx"]         .get<int>() );
     this->set_minimalContourArea( data["minimalContourArea"] .get<int>() );
 }

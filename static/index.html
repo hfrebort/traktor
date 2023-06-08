@@ -45,6 +45,11 @@
     td {
       padding: 3px;
     }
+    .b-r{
+      /*border-right: thin black solid;*/
+      height: 100vh;
+      overflow: auto;
+    }
   </style>
   <script src="scripts/angular.min.js"></script>
   <script src="scripts/rzslider.min.js"></script>
@@ -56,7 +61,7 @@
 <body data-ng-controller="TractorController as ctrl">
   <div class="container-fluid">
     <div class="row">
-      <div data-ng-class="{'col-sm-7': showMenu, 'col-sm-12': !showMenu}">
+      <div data-ng-class="{'col-sm-7 b-r': showMenu, 'col-sm-12 b-r': !showMenu}">
         <div data-ng-show="!showMenu">
           <button name="showMenuButton" data-ng-click="ctrl.displayMenu()" class="btn btn-block btn-sm">
             <span class="glyphicon glyphicon-chevron-left"></span>
@@ -72,7 +77,7 @@
         <!--  <div class="traktor-container"><img class="traktor-image" src="{{videoUrl}}"></div>-->
         <div class="traktor-container"><img class="traktor-image" src="/video"></div>
       </div>
-      <div class="col-sm-5" data-ng-show="showMenu">
+      <div class="col-sm-5 b-r" data-ng-show="showMenu">
         <form name="tractorForm" method="post">
           <div class="row">
             <div class="col-sm-12">
@@ -86,9 +91,11 @@
               <div class="input-group">
                 <input type="text" data-ng-model="settingsName" uib-typeahead="s for s in settings | filter:$viewValue" placeholder="Name" class="form-control" />
                 <div class="input-group-btn" data-uib-dropdown>
+                  <!--SAVE-->
                   <button type="button" class="btn btn-default" data-ng-click="ctrl.save()" data-ng-disabled="settingsName === '' || settingsName === undefined">Save</button>
-                  <button type="button" class="btn btn-default" data-uib-dropdown-toggle>Load <span class="caret"></span></button>
-                  <ul data-uib-dropdown-menu role="menu">
+                  <!--LOAD-->
+                  <button type="button" class="btn btn-default" data-uib-dropdown-toggle>Load  <span class="caret"></span></button>
+                  <ul class="dropdown-menu" data-uib-dropdown-menu role="menu">
                     <li role="menuitem" data-ng-click="ctrl.load(setting)" data-ng-repeat="setting in settings"><a href="#">{{setting}}</a></li>
                   </ul>                  
                 </div>
@@ -96,7 +103,7 @@
             </div>
           </div>
           <div class="row">
-            <fieldset>
+            <fieldset class="col-sm-12">
               <legend>Reference lines</legend>
               <table border="1" width="100%">
                 <tr>
@@ -127,9 +134,18 @@
                       rz-slider-options="rowThresholdPxSlider.options"></rzslider>
                   </td>
                 </tr>
+                <tr>
+                  <td><label>Reihen Bereich</label></td>
+                  <td>
+                    <rzslider class="custom-slider" rz-slider-model="rowRangePxSlider.value"
+                      rz-slider-options="rowRangePxSlider.options"></rzslider>
+                  </td>
+                </tr>
               </table>
             </fieldset>
-            <fieldset>
+          </div>
+          <div class="row">
+            <fieldset class="col-sm-12">
               <legend>Image processing</legend>
               <table border="1" width="100%">
                 <tr><td width="20%"><label>Hue (Farbe)</label></td>

@@ -16,6 +16,8 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
     $scope.rowThresholdPxSlider = { value:   5, options: { floor:  1, ceil:  320, onChange: function(s, m, h, p) { applyChanges(); } } };
     $scope.rowSpacingPxSlider   = { value: 160, options: { floor: 10, ceil: 1000, onChange: function(s, m, h, p) { applyChanges(); } } };
     $scope.rowPerspectiveSlider = { value: 200, options: { floor:  0, ceil:  300, onChange: function(s, m, h, p) { applyChanges(); } } };
+    $scope.rowRangePxSlider     = { value:   5, options: { floor:  0, ceil:  320, onChange: function(s, m, h, p) { applyChanges(); } } };
+    
     $scope.showMenu = true;
     $scope.settings = [];
 
@@ -44,10 +46,12 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
         $scope.data.rowThresholdPx     = $scope.rowThresholdPxSlider.value;
         $scope.data.rowSpacingPx       = $scope.rowSpacingPxSlider.value;
         $scope.data.rowPerspectivePx   = $scope.rowPerspectiveSlider.value;
+        $scope.data.rowRangePx         = $scope.rowRangePxSlider.value;
     };
     const applyChanges = function () {
         // row threshold maximum can only be the half of the row distance
         $scope.rowThresholdPxSlider.options.ceil = Math.floor($scope.rowSpacingPxSlider.value / 2);
+        $scope.rowRangePxSlider.options.ceil     = Math.floor($scope.rowSpacingPxSlider.value / 2) - $scope.rowThresholdPxSlider.value;
 
         applySliderValues();
 
@@ -71,9 +75,14 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
         $scope.rowSpacingPxSlider.value        = data.rowSpacingPx;
         $scope.rowPerspectiveSlider.value      = data.rowPerspectivePx;
         $scope.rowThresholdPxSlider.value      = data.rowThresholdPx;
+        $scope.rowRangePxSlider.value          = data.rowRangePx;
+
+        $scope.rowThresholdPxSlider.options.ceil = Math.floor($scope.rowSpacingPxSlider.value / 2);
+        $scope.rowRangePxSlider.options.ceil     = Math.floor($scope.rowSpacingPxSlider.value / 2) - $scope.rowThresholdPxSlider.value;
+
     }
     const loadSettingsFromBackend = function(path) {
-        return $http.get('/' + path).then(function(response) {
+        return $http.get('/load/' + path).then(function(response) {
             let data = response.data;
             applySettingsFromBackend(data);
         });
@@ -92,11 +101,11 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
         console.log('save settings:', $scope.settingsName, $scope.data);
         applySliderValues();
         $http.post('/save/' + $scope.settingsName, $scope.data).then(handleResponse);
-        $scope.settingsName = '';
         list();
     };
     this.load = function(path) {
-        loadSettingsFromBackend('load/' + path).then(applyChanges);
+        loadSettingsFromBackend(path).then(applyChanges);
+        $scope.settingsName = path;
     };
 
     loadSettingsFromBackend('current');

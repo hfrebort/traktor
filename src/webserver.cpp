@@ -124,6 +124,8 @@ void URL_current(httplib::Server* svr, DetectSettings* settings)
         data["rowThresholdPx"]      = settings->getReflineSettings().rowThresholdPx;
         data["rowSpacingPx"]        = settings->getReflineSettings().rowSpacingPx;
         data["rowPerspectivePx"]    = settings->getReflineSettings().rowPerspectivePx;
+        data["rowRangePx"]          = settings->getReflineSettings().rowRangePx;
+
         
         res.set_content(data.dump(), "application/json");
         res.status = 200;

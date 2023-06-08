@@ -18,6 +18,7 @@ struct Center
     int contours_idx;
     cv::Point2i point;
     bool within_threshold;
+    bool within_row_range;
 
     Center(int idx, int x, int y)
     {
@@ -25,14 +26,13 @@ struct Center
         point.x = x;
         point.y = y;
         within_threshold = false;
+        within_row_range = true;
     }
 };
 
 struct Contoures
 {
     std::vector< std::vector<cv::Point> >   all_contours;
-    //std::vector<int>                        centers_contours_idx;
-    //std::vector<cv::Point2i>                centers;
     std::vector<Center> centers;
 
     void clearCenters()
