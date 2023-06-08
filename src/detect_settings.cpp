@@ -20,7 +20,9 @@ void DetectSettings::set_fromJson(const std::string& jsonString)
     this->set_maxRows           ( data["maxRows"]            .get<int>() );
     this->set_rowSpacingPx      ( data["rowSpacingPx"]       .get<int>() );
     this->set_rowPerspectivePx  ( data["rowPerspectivePx"]   .get<int>() );
-    this->set_rowThresholdPx    ( data["rowThresholdPx"]     .get<int>() );
-    this->set_rowRangePx        ( data["rowRangePx"]         .get<int>() );
+    this->set_rowThresholdPx    ( data["rowThresholdPx"]     .get<int>() ); 
+    //this->set_rowRangePx        ( data["rowRangePx"]         .get<int>() ); --> throws an exception if value is not present
     this->set_minimalContourArea( data["minimalContourArea"] .get<int>() );
+
+    this->set_rowRangePx        ( data.value<int>("rowRangePx", 0) ) ;
 }
