@@ -81,6 +81,27 @@ void URL_video(httplib::Server* svr, Shared* shared, ImagePipeline* pipeline, En
 
 }
 
+void URL_offset(httplib::Server* svr, DetectSettings* detect_settings)
+{
+    svr->Post("/offset", [=](const Request &req, Response &res)
+    {
+        try
+        {
+            nlohmann::json data = nlohmann::json::parse(req.body);
+            int offset_delta = data.value<int>("offset", 0);
+            detect_settings->add_offset_delta(offset_delta);
+            printf("I: offset is now: %d\n", detect_settings->getReflineSettings().offset);
+            res.status = 200;
+        }
+        catch(const std::exception& e)
+        {
+            fprintf(stderr, "/offset: %s\n", e.what());
+            res.status = 500;
+            res.set_content(e.what(), "text/plain");
+        }
+    });
+}
+
 void URL_applyChanges(httplib::Server* svr, DetectSettings* detect_settings)
 {
     svr->Post("/applyChanges", [=](const Request &req, Response &res)
@@ -125,7 +146,6 @@ void URL_current(httplib::Server* svr, DetectSettings* settings)
         data["rowSpacingPx"]        = settings->getReflineSettings().rowSpacingPx;
         data["rowPerspectivePx"]    = settings->getReflineSettings().rowPerspectivePx;
         data["rowRangePx"]          = settings->getReflineSettings().rowRangePx;
-
         
         res.set_content(data.dump(), "application/json");
         res.status = 200;
@@ -187,7 +207,7 @@ int thread_webserver(int port, Shared* shared, ImagePipeline* pipeline, EncodeCo
     URL_applyChanges(&svr, &shared->detectSettings );
     URL_current(&svr, &shared->detectSettings);
     URL_stats(&svr, stats_diff);
-    
+    URL_offset(&svr, &shared->detectSettings);
     //
     // ------------------------------------------------------------------------
     //

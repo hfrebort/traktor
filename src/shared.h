@@ -67,6 +67,7 @@ struct ReflinesSettings {
         
         int         x_half;
         int         y_fluchtpunkt;
+        int         offset;
         
 
         int get_half_row_count() const {
@@ -89,6 +90,7 @@ struct ReflinesSettings {
         rowRangePx         = 0;
 
         y_fluchtpunkt      = 0;
+        offset             = 0;
     }
 };
 
@@ -110,6 +112,10 @@ struct DetectSettings {
         
 
         DetectSettings() {
+        }
+
+        void add_offset_delta(const int delta) {
+            reflineSettings.offset += delta;
         }
 
         void set_frame(const int newCols, const int newRows) {

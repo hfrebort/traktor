@@ -29,7 +29,7 @@ static void draw_row_lines(cv::InputOutputArray frame, const ReflinesSettings& r
     static const cv::Scalar rowToleranceLineColor( 60,255,128);
     static const cv::Scalar rowSpaceLineColor    (  0,  0,255);
  
-    const int x_half = refSettings.x_half;
+    const int x_half = refSettings.x_half + refSettings.offset;
     //const int y_max  = imgSettings.frame_rows;
     const int y_max  = frame.rows();
 

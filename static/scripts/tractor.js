@@ -107,7 +107,12 @@ angular.module('tractor', ['ui.bootstrap', 'rzSlider'])
         loadSettingsFromBackend(path).then(applyChanges);
         $scope.settingsName = path;
     };
-
+    this.btn_offset_left = function() {
+        $http.post('/offset', { "offset" : -1 }).then(handleResponse);
+    };
+    this.btn_offset_right = function() {
+        $http.post('/offset', { "offset" :  1 }).then(handleResponse);
+    };
     loadSettingsFromBackend('current');
     list();
     console.log("controller initialized");

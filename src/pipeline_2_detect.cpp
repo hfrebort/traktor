@@ -110,6 +110,7 @@ bool find_point_on_nearest_refline(
 
     float px_delta_to_row;
     float x_ref1 = 0;    // start with the middle
+          x_ref1 += settings.offset;
     float x_ref2;
 
     int refline_x = settings.rowSpacingPx;
@@ -125,6 +126,7 @@ bool find_point_on_nearest_refline(
         const float refline_steigung = settings.y_fluchtpunkt / (float)refline_x;
         x_ref2 = -plant.y / refline_steigung ;
         x_ref2 +=  refline_x;
+        x_ref2 += settings.offset;
 
         if ( x_ref1 <= plant_x_abs_offset_from_0 && plant_x_abs_offset_from_0 < x_ref2 )
         {
