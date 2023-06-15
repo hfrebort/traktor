@@ -2,3 +2,4 @@ CMakeFiles/**
 deps/**
 release/**
 build*/**
+test/build/**

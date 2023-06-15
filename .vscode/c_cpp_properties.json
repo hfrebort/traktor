@@ -5,6 +5,7 @@
             "includePath": [
                  "${workspaceFolder}/src"
                 ,"/usr/include/opencv4"
+                ,"${workspaceFolder}/test/build/_deps/googletest-src/googletest/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang++-13",
