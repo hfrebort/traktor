@@ -3,12 +3,11 @@
         {
             "name": "Linux",
             "includePath": [
-                 "${workspaceFolder}/src"
-                ,"/usr/include/opencv4"
-                ,"${workspaceFolder}/test/build/_deps/googletest-src/googletest/include"
+                "${workspaceFolder}/src",
+                "/usr/include/opencv4"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/clang++-13",
+            "compilerPath": "/usr/bin/clang++-15",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64",

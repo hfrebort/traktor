@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 3.16)
-project(TraktorTest LANGUAGES CXX)
+
+
+set(EXE_TEST traktor_test)
+project(${EXE_TEST} LANGUAGES CXX)
+add_executable(${EXE_TEST} traktor_test.cpp)
+
+target_include_directories(${EXE_TEST} PRIVATE "../deps/cpp-httplib")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
@@ -17,14 +21,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
+find_package(OpenCV REQUIRED)
+
+# Link your application with OpenCV libraries
+target_link_libraries     (${EXE_TEST} PRIVATE ${OpenCV_LIBS})
+target_include_directories(${EXE_TEST} PRIVATE ${OpenCV_INCLUDE_DIRS})
+
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_library(GTest::GTest INTERFACE IMPORTED)
 target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
-add_executable(traktor_test traktor_test.cpp)
-target_link_libraries(traktor_test PRIVATE GTest::GTest)
 
-enable_testing()
-add_test(NAME traktor_test 
-         COMMAND traktor_test)
+target_link_libraries(${EXE_TEST} PUBLIC GTest::GTest)
+
+#enable_testing()
+#add_test(NAME ${EXECUTABLE} COMMAND traktor_test)
