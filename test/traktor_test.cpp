@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "../src/shared.h"
+#include "shared.h"
 
 bool find_point_on_nearest_refline(
       const cv::Point&        plant

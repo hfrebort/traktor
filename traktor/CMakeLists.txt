@@ -5,30 +5,30 @@ set(CMAKE_CXX_FLAGS "-gdwarf-4")
 project(${EXE_TRAKTOR} VERSION 1.2.0)
 
 set(SOURCES 
-    main.cpp
-    webserver.cpp
-    stats.h
-    stats.cpp
-    shared.h
-    detect_settings.cpp
-    camera.h
-    detect.h
-    encode.h
-    pipeline_1_camera.cpp
-    pipeline_2_detect.cpp
-    pipeline_3_encode_send.cpp
-    thread_stats.cpp
-    util.h
-    util.cpp
-    harrow.h
-    harrow.cpp
-    thread_center_harrow.cpp
-    pipeline/auto_reset_event.cpp
-    pipeline/auto_reset_event.hpp
-    pipeline/Postbox.cpp
-    pipeline/Postbox.hpp
-    pipeline/ImagePipeline.cpp
-    pipeline/ImagePipeline.hpp
+    src/main.cpp
+    src/webserver.cpp
+    src/stats.h
+    src/stats.cpp
+    src/shared.h
+    src/detect_settings.cpp
+    src/camera.h
+    src/detect.h
+    src/encode.h
+    src/pipeline_1_camera.cpp
+    src/pipeline_2_detect.cpp
+    src/pipeline_3_encode_send.cpp
+    src/thread_stats.cpp
+    src/util.h
+    src/util.cpp
+    src/harrow.h
+    src/harrow.cpp
+    src/thread_center_harrow.cpp
+    src/pipeline/auto_reset_event.cpp
+    src/pipeline/auto_reset_event.hpp
+    src/pipeline/Postbox.cpp
+    src/pipeline/Postbox.hpp
+    src/pipeline/ImagePipeline.cpp
+    src/pipeline/ImagePipeline.hpp
 )
 
 add_executable(${EXE_TRAKTOR} ${SOURCES})

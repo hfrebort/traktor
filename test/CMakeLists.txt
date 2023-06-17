@@ -5,6 +5,7 @@ project(${EXE_TEST} LANGUAGES CXX)
 add_executable(${EXE_TEST} traktor_test.cpp)
 
 target_include_directories(${EXE_TEST} PRIVATE "../deps/cpp-httplib")
+target_include_directories(${EXE_TEST} PRIVATE "../traktor/src")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
