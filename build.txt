@@ -10,6 +10,9 @@ prerequistites
         + mkdir ./deps/json && cd ./deps/json
         + wget https://github.com/nlohmann/json/raw/develop/single_include/nlohmann/json.hpp
 
+    libgpiod:
+        + sudo apt install libgpiod-dev
+
 
 cmake, make, run
 ----------------

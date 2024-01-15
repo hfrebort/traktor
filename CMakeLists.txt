@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0.0)
-
+cmake_minimum_required(VERSION 3.5.0)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(EXECUTABLE traktor)
 #set(CMAKE_CXX_FLAGS "-march=native")
 set(CMAKE_CXX_FLAGS "-gdwarf-4")
@@ -69,6 +69,14 @@ target_include_directories(${EXECUTABLE} PRIVATE "./deps/json")
 
 #
 # libgpiod
+#
+# compile yourself:
+#  sudo apt install autoconf
+#  sudo apt install build-essential 
+#  sudo apt install autoconf-archive 
+#  sudo apt install libtool
+# OR:
+#  sudo apt install libgpiod-dev
 #
 target_include_directories(${EXECUTABLE} PRIVATE "/usr/local/include")
 target_link_libraries     (${EXECUTABLE} PRIVATE "gpiod"    )
