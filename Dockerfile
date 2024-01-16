@@ -34,7 +34,7 @@ RUN  apk update         \
 
 #
 # 2024-01-16 Spindler
-#   this .so is needed (warum a imma) and not part of the "opencv" package from alpine
+#   libopencv_aruco.so is needed (warum a imma) and not part of the "opencv" package from alpine
 #   dirty hack: copy it from the build stage. (ned schee)
 #
 COPY --from=build   /usr/lib/libopencv_aruco.so.4.8.1 /usr/lib/libopencv_aruco.so.4.8.1
