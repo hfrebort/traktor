@@ -30,7 +30,7 @@ from alpine:latest
 RUN  apk update         \
   && apk add --no-cache \
     libgpiod            \
-    opencv
+    opencv~=4.8.1
 
 #
 # 2024-01-16 Spindler
