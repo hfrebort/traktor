@@ -8,7 +8,7 @@ RUN  apk update         \
     alpine-sdk          \
     cmake               \
     libgpiod-dev        \
-    opencv-dev
+    opencv-dev~=4.8.1
 
 RUN     mkdir -p    /traktor/deps/cpp-httplib   \
                     /traktor/deps/json          \
