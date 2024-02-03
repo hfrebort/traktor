@@ -7,43 +7,35 @@ A system to control a harrow
 - Adjust harrow left right
 - Start/Stop automatic arrow adjustment
 
-## setup raspberry
+# setup raspberry
 
 Use raspap.com to install an apache and install wifi connection
 (https://www.youtube.com/watch?v=YbvSS8MJm2s)
 
-## install tractor
+# docker (easy)
 
-- Copy the whole directory traktor to the home directory
-- Compile and start application which is written in C++ with following command
+    1. docker build -t traktor .
+    2. docker run --rm --device=/dev/video0 -p 9080:9080 traktor
 
-cd build
-cmake ..
-make
+An USB camera on /dev/video0
+Web UI should be reachable by: http://localhost:9080
 
-./traktor
+# build on your own
 
-- After that it is available under (http://localhost:8080)
+## prerequistites
 
-## users
+    sudo apt install libopencv-dev libgpiod-dev
 
-- ssh: pi, raspberry
-- raspap: admin, secret
-- wifi: raspi-webgui, ChangeMe
+    + mkdir -p ./deps/cpp-httplib ./deps/json
+    + wget -O ./deps/cpp-httplib/httplib.h https://github.com/yhirose/cpp-httplib/raw/master/httplib.h
+    + wget -O ./deps/json/json.hpp https://github.com/nlohmann/json/raw/develop/single_include/nlohmann/json.hpp
 
-# Calculation
+## build
 
-width (px) / height (cm) = factor (px/cm)
-640 / 50 = 12,8
+    mkdir Release
+    cd Release
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make
 
-## TODO's
-
-- calculate and display frames per second
-
-Phase 1:
-
-- detect areas which are overloaded with weed and show a warning to handle it manually -> harrow is fixed
-
-Phase 2:
-
-- calculate the deviation for all rows -> corrected regarding the perspective
+## run
+    ./traktor

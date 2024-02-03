@@ -1,4 +1,4 @@
-FROM alpine:latest as build
+FROM alpine:3.19 as build
 
 RUN  apk update         \
   && apk upgrade        \
@@ -25,7 +25,7 @@ RUN     cmake -DCMAKE_BUILD_TYPE=Release .. \
 #
 # MAIN image
 #
-from alpine:latest
+from alpine:3.19
 
 RUN  apk update         \
   && apk add --no-cache \
